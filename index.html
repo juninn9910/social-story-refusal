@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#7fd8ff">
-<title>거절 표현하기 정글 모험</title>
+<title>내 마음 말하기 정글 모험</title>
 <style>
 :root{--ink:#4a2b1a}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -46,6 +46,15 @@ button{font-family:inherit;border:0;padding:0;background:none;cursor:pointer;tou
 .pose-throw .armR{transform:rotate(-155deg)} .pose-throw .armL{transform:rotate(25deg)}
 .pose-push .armR{transform:rotate(-62deg)} .pose-push .armL{transform:rotate(-112deg)}
 .reach .armL{transform:rotate(62deg)}
+.reachR .armR{transform:rotate(-62deg)}
+.pose-raise .armR{transform:rotate(-150deg)}
+/* 팔로 X — 평소 팔은 숨기고 가슴 앞에서 엇갈린 팔을 보여 줌 */
+.xarms{display:none}
+.pose-x .xarms{display:inline}
+.pose-x .armL,.pose-x .armR{display:none}
+.breathe{animation:breathe 1.3s ease-in-out}
+.breathe-loop{animation:breathe 3s ease-in-out infinite}
+@keyframes breathe{0%,100%{transform:scale(1)}45%{transform:scale(1.07,1.05)}}
 .wave .armR{animation:waveR .45s ease-in-out infinite alternate}
 .poke .armL{animation:pokeA .35s ease-in-out infinite alternate}
 .cheer .armL{animation:cheerL .35s ease-in-out infinite alternate}
@@ -99,8 +108,10 @@ button{font-family:inherit;border:0;padding:0;background:none;cursor:pointer;tou
 .bubble.right{left:58%} .bubble.left{right:58%}
 .bubble::after{content:"";position:absolute;bottom:-1.9vmin;width:3vmin;height:3vmin;background:#fff;border-right:.6vmin solid var(--ink);border-bottom:.6vmin solid var(--ink);transform:rotate(45deg)}
 .bubble.right::after{left:3vmin} .bubble.left::after{right:3vmin}
-.b-icon{width:min(13vh,11vw)} .b-icon svg{width:100%;height:auto;display:block}
-.b-text{font-size:min(3.2vh,2.8vw);color:#c0392b;font-weight:900;margin-top:.6vh;white-space:nowrap}
+.b-icon{width:min(13vh,11vw)} .b-icon svg,.b-icon img{width:100%;height:auto;display:block}
+.b-text{font-size:min(4.6vh,3.4vw);color:var(--ink);font-weight:900;line-height:1.25;text-align:center;white-space:normal;word-break:keep-all;width:max-content;max-width:min(34vw,60vh)}
+.bubble.answer{border-color:#c0392b;border-width:.8vmin}
+.bubble.answer .b-text{color:#c0392b;margin-top:.6vh}
 .emote{position:absolute;left:62%;top:-4%;width:22%;z-index:6;animation:emoteUp 1.8s ease-out both;pointer-events:none}
 .emote svg{width:100%;height:auto;display:block}
 @keyframes emoteUp{0%{transform:translateY(20%) scale(.3);opacity:0}20%{transform:translateY(0) scale(1.1);opacity:1}80%{opacity:1}100%{transform:translateY(-40%) scale(1);opacity:0}}
@@ -144,9 +155,12 @@ button{font-family:inherit;border:0;padding:0;background:none;cursor:pointer;tou
 .pick.chosen{animation:chosenPick .7s cubic-bezier(.3,1.6,.5,1) both}
 @keyframes chosenPick{to{transform:scale(1.25)}}
 .pick.out{transition:.4s;opacity:0;transform:scale(.5)}
-.jumps{position:absolute;left:1vw;bottom:1vh;z-index:20;display:flex;gap:6px;align-items:center;font-size:12px;color:#fff;text-shadow:0 1px 2px #000;opacity:.8}
-.jumps button{background:rgba(255,255,255,.88);color:#5a3218;border:1.5px solid #7a4a22;border-radius:8px;padding:4px 8px;font-size:12px;text-shadow:none}
-.warn{position:absolute;left:1vw;bottom:5vh;z-index:20;max-width:46vw;background:rgba(255,245,220,.95);border:1.5px solid #c0392b;border-radius:8px;padding:6px 10px;font-size:12px;color:#7a2a1a}
+.tpanel{position:absolute;left:1vw;bottom:1vh;z-index:20;display:flex;flex-direction:column;gap:5px;font-size:12px;color:#fff;text-shadow:0 1px 2px #000}
+.tp-sum{background:rgba(40,25,10,.6);padding:4px 10px;border-radius:8px;align-self:flex-start;font-size:13px}
+.tp-row{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
+.tpanel button{background:rgba(255,255,255,.92);color:#5a3218;border:1.5px solid #7a4a22;border-radius:8px;padding:5px 9px;font-size:12px;text-shadow:none}
+.tp-row:nth-child(2) button{font-size:14px;padding:7px 12px;font-weight:800}
+.warn{position:absolute;left:1vw;bottom:16vh;z-index:20;max-width:46vw;background:rgba(255,245,220,.95);border:1.5px solid #c0392b;border-radius:8px;padding:6px 10px;font-size:12px;color:#7a2a1a}
 
 /* 챕터 카드 */
 .chapcard{position:absolute;left:50%;top:38%;z-index:8;display:flex;align-items:center;gap:3vw;padding:3vh 5vw;transform:translate(-50%,-50%);animation:ccIn .6s cubic-bezier(.3,1.5,.5,1) both}
@@ -197,21 +211,21 @@ button{font-family:inherit;border:0;padding:0;background:none;cursor:pointer;tou
 .fill{position:absolute;left:0;top:0;bottom:0;width:100%;background:#8fe07a;transform:scaleX(0);transform-origin:left;z-index:0}
 .lbl{position:relative;z-index:1}
 
-/* 3장 큰 멈춤 버튼 */
-.bigstop{position:absolute;left:73vw;top:44vh;width:min(34vh,24vw);aspect-ratio:1;margin-left:calc(min(34vh,24vw) / -2);margin-top:calc(min(34vh,24vw) / -2);z-index:6;transform:scale(var(--s,1));transition:transform .35s cubic-bezier(.3,1.6,.5,1),opacity .5s}
+/* 큰 행동 버튼 (팔로 X · 숨쉬기 · 하지 마세요) */
+.bigbtn{position:absolute;left:73vw;top:44vh;width:min(34vh,24vw);aspect-ratio:1;margin-left:calc(min(34vh,24vw) / -2);margin-top:calc(min(34vh,24vw) / -2);z-index:6;transform:scale(var(--s,1));transition:transform .35s cubic-bezier(.3,1.6,.5,1),opacity .5s}
 .bs-a{width:100%;height:100%;animation:popIn .5s cubic-bezier(.3,1.6,.5,1) both}
 .bs-b{width:100%;height:100%;filter:drop-shadow(0 1.4vmin 0 rgba(0,0,0,.25))}
-.bs-b svg{width:100%;height:100%;display:block}
-.bigstop.ready:not(.busy) .bs-b{animation:pulse 1.1s ease-in-out infinite}
-.bigstop.busy .bs-b{filter:drop-shadow(0 1.4vmin 0 rgba(0,0,0,.25)) brightness(.88)}
-.bigstop.hit .bs-b{animation:hit .4s ease-out}
-.bigstop.done{opacity:0;transform:scale(2);pointer-events:none}
+.bs-b svg,.bs-b img{width:100%;height:100%;display:block}
+.bigbtn.ready:not(.busy) .bs-b{animation:pulse 1.1s ease-in-out infinite}
+.bigbtn.busy .bs-b{filter:drop-shadow(0 1.4vmin 0 rgba(0,0,0,.25)) brightness(.88)}
+.bigbtn.hit .bs-b{animation:hit .4s ease-out}
+.bigbtn.done{opacity:0;transform:scale(2);pointer-events:none}
 @keyframes hit{0%{transform:scale(1)}30%{transform:scale(.86)}100%{transform:scale(1)}}
 
 /* 엔딩 */
 .party{position:absolute;left:0;right:0;bottom:6vh;display:flex;justify-content:center;align-items:flex-end;gap:1vw;z-index:4}
-.pc{position:relative;width:min(24vh,19vw);aspect-ratio:200/240}
-.pc.hero{width:min(34vh,25vw)}
+.pc{position:relative;width:min(20vh,16vw);aspect-ratio:200/240}
+.pc.hero{width:min(30vh,22vw)}
 .pc .inner{animation:jump .7s cubic-bezier(.3,.7,.4,1) infinite}
 .stamp{position:absolute;left:50%;top:3vh;width:min(36vh,30vw);margin-left:calc(min(36vh,30vw) / -2);z-index:7;animation:stamp .5s cubic-bezier(.5,0,.5,1.3) both}
 .stamp svg{width:100%;height:auto;display:block}
@@ -222,11 +236,12 @@ button{font-family:inherit;border:0;padding:0;background:none;cursor:pointer;tou
 .againBtn span{font-size:min(2.2vh,15px);color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.7)}
 .teacherLog{position:absolute;left:1vw;top:5.5vh;z-index:20;background:rgba(255,255,255,.9);border:1.5px solid #7a4a22;border-radius:10px;padding:8px 10px;font-size:12px;color:#5a3218;white-space:pre-line;max-width:38vw;line-height:1.5}
 .teacherLog button{display:block;margin-top:6px;background:#fff3d6;border:1.5px solid #7a4a22;border-radius:6px;padding:3px 8px;font-size:12px;color:#5a3218}
+.teacherLog .sync{margin-top:4px;color:#2e7d32}
 
-/* 교사용 표시 */
-#caption{position:absolute;left:50%;bottom:1vh;transform:translateX(-50%);z-index:15;background:rgba(40,25,10,.55);color:#fff;font-size:min(2.3vh,15px);padding:4px 12px;border-radius:10px;max-width:60vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
+/* 해설 자막판 (위쪽) · 교사용 표시 */
+#caption{position:absolute;left:0;right:0;margin:0 auto;width:max-content;top:1.5vh;z-index:15;background:rgba(255,253,245,.95);color:var(--ink);font-size:min(4.2vh,3vw);font-weight:900;line-height:1.3;padding:1vh 2.4vw;border-radius:2.5vmin;border:.6vmin solid #b8733a;box-shadow:0 .8vmin 0 rgba(0,0,0,.15);max-width:min(56vw,calc(100vw - 340px));text-align:center;word-break:keep-all;pointer-events:none;animation:popIn .3s both}
 #caption:empty{display:none}
-#chapLabel{position:absolute;left:1vw;top:1vh;z-index:15;background:rgba(255,255,255,.8);color:#5a3218;font-size:min(2vh,14px);padding:4px 10px;border-radius:10px;pointer-events:none}
+#chapLabel{position:absolute;left:1vw;bottom:1vh;z-index:15;background:rgba(255,255,255,.75);color:#5a3218;font-size:min(1.8vh,12px);padding:3px 9px;border-radius:8px;pointer-events:none;max-width:60vw}
 #chapLabel:empty{display:none}
 #tbar{position:absolute;right:1vw;bottom:1vh;z-index:30;display:flex;gap:8px;opacity:.6}
 #tbar:hover,#tbar:focus-within{opacity:1}
@@ -234,11 +249,90 @@ button{font-family:inherit;border:0;padding:0;background:none;cursor:pointer;tou
 #tbar svg{width:22px;height:22px;position:relative;z-index:1}
 #tbar small{position:relative;z-index:1;font-size:8px;color:#c0392b;line-height:1}
 
+/* 책상 소품 (퍼즐·색칠) · 질문 카드 */
+.desk{position:absolute;left:calc(50% - min(14vh,11vw));bottom:5vh;width:min(28vh,22vw);z-index:4}
+.desk svg{width:100%;height:auto;display:block}
+.desk.tap-me::after{content:"";position:absolute;inset:-8%;border-radius:4vmin;border:1vmin dashed #fff;box-shadow:0 0 0 .6vmin rgba(255,224,0,.7);animation:pulse 1s ease-in-out infinite}
+.pz{transform-box:fill-box;transform-origin:center;animation:wiggle 1s ease-in-out infinite}
+.qcard{background:#fff;border:.6vmin solid var(--ink);border-radius:2vmin;padding:8%}
+.qcard svg{width:100%;height:auto;display:block}
+.layer > img{width:100%;height:auto;display:block}
+.cc-icon img,.gate-icon img{width:100%;height:auto;display:block}
+
+/* 1단계 기분 막대 */
+.meter{position:absolute;left:1.5vw;bottom:12vh;width:4.5vmin;height:32vh;background:#fff;border:.6vmin solid var(--ink);border-radius:3vmin;overflow:hidden;z-index:4;animation:popIn .4s both}
+.meter i{position:absolute;left:0;right:0;bottom:0;height:0;background:#ef5350;transition:height .8s ease,background .8s}
+
+/* 4단계 먼저-다음 판 */
+.ftboard{position:absolute;left:0;right:0;margin:auto;width:max-content;top:17vh;display:flex;align-items:center;gap:2vw;padding:1.6vh 3vw;z-index:5;animation:popIn .4s both}
+.ft-item{position:relative;width:min(17vh,13vw);aspect-ratio:1;border-radius:50%;background:#fff8e6;padding:1.2vmin;opacity:.45;filter:grayscale(.5);transition:.4s}
+.ft-item.on{opacity:1;filter:none;transform:scale(1.12);box-shadow:0 0 0 1vmin #ffe14d}
+.ft-item > svg:not(.ring),.ft-item > img{width:100%;height:100%;display:block}
+.ft-arrow{font-size:min(8vh,6vw);color:#fff8e6}
+.ring{position:absolute;inset:-8%;width:116%;height:116%;transform:rotate(-90deg)}
+.ring circle{fill:none;stroke:rgba(255,255,255,.6);stroke-width:7}
+.ring circle.p{stroke:#29b6f6;stroke-dasharray:283;animation:ring linear forwards}
+.ft-item:not(.on) .ring{display:none}
+@keyframes ring{from{stroke-dashoffset:0}to{stroke-dashoffset:283}}
+
+/* 교사 게이트: 말 버튼 · 반응 기록 */
+.chips{flex-wrap:wrap;justify-content:center;max-width:min(46vw,calc(100vw - 520px));row-gap:1.4vh}
+.chips.small .chip{font-size:min(6.5vh,5vw)}
+.gate-aac{width:min(24vh,20vw);aspect-ratio:1;border-radius:50%;background:#fff;box-shadow:0 1.2vmin 0 rgba(0,0,0,.2);animation:pulse 1.2s ease-in-out infinite}
+.gate-aac svg,.gate-aac img{width:100%;height:100%;display:block}
+.gate-aac.hit{animation:hit .4s ease-out}
+.resp{position:fixed;top:1.2vh;right:1.2vw;z-index:40;display:flex;flex-direction:column;gap:5px;width:150px}
+.resp-h{font-size:11px;color:#fff;text-shadow:0 1px 2px #000;text-align:center}
+.resp button{position:relative;overflow:hidden;background:rgba(255,255,255,.95);border:2px solid #7a4a22;border-radius:10px;padding:6px 8px;font-size:13px;color:#5a3218;text-align:left}
+.resp button.skip{text-align:center;background:rgba(255,243,214,.95);font-size:12px}
+
+/* 말 버튼 보드 */
+.aacboard{position:absolute;top:10vh;bottom:7vh;left:3vw;right:3vw;display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(2,1fr);gap:2.5vmin;z-index:5}
+.aacbtn{background:#fffdf5;border-radius:4vmin;border:1vmin solid #e7a955;box-shadow:0 1.2vmin 0 #b9772f;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1vh;min-height:0;padding:1.5vmin}
+.aacbtn .ai{flex:1 1 0;min-height:0;width:100%}
+.aacbtn .ai svg,.aacbtn .ai img{width:100%;height:100%;display:block;object-fit:contain}
+.aacbtn .at{font-size:min(4.4vh,3.2vw);font-weight:900;color:#5a3218}
+.aacbtn.hit{animation:hit .4s ease-out}
+.aacbtn:active{transform:translateY(.6vmin);box-shadow:0 .6vmin 0 #b9772f}
+
+/* 교사 창 (설정·기록·음성 목록) */
+#modal{position:fixed;inset:0;z-index:60;display:none;align-items:center;justify-content:center;background:rgba(25,40,20,.55)}
+#modal.show{display:flex}
+.mpanel{background:#fffaf0;border:3px solid #7a4a22;border-radius:16px;padding:16px 20px;width:min(900px,94vw);max-height:92vh;overflow:auto;color:var(--ink);font-size:14px;line-height:1.5;user-select:text;-webkit-user-select:text}
+.mpanel h2{margin:0 0 10px;font-size:20px} .mpanel h3{margin:14px 0 4px;font-size:15px}
+.mpanel small{font-weight:400;opacity:.7;font-size:12px}
+.mrow{display:flex;gap:10px;align-items:flex-start;margin:9px 0}
+.mrow > b{flex:0 0 78px;padding-top:6px}
+.opts{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.opt{border:2px solid #d7b88a;background:#fff;border-radius:10px;padding:6px 12px;font-size:14px;color:#5a3218}
+.opt.on{background:#ffe066;border-color:#f4a91d;font-weight:800}
+.mpanel input,.mpanel select{font:inherit;font-size:15px;padding:6px 10px;border:2px solid #d7b88a;border-radius:10px;background:#fff;color:var(--ink);min-width:220px;user-select:text;-webkit-user-select:text}
+.mpanel input[type=url]{min-width:min(520px,70vw)}
+.mpanel details{margin-top:10px;border-top:1px dashed #d7b88a;padding-top:6px}
+.mpanel summary{cursor:pointer;font-weight:800}
+.mstat{font-size:12px;color:#2e7d32}
+.mnote{background:#fff3d6;border-radius:10px;padding:8px 12px;font-size:13px;margin:8px 0;white-space:pre-line}
+.mwarn{color:#c0392b;font-weight:800}
+.mbtns{display:flex;gap:8px;justify-content:flex-end;margin-top:12px;flex-wrap:wrap}
+.mbtns button{border:2px solid #7a4a22;background:#fff;border-radius:10px;padding:8px 16px;font-size:14px;color:#5a3218}
+.mbtns .mok{background:#7ed957;font-weight:800}
+.mbtns .mdel{border-color:#c0392b;color:#c0392b;margin-right:auto}
+table.rt{border-collapse:collapse;width:100%;font-size:13px;margin-top:6px}
+.rt th,.rt td{border:1px solid #e3cfa8;padding:4px 6px;text-align:left;vertical-align:top}
+.rt th{background:#fff3d6}
+.rt code{font-size:12px;word-break:break-all}
+.dots{display:inline-flex;gap:3px;vertical-align:middle;flex-wrap:wrap}
+.dot{width:14px;height:14px;border-radius:50%;display:inline-block;border:1.5px solid rgba(0,0,0,.25);vertical-align:middle}
+.d-self{background:#43a047}.d-imit{background:#9ccc65}.d-aac{background:#42a5f5}.d-prompt{background:#ffa726}.d-none{background:#9e9e9e}.d-na{background:#fff}
+.legend{font-size:12px;display:flex;gap:10px;flex-wrap:wrap;margin:4px 0}
+
 @media (orientation:portrait){
   .choices{flex-direction:column;gap:3vh}
   .card{width:min(70vw,40vh)}
   .picks{top:36vh;gap:3vw}
   .gate-board{flex-direction:column;gap:2vh}
+  .aacboard{grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(4,1fr)}
+  .mrow{flex-direction:column;gap:4px}
 }
 </style>
 </head>
@@ -253,9 +347,11 @@ button{font-family:inherit;border:0;padding:0;background:none;cursor:pointer;tou
   <div id="tbar">
     <button id="bSound" title="소리: 전체 켬 → 음성만 끔 → 전체 끔"></button>
     <button id="bFull" title="전체 화면"></button>
+    <button id="bAac" title="말 버튼 (길게 누르기)"><span class="fill"></span></button>
     <button id="bHome" title="처음으로 (길게 누르기)"><span class="fill"></span></button>
   </div>
 </div>
+<div id="modal"></div>
 
 <script>
 'use strict';
@@ -263,51 +359,134 @@ button{font-family:inherit;border:0;padding:0;background:none;cursor:pointer;tou
    CONFIG — 교사가 바꿀 수 있는 설정 (대사·난이도·진행 방식)
    ===================================================================== */
 const CONFIG = {
-  title: { top: '거절 표현하기', main: '정글 모험!' },
+  title: { top: '내 마음 말하기', main: '정글 모험!' },
+  // 구글 시트의 탭 이름. 나중에 다른 상황 이야기를 만들면 여기만 바꾸면 새 탭이 자동으로 생깁니다.
+  story: '거절·어려움 표현하기',
   tts: { rate: 0.88, pitch: 1.15, narratorPitch: 1.1 },  // 말 속도·높이 (0.1~2)
   sfxVolume: 0.8,           // 효과음 크기 (0~1)
   shuffleChoices: true,     // 정답 카드 위치를 매번 무작위로 (위치 암기 방지)
   hintAfterWrong: 2,        // 오답 n회 후 정답 카드 반짝임 (0 = 끔)
   teacherHoldMs: 600,       // 교사 버튼 길게 누르기 시간(ms). 0이면 한 번 터치
-  showCaption: true,        // 화면 하단 교사용 자막
-  showTeacherLabels: true,  // 카드·말풍선의 작은 글씨
-  ch1: {
+  showCaption: true,        // 화면 위쪽 해설 자막판
+  showBubbleText: true,     // 캐릭터 말풍선에 대사 글자 보이기
+  showTeacherLabels: true,  // 카드의 작은 설명 글씨
+  // 구글 시트 웹앱 (설치 방법: 교사용_안내.md). 여기 적어 두면 교사 설정에서 매번 넣지 않아도 됩니다.
+  // key는 파일에 적지 마세요(깃허브에 올리면 누구나 볼 수 있음). 기기마다 교사 설정에서 한 번 입력하면 기억합니다.
+  sheet: { url: 'https://script.google.com/macros/s/AKfycbzYb0Y8hYNHYRrrU6VRe53ivibriY4XqI3uvAG-l9wqkIzDvc-Dwc8LitDcDMjXSRBnOg/exec', key: '' },
+  // 녹음 음성 파일 폴더 (클로바더빙 등). 파일이 없으면 기기 음성(TTS)으로 읽어 줍니다.
+  audioDir: 'audio',
+
+  /* 학생 유형 — 교사 설정에서 고르면 단계·수준·오답 카드가 자동으로 맞춰집니다.
+     stages: 기본 단계(1~6) / level: 표현 수준(1~4) / task3: 3단계 장면('puzzle' 어려운 과제, 'question' 어려운 질문)
+     wrong: 단계별 오답 카드 — hurt(내 몸 아프게 하기) shout(소리 지르기) hold(꾹 참기) throw(던지기) push(밀기) */
+  defaultType: 'base',
+  types: {
+    A: { name: 'A형 (손 깨물기·참기)', stages: [1, 2, 3, 6], level: 1, task3: 'puzzle',
+         wrong: { 2: 'hurt', 3: 'hurt', 4: 'hurt', 5: 'hold', 6: 'hold' } },
+    B: { name: 'B형 (소리·코 때리기)', stages: [1, 3, 4, 6], level: 2, task3: 'question',
+         wrong: { 2: 'shout', 3: 'shout', 4: 'hurt', 5: 'shout', 6: 'hold' } },
+    base: { name: '기본형 (전체)', stages: [1, 2, 3, 4, 5, 6], level: 3, task3: 'puzzle', wrong: {} }
+  },
+  wrongDefault: { 2: 'throw', 3: 'hold', 4: 'shout', 5: 'push', 6: 'hold' },
+  wrongs: {
+    hurt:  { label: '(내 몸 아프게 하기)', line: '그러면 내 몸이 아파요. 내 몸은 소중해요. 팔로 X를 만들고 말해 볼까?' },
+    shout: { label: '(소리 지르기)', line: '소리를 지르면 모두 깜짝 놀라요. 말로 해 볼까?' },
+    hold:  { label: '(꾹 참기)', line: '꾹 참으면 마음이 계속 힘들어요. 말로 알려 볼까?' },
+    throw: { label: '(던지기)', line: '던지면 친구가 다쳐요. 말로 해 볼까?' },
+    push:  { label: '(밀기)', line: '밀면 친구가 넘어져요. 말로 해 볼까?' }
+  },
+  gateNote: {
+    x:     { 1: '팔로 X를 만들거나 버튼을 눌러 볼까요?', n: '우리 친구도 팔로 X를 만들고 함께 말해 볼까요?' },
+    raise: { 1: '손을 들거나 버튼을 눌러 볼까요?',       n: '우리 친구도 손을 들고 함께 말해 볼까요?' }
+  },
+
+  /* 단계별 대사. say는 표현 수준별 문장 — 1: 동작·버튼  2: 한 단어  3: 두세 어절  4: 이유·대안
+     문자열 대신 { 1: '', 2: '', 3: '', 4: '' }로 적으면 수준마다 다르게 말합니다. */
+  s1: {
     friend: 'pipi',
+    intro: '친구가 아주 큰 소리로 노래해요.',
+    friendLine: '랄랄라~ 랄랄라~!',
+    heroFeel: '으, 너무 시끄러워! 기분이 나빠!',
+    faceQ: '{name} 기분이 어때 보여? 얼굴을 눌러 봐!',
+    faceWrong: '웃는 얼굴일까? 시끄러우면 기분이 나빠요. 다시 볼까?',
+    xQ: '기분이 나쁠 때는 먼저 팔로 X를 만들어요. X 버튼을 눌러 봐!',
+    xDone: '팔로 X! 내 몸을 지켜요.',
+    breaths: 3,
+    breathQ: '이제 후~ 숨을 쉬어요. 바람 버튼을 세 번 눌러 봐!',
+    breath: '후~',
+    calmDone: '마음이 조금 편해졌어요. 이제 말로 알려 줘요.',
+    say: { 1: '싫어요', 2: '싫어요.', 3: '시끄러워요. 싫어요.', 4: '너무 시끄러워요. 작게 해 주세요.' },
+    friendOk: '아, 시끄러웠구나! 작게 할게.',
+    praise: '팔로 X를 만들고, 숨 쉬고, 말로 알렸어요!'
+  },
+  s2: {
+    friend: null,           // null이면 주인공이 아닌 친구가 자동으로 나와요
     item: 'broccoli',       // ITEMS 중 하나 (또는 ASSETS.items.ch1Item 이미지)
     friendLine: '브로콜리 먹어 봐! 맛있어!',
-    heroLine: '나는 이거 하기 싫어!',
+    heroLine: '나는 이거 먹기 싫어!',
     question: '친구에게 어떻게 말할까?',
-    wrongLine: '던지면 친구가 다쳐요. 말로 해 볼까?',
-    answer: '싫어요! 아니요!',
-    friendOk: '알았어!',
-    gateChips: ['싫', '어', '요'],
-    gatePhrase: '싫어요!'
+    say: { 1: '싫어요', 2: '싫어요.', 3: '브로콜리 싫어요.', 4: '배불러요. 안 먹을래요.' },
+    friendOk: { 1: '알았어!', 2: '알았어!', 3: '알았어!', 4: '알았어! 다음에 먹자!' },
+    praise: '싫은 것을 말로 알렸어요!'
   },
-  ch2: {
+  s3: {
+    task: 'puzzle',
+    ask: '어떻게 할까?',
+    puzzle: {
+      teacherLine: '이 퍼즐을 맞춰 볼까?',
+      heroLine: '어, 안 들어가… 너무 어려워!',
+      say: { 1: '어려워요', 2: '어려워요.', 3: '어려워요. 도와주세요.', 4: '이거 어려워요. 같이 해 주세요.' },
+      teacherOk: '알려 줘서 고마워! 같이 해 보자.',
+      praise: '어려울 때 말로 알렸어요!'
+    },
+    question: {
+      teacherLine: '이건 이름이 뭘까?',
+      heroLine: '음… 모르겠어…',
+      say: { 1: '몰라요', 2: '몰라요.', 3: '잘 몰라요. 알려 주세요.', 4: '잘 모르겠어요. 다시 알려 주세요.' },
+      teacherOk: '괜찮아! 몰라도 돼요. 말해 줘서 고마워.',
+      answer: '이건 파인애플이에요!',
+      repeat: '파인애플!',
+      praise: '모를 때 말로 알렸어요!'
+    }
+  },
+  s4: {
+    teacherLine: '이제 색칠하기 시간이에요!',
+    heroLine: '으… 하기 싫어. 힘들어…',
+    question: '어떻게 말할까?',
+    say: { 1: '쉬고 싶어요', 2: '쉬고 싶어요.', 3: '조금 쉬고 싶어요.', 4: '조금 쉬고 다시 할게요.' },
+    teacherOk: '말해 줘서 고마워. 조금 쉬고 하자!',
+    restSec: 6,
+    restLine: '쉬는 시간이에요. 후~ 편하게 쉬어요.',
+    thenLine: '이제 조금만 해 볼까? 별을 눌러 색칠해 봐!',
+    praise: '쉬고 나서 다시 했어요!'
+  },
+  s5: {
     heroLine: '나는 탭이랑 클레이가 좋아!',
     friendLine: '나 줘! 나 줘!',
     question: '내 탭이랑 클레이를 뺏으려고 해! 어떻게 말할까?',
-    wrongLine: '밀면 친구가 넘어져요. 말로 해 볼까?',
-    answer: '하지 마!',
-    friendSorry: '앗, 미안해!',
-    praise: '내 물건을 잘 지켰어요!',
-    gateChips: ['하', '지', '마'],
-    gatePhrase: '하지 마!'
+    say: { 1: '안 돼요', 2: '안 돼요.', 3: '내 거예요. 안 돼요.', 4: '내 거예요. 다 하고 빌려줄게요.' },
+    friendSorry: { 1: '앗, 미안해!', 2: '앗, 미안해!', 3: '앗, 미안해!', 4: '알았어, 기다릴게!' },
+    praise: '내 물건을 잘 지켰어요!'
   },
-  ch3: {
-    emotionChoice: true,    // true: 두 얼굴 중 고르기 / false: 주인공 얼굴 터치만
+  s6: {
     intro: '친구가 자꾸 툭툭 쳐요.',
-    faceQ: '{name} 기분이 어때 보여? 얼굴을 눌러 봐!',
-    faceWrong: '웃는 얼굴일까? 툭툭 맞으면 기분이 나빠요. 다시 볼까?',
-    feel: '아, 귀찮아! 기분이 나빠!',
-    buttonQ: '빨간 버튼을 누르면서 크게 말해 봐!',
-    words: ['하지 마!', '싫어요!', '멈춰!'],
+    stopQ: '빨간 버튼을 누르면서 팔로 X! 말해 봐!',
+    stopWord: '하지 마세요!',
+    friendAgain: '헤헤, 또 해야지!',
+    question: '말해도 계속해요. 어떻게 할까?',
+    say: { 1: '도와주세요', 2: '도와주세요.', 3: '선생님, 도와주세요.', 4: '선생님, 친구가 자꾸 쳐요. 도와주세요.' },
+    teacherLine: '말해 줘서 고마워. 친구가 싫다고 했어요. 이제 멈춰요.',
     friendSorry: '미안해, 이제 안 할게!',
-    praise: '말로 해서 장난을 멈췄어요!',
-    gateChips: ['하지 마', '싫어요'],
-    gatePhrase: '하지 마! 싫어요!'
+    praise: '선생님께 잘 알렸어요!'
   },
-  ending: { line: '멋지게 말했어요! 참 잘했어요!' }
+  ending: { line: '멋지게 말했어요! 참 잘했어요!' },
+
+  /* 말 버튼 보드 (대체 의사소통). 그림을 바꾸려면 ASSETS.aac에 이미지 경로를 넣으세요. */
+  aac: [
+    { id: 'like', word: '좋아요' }, { id: 'no', word: '싫어요' }, { id: 'cant', word: '안 돼요' }, { id: 'stop', word: '하지 마세요' },
+    { id: 'hard', word: '어려워요' }, { id: 'dunno', word: '몰라요' }, { id: 'help', word: '도와주세요' }, { id: 'rest', word: '쉬고 싶어요' }
+  ],
+  aacVoice: { pitch: 1.2, rate: 0.9 }
 };
 
 /* =====================================================================
@@ -316,8 +495,9 @@ const CONFIG = {
    표정 키: happy, worried, annoyed, angry, talk, proud, surprised
    ===================================================================== */
 const ASSETS = {
-  characters: { mong: null, ruru: null, boogi: null, pipi: null },
+  characters: { mong: null, ruru: null, boogi: null, pipi: null, owl: null },
   items: { ch1Item: null, tablet: null, clay: null },
+  aac: {},   // 예) { no: 'img/싫어요.png', help: 'img/도와주세요.png' }
   background: null
 };
 
@@ -326,9 +506,11 @@ const CHARS = {
   mong:  { name: '몽이', kind: '원숭이',   color: '#d9893f', pitch: 1.45 },
   ruru:  { name: '루루', kind: '아기사자', color: '#f2b632', pitch: 1.3 },
   boogi: { name: '부기', kind: '거북이',   color: '#5fb24b', pitch: 1.15 },
-  pipi:  { name: '삐삐', kind: '앵무새',   color: '#f25450', pitch: 1.7 }
+  pipi:  { name: '삐삐', kind: '앵무새',   color: '#f25450', pitch: 1.7 },
+  owl:   { name: '부엉 선생님', kind: '부엉이', color: '#9b6b43', pitch: 0.95 }
 };
 const HEROES = ['mong', 'ruru', 'boogi'];
+const TEACHER = 'owl';
 
 /* =====================================================================
    기본 그래픽
@@ -352,6 +534,16 @@ const PALM = `<g fill="#fff"><rect x="56" y="72" width="48" height="44" rx="16"/
 const STOP_FACE = `<polygon points="${OCT_OUT}" fill="#e53935" stroke="${INK}" stroke-width="4" stroke-linejoin="round"/><polygon points="${OCT_IN}" fill="none" stroke="#fff" stroke-width="6" stroke-linejoin="round"/>${PALM}`;
 const X_FACE = `<circle cx="80" cy="80" r="74" fill="${INK}"/><circle cx="80" cy="80" r="71" fill="#fff"/><circle cx="80" cy="80" r="63" fill="none" stroke="#e53935" stroke-width="14"/><path d="M53 53 L107 107 M107 53 L53 107" stroke="#e53935" stroke-width="20" stroke-linecap="round"/>`;
 const POST = `<rect x="72" y="140" width="16" height="82" rx="6" fill="#a86a3a" stroke="${INK}" stroke-width="3"/>`;
+const DISC = bg => `<circle cx="80" cy="80" r="74" fill="${INK}"/><circle cx="80" cy="80" r="71" fill="${bg}"/>`;
+const twoPass = (s, fill, w = 7) => `<g fill="${INK}" stroke="${INK}" stroke-width="${w}" stroke-linejoin="round">${s}</g><g fill="${fill}">${s}</g>`;
+const SKIN = '#ffd9a8';
+const HAND_S = '<rect x="56" y="70" width="48" height="46" rx="16"/><rect x="57" y="38" width="11" height="42" rx="5.5"/><rect x="69.5" y="30" width="11" height="48" rx="5.5"/><rect x="82" y="32" width="11" height="46" rx="5.5"/><rect x="94" y="42" width="10" height="36" rx="5"/><rect x="40" y="76" width="12" height="32" rx="6" transform="rotate(-38 46 92)"/>';
+const xArm = (x1, y1, x2, y2) => {
+  const sx = x1 + (x2 - x1) * .22, sy = y1 + (y2 - y1) * .22;
+  return `<path d="M${x1} ${y1} L${x2} ${y2}" stroke="${INK}" stroke-width="28" stroke-linecap="round"/><path d="M${x1} ${y1} L${x2} ${y2}" stroke="${SKIN}" stroke-width="21" stroke-linecap="round"/>` +
+    `<path d="M${x1} ${y1} L${sx} ${sy}" stroke="${INK}" stroke-width="30" stroke-linecap="round"/><path d="M${x1} ${y1} L${sx} ${sy}" stroke="#e53935" stroke-width="23" stroke-linecap="round"/>` +
+    `<circle cx="${x2}" cy="${y2}" r="14" fill="${SKIN}" stroke="${INK}" stroke-width="3.5"/>`;
+};
 
 const ICON = {
   xBadge: `<svg viewBox="0 0 160 160">${X_FACE}</svg>`,
@@ -369,20 +561,38 @@ const ICON = {
   sOn: `<svg viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z" fill="#5a3218"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" stroke="#5a3218" stroke-width="2" fill="none" stroke-linecap="round"/></svg>`,
   sOff: `<svg viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z" fill="#5a3218"/><path d="M16 9l6 6M22 9l-6 6" stroke="#c0392b" stroke-width="2.2" stroke-linecap="round"/></svg>`,
   full: `<svg viewBox="0 0 24 24"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5" stroke="#5a3218" stroke-width="2.2" fill="none" stroke-linecap="round"/></svg>`,
-  home: `<svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7M6 9.5V20h12V9.5" stroke="#5a3218" stroke-width="2.2" fill="none" stroke-linejoin="round" stroke-linecap="round"/></svg>`
+  home: `<svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7M6 9.5V20h12V9.5" stroke="#5a3218" stroke-width="2.2" fill="none" stroke-linejoin="round" stroke-linecap="round"/></svg>`,
+  chat: `<svg viewBox="0 0 24 24"><path d="M4 5h16v10H10l-5 4v-4H4z" stroke="#5a3218" stroke-width="2.2" fill="none" stroke-linejoin="round"/></svg>`,
+  /* 말 버튼 그림 */
+  xArms: `<svg viewBox="0 0 160 160">${DISC('#ffebee')}${xArm(50, 124, 110, 56)}${xArm(110, 124, 50, 56)}</svg>`,
+  like: `<svg viewBox="0 0 160 160">${DISC('#fce4ec')}<g transform="translate(30 38)"><path d="M50 84 C 10 56 2 34 14 18 C 26 4 44 8 50 24 C 56 8 74 4 86 18 C 98 34 90 56 50 84Z" fill="#ff5a7a" stroke="${INK}" stroke-width="5"/></g></svg>`,
+  hard: `<svg viewBox="0 0 160 160">${DISC('#fff3e0')}<path d="M40 50 H62 a10 10 0 1 1 20 0 H104 V72 a10 10 0 1 1 0 20 V114 H40 Z" fill="#ffb74d" stroke="${INK}" stroke-width="5" stroke-linejoin="round"/><text x="72" y="100" text-anchor="middle" font-size="46" font-weight="900" fill="#fff" stroke="${INK}" stroke-width="2.5" font-family="Arial, sans-serif">?</text><path d="M126 40 Q 138 58 126 66 Q 114 58 126 40Z" fill="#8fd8ff" stroke="#2f8fd0" stroke-width="3"/></svg>`,
+  dunno: `<svg viewBox="0 0 160 160">${DISC('#f3e5f5')}<circle cx="72" cy="94" r="36" fill="${SKIN}" stroke="${INK}" stroke-width="4"/><circle cx="60" cy="90" r="4.5" fill="${INK}"/><circle cx="84" cy="90" r="4.5" fill="${INK}"/><path d="M62 110 Q 72 104 82 110" stroke="${INK}" stroke-width="4" fill="none" stroke-linecap="round"/><text x="120" y="78" text-anchor="middle" font-size="58" font-weight="900" fill="#8e24aa" stroke="${INK}" stroke-width="2" font-family="Arial, sans-serif">?</text><text x="44" y="56" text-anchor="middle" font-size="30" font-weight="900" fill="#ba68c8" font-family="Arial, sans-serif">?</text></svg>`,
+  help: `<svg viewBox="0 0 160 160">${DISC('#e8f5e9')}${twoPass('<rect x="62" y="108" width="36" height="40" rx="8"/>', '#66bb6a', 6)}${twoPass(HAND_S, SKIN)}<path d="M34 50 Q 26 64 34 78 M126 50 Q 134 64 126 78" stroke="#43a047" stroke-width="6" fill="none" stroke-linecap="round"/></svg>`,
+  rest: `<svg viewBox="0 0 160 160">${DISC('#e1f5fe')}<rect x="50" y="46" width="22" height="70" rx="8" fill="#29b6f6" stroke="${INK}" stroke-width="4"/><rect x="88" y="46" width="22" height="70" rx="8" fill="#29b6f6" stroke="${INK}" stroke-width="4"/><text x="116" y="56" font-size="24" font-weight="900" fill="#0277bd" font-family="Arial, sans-serif">z</text><text x="128" y="40" font-size="16" font-weight="900" fill="#0277bd" font-family="Arial, sans-serif">z</text></svg>`,
+  wind: `<svg viewBox="0 0 160 160">${DISC('#e0f7fa')}<g stroke="#26a69a" stroke-width="9" fill="none" stroke-linecap="round"><path d="M30 62 H92 a14 14 0 1 0 -14 -14"/><path d="M30 86 H112 a14 14 0 1 1 -14 14"/><path d="M30 110 H80"/></g></svg>`,
+  /* 장면 효과 그림 */
+  note: `<svg viewBox="0 0 60 80"><path d="M22 62 V14 L50 8 V52" stroke="${INK}" stroke-width="5" fill="none" stroke-linejoin="round"/><ellipse cx="15" cy="62" rx="11" ry="8" fill="#b388ff" stroke="${INK}" stroke-width="3"/><ellipse cx="43" cy="54" rx="11" ry="8" fill="#b388ff" stroke="${INK}" stroke-width="3"/></svg>`,
+  loud: `<svg viewBox="0 0 100 100"><g stroke="#e53935" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M8 34 L22 22 L32 32 L46 18 L56 28 L72 14 L82 22"/><path d="M8 52 L22 42 L34 54 L48 42 L60 54 L74 42 L90 50"/><path d="M8 70 L22 76 L32 66 L46 80 L56 70 L72 84 L82 76"/></g></svg>`,
+  bandage: `<svg viewBox="0 0 100 100"><g transform="rotate(-35 50 50)"><rect x="8" y="34" width="84" height="32" rx="16" fill="#f5c99a" stroke="${INK}" stroke-width="4"/><rect x="36" y="34" width="28" height="32" fill="#e8b07a" stroke="${INK}" stroke-width="3"/><g fill="#c98a55"><circle cx="44" cy="44" r="2.5"/><circle cx="56" cy="44" r="2.5"/><circle cx="44" cy="56" r="2.5"/><circle cx="56" cy="56" r="2.5"/></g></g></svg>`,
+  ouch: `<svg viewBox="0 0 100 100"><polygon points="${starPts(9, 48, 26, 50, 50)}" fill="#ff7043" stroke="#c62828" stroke-width="4" stroke-linejoin="round"/></svg>`,
+  rain: `<svg viewBox="0 0 120 100">${twoPass('<ellipse cx="60" cy="46" rx="46" ry="20"/><circle cx="42" cy="36" r="20"/><circle cx="72" cy="30" r="22"/>', '#a9b6c6')}<g fill="#4fc3f7" stroke="#2f8fd0" stroke-width="2"><path d="M36 74 q6 10 0 16 q-6 -6 0 -16z"/><path d="M60 78 q6 10 0 16 q-6 -6 0 -16z"/><path d="M84 74 q6 10 0 16 q-6 -6 0 -16z"/></g></svg>`,
+  qmark: `<svg viewBox="0 0 60 80"><text x="30" y="66" text-anchor="middle" font-size="72" font-weight="900" fill="#8e24aa" stroke="#fff" stroke-width="3" paint-order="stroke" font-family="Arial, sans-serif">?</text></svg>`,
+  crayon: `<svg viewBox="0 0 100 100"><g transform="rotate(-35 50 50)"><rect x="12" y="40" width="62" height="20" rx="4" fill="#ef5350" stroke="${INK}" stroke-width="3"/><rect x="26" y="40" width="28" height="20" fill="#ffcdd2" stroke="${INK}" stroke-width="3"/><polygon points="74,40 94,50 74,60" fill="#ef5350" stroke="${INK}" stroke-width="3" stroke-linejoin="round"/></g></svg>`
 };
 
 const ITEMS = {
   broccoli: `<svg viewBox="0 0 100 112"><path d="M41 58 L37 104 Q50 112 63 104 L59 58 Z" fill="#d6ecaa" ${OL}/><circle cx="28" cy="50" r="20" fill="#3f9a3a" ${OL}/><circle cx="72" cy="50" r="20" fill="#3f9a3a" ${OL}/><circle cx="50" cy="32" r="25" fill="#4caf43" ${OL}/><circle cx="50" cy="58" r="17" fill="#45a83d" ${OL}/><g fill="#2f7d2a"><circle cx="42" cy="26" r="4"/><circle cx="58" cy="34" r="4"/><circle cx="24" cy="48" r="3.5"/><circle cx="74" cy="46" r="3.5"/><circle cx="50" cy="56" r="3"/></g></svg>`,
   tablet: `<svg viewBox="0 0 150 106"><rect x="4" y="4" width="142" height="98" rx="16" fill="#3b4060" ${OL}/><rect x="17" y="15" width="116" height="76" rx="7" fill="#7fd3ff"/><circle cx="45" cy="45" r="15" fill="#ffd93b"/><path d="M78 72 L96 38 L114 72 Z" fill="#ff7aa2"/><rect x="34" y="66" width="30" height="14" rx="4" fill="#7ed957"/><circle cx="140" cy="53" r="3" fill="#9aa3c7"/></svg>`,
-  clay: `<svg viewBox="0 0 150 90"><path d="M10 78 Q 6 50 30 46 Q 52 40 56 62 Q 60 84 34 86 Q 14 88 10 78 Z" fill="#ff6b6b" ${OL}/><circle cx="82" cy="62" r="22" fill="#4fc3f7" ${OL}/><path d="M100 80 Q 112 60 124 72 Q 136 84 144 66" stroke="${INK}" stroke-width="15" fill="none" stroke-linecap="round"/><path d="M100 80 Q 112 60 124 72 Q 136 84 144 66" stroke="#ffd93b" stroke-width="10" fill="none" stroke-linecap="round"/><circle cx="64" cy="30" r="13" fill="#7ed957" ${OL}/><circle cx="26" cy="58" r="4" fill="#fff" opacity=".6"/><circle cx="76" cy="54" r="4" fill="#fff" opacity=".6"/></svg>`
+  clay: `<svg viewBox="0 0 150 90"><path d="M10 78 Q 6 50 30 46 Q 52 40 56 62 Q 60 84 34 86 Q 14 88 10 78 Z" fill="#ff6b6b" ${OL}/><circle cx="82" cy="62" r="22" fill="#4fc3f7" ${OL}/><path d="M100 80 Q 112 60 124 72 Q 136 84 144 66" stroke="${INK}" stroke-width="15" fill="none" stroke-linecap="round"/><path d="M100 80 Q 112 60 124 72 Q 136 84 144 66" stroke="#ffd93b" stroke-width="10" fill="none" stroke-linecap="round"/><circle cx="64" cy="30" r="13" fill="#7ed957" ${OL}/><circle cx="26" cy="58" r="4" fill="#fff" opacity=".6"/><circle cx="76" cy="54" r="4" fill="#fff" opacity=".6"/></svg>`,
+  pineapple: `<svg viewBox="0 0 100 130"><defs><clipPath id="pnClip"><ellipse cx="50" cy="88" rx="30" ry="38"/></clipPath></defs><path d="M50 52 L34 12 L48 32 L50 4 L56 32 L70 12 Z" fill="#43a047" stroke="${INK}" stroke-width="3" stroke-linejoin="round"/><ellipse cx="50" cy="88" rx="30" ry="38" fill="#ffca28"/><g clip-path="url(#pnClip)" stroke="#e0a100" stroke-width="3"><path d="M10 60 L90 140 M10 84 L70 144 M30 50 L100 120 M50 46 L100 96 M90 60 L10 140 M90 84 L30 144 M70 50 L0 120 M50 46 L0 96"/></g><ellipse cx="50" cy="88" rx="30" ry="38" fill="none" stroke="${INK}" stroke-width="3"/></svg>`
 };
 function itemHTML(key) {
   const a = ASSETS.items[key];
   return a ? `<img src="${a}" alt="" draggable="false">` : ITEMS[key];
 }
 function ch1ItemHTML() {
-  return ASSETS.items.ch1Item ? `<img src="${ASSETS.items.ch1Item}" alt="" draggable="false">` : (ITEMS[CONFIG.ch1.item] || ITEMS.broccoli);
+  return ASSETS.items.ch1Item ? `<img src="${ASSETS.items.ch1Item}" alt="" draggable="false">` : (ITEMS[CONFIG.s2.item] || ITEMS.broccoli);
 }
 
 /* ---------- 얼굴 부품 ---------- */
@@ -444,7 +654,9 @@ function face(m, o = {}) {
 function arms(col, o = {}) {
   const hand = o.hand || col, w = o.w || 20, h = o.h || 44;
   const one = (cx, rot, cls) => `<g class="${cls}" style="transform-origin:${cx}px 152px"><g transform="rotate(${rot} ${cx} 152)"><rect x="${cx - w / 2}" y="146" width="${w}" height="${h}" rx="${w / 2}" fill="${col}" ${OL}/><circle cx="${cx}" cy="${146 + h}" r="${w / 2 + 3}" fill="${hand}" ${OL}/></g></g>`;
-  return one(64, 28, 'armL') + one(136, -28, 'armR');
+  // 팔로 X: 팔꿈치(아래)에서 반대쪽 어깨 앞(위)으로 엇갈린 두 팔. .pose-x일 때만 보임
+  const xa = (x1, y1, x2, y2) => `<path d="M${x1} ${y1} L${x2} ${y2}" stroke="${INK}" stroke-width="${w + 6}" stroke-linecap="round"/><path d="M${x1} ${y1} L${x2} ${y2}" stroke="${col}" stroke-width="${w}" stroke-linecap="round"/><circle cx="${x2}" cy="${y2}" r="${w / 2 + 3}" fill="${hand}" ${OL}/>`;
+  return one(64, 28, 'armL') + one(136, -28, 'armR') + `<g class="xarms">${xa(72, 206, 134, 140)}${xa(128, 206, 66, 140)}</g>`;
 }
 const SWEAT = `<path d="M160 50 Q 171 68 160 76 Q 149 68 160 50Z" fill="#8fd8ff" stroke="#2f8fd0" stroke-width="2.5"/>`;
 const ANGER = `<g transform="translate(152 34)" stroke="#e53935" stroke-width="5" fill="none" stroke-linecap="round"><path d="M-12 -4 Q -4 -4 -4 -12"/><path d="M4 -12 Q 4 -4 12 -4"/><path d="M12 4 Q 4 4 4 12"/><path d="M-4 12 Q -4 4 -12 4"/></g>`;
@@ -527,6 +739,25 @@ const DRAW = {
       ${open ? `<path d="M88 120 Q 100 148 112 120 Z" fill="#e8972a" ${OL}/>` : ''}
       <path d="M84 106 Q 100 94 116 106 Q 116 124 100 136 Q 96 120 84 106 Z" fill="${Y}" ${OL}/>
       ${arms(Bl, { hand: Bl, w: 24, h: 44 })}`, m);
+  },
+  owl(m) { // 부엉이 선생님
+    const B = '#9b6b43', D = '#7d5233', F = '#f3dfb8';
+    const open = ['talk', 'proud', 'angry', 'surprised'].includes(m);
+    const foot = x => `<path d="M${x} 214 l-8 12 M${x} 214 l0 14 M${x} 214 l8 12" stroke="#f0a030" stroke-width="5" stroke-linecap="round"/>`;
+    return svgWrap(`
+      ${foot(84)}${foot(116)}
+      <ellipse cx="100" cy="178" rx="50" ry="48" fill="${B}" ${OL}/>
+      <ellipse cx="100" cy="188" rx="31" ry="32" fill="${F}"/>
+      <path d="M86 176 q6 6 12 0 M102 176 q6 6 12 0 M94 192 q6 6 12 0 M86 208 q6 6 12 0 M102 208 q6 6 12 0" stroke="#c9a97a" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <path d="M50 46 L58 14 L82 40 Z" fill="${D}" ${OL}/><path d="M150 46 L142 14 L118 40 Z" fill="${D}" ${OL}/>
+      <circle cx="100" cy="92" r="58" fill="${B}" ${OL}/>
+      <ellipse cx="77" cy="92" rx="27" ry="29" fill="${F}"/><ellipse cx="123" cy="92" rx="27" ry="29" fill="${F}"/>
+      ${face(m, { lid: F, noMouth: true, cdx: 46 })}
+      <g fill="none" stroke="${INK}" stroke-width="3.5"><circle cx="78" cy="90" r="19"/><circle cx="122" cy="90" r="19"/><path d="M97 88 Q 100 84 103 88"/></g>
+      ${open ? `<path d="M92 118 L108 118 L100 134 Z" fill="#c9701a" ${OL}/>` : ''}
+      <path d="M90 106 L110 106 L100 122 Z" fill="#f0a030" ${OL}/>
+      <path d="M86 146 L100 152 L114 146 L114 160 L100 154 L86 160 Z" fill="#43a047" ${OL}/>
+      ${arms(D, { hand: D, w: 22, h: 42 })}`, m);
   }
 };
 function charSVG(id, mood = 'happy') {
@@ -634,7 +865,12 @@ function pickVoice() {
   if (!HAS_TTS) return;
   const vs = speechSynthesis.getVoices() || [];
   const ko = vs.filter(v => /^ko/i.test(v.lang));
-  TTS.voice = ko.find(v => /Google|Yuna|SunHi|Heami|Samsung|female/i.test(v.name)) || ko[0] || null;
+  let want = null;
+  try { want = localStorage.getItem('ssr.voice'); } catch (e) {}
+  TTS.list = ko;
+  // 교사가 고른 목소리 → 자연스러운 신경망 음성(엣지 'Natural'·'Online') → 구글 → 기타
+  TTS.voice = ko.find(v => v.name === want) || ko.find(v => /Natural|Online|Neural/i.test(v.name)) ||
+    ko.find(v => /Google/i.test(v.name)) || ko.find(v => /Yuna|SunHi|Heami|Samsung|female/i.test(v.name)) || ko[0] || null;
   TTS.count = vs.length;
 }
 if (HAS_TTS) { pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
@@ -702,29 +938,73 @@ const sfx = {
 };
 
 function setCaption(t) { $('#caption').textContent = CONFIG.showCaption ? (t || '') : ''; }
-function say(text, v = {}) {
-  setCaption(text);
-  const rate = v.rate ?? CONFIG.tts.rate;
-  const est = Math.max(900, text.length * 230 / rate);
+
+/* 녹음 음성 파일: audio/역할/대사.mp3 → audio/대사.mp3 → 기기 음성(TTS) 순서로 찾음 */
+const AUDIO_MISS = new Set();
+let CUR_AUDIO = null;
+const cleanName = t => t.replace(/[\\/:*?"<>|#%]/g, '').replace(/\s+/g, ' ').trim();
+const audioPath = (text, role) => `${CONFIG.audioDir}/${role ? role + '/' : ''}${cleanName(text)}.mp3`;
+function playFile(text, role) {
+  if (!CONFIG.audioDir) return Promise.resolve(false);
+  const paths = [role && audioPath(text, role), audioPath(text, '')].filter(p => p && !AUDIO_MISS.has(p));
   return new Promise(res => {
-    if (MUTE_TTS || !HAS_TTS) { setTimeout(res, est); return; }
-    const doSpeak = () => {
-      const u = new SpeechSynthesisUtterance(text);
-      u.lang = 'ko-KR'; if (TTS.voice) u.voice = TTS.voice;
-      u.rate = rate; u.pitch = v.pitch ?? CONFIG.tts.pitch; u.volume = v.volume ?? 1;
-      let done = false;
-      const fin = () => { if (done) return; done = true; clearTimeout(gt); res(); };
-      const gt = setTimeout(fin, est + 3000);   // onend가 안 오는 기기 대비
-      u.onend = fin; u.onerror = fin;
-      CURRENT_U = u;                           // 일부 크롬 GC 버그 방지
-      speechSynthesis.speak(u);
+    const tryNext = () => {
+      const p = paths.shift();
+      if (!p) { res(false); return; }
+      const a = new Audio(encodeURI(p));
+      let state = 0;   // 0 여는 중 · 1 재생 중 · 2 끝
+      const fail = miss => { if (state !== 0) return; state = 2; if (miss) AUDIO_MISS.add(p); tryNext(); };
+      const done = () => { if (state === 2) return; state = 2; if (CUR_AUDIO === a) CUR_AUDIO = null; res(true); };
+      a.onerror = () => (state === 0 ? fail(true) : done());
+      a.onended = done;
+      a.play().then(() => { if (state !== 0) return; state = 1; CUR_AUDIO = a; a._stop = done; }).catch(() => fail(false));
     };
-    if (speechSynthesis.speaking || speechSynthesis.pending) { speechSynthesis.cancel(); setTimeout(doSpeak, 80); }
-    else doSpeak();
+    tryNext();
   });
 }
-const narr = () => ({ pitch: CONFIG.tts.narratorPitch, rate: CONFIG.tts.rate });
-const voiceOf = (id, ex = {}) => Object.assign({ pitch: CHARS[id].pitch, rate: CONFIG.tts.rate }, ex);
+function speakTTS(text, v, est) {
+  return new Promise(res => {
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'ko-KR'; if (TTS.voice) u.voice = TTS.voice;
+    u.rate = v.rate ?? CONFIG.tts.rate; u.pitch = v.pitch ?? CONFIG.tts.pitch; u.volume = v.volume ?? 1;
+    let done = false;
+    const fin = () => { if (done) return; done = true; clearTimeout(gt); res(); };
+    const gt = setTimeout(fin, est + 3000);   // onend가 안 오는 기기 대비
+    u.onend = fin; u.onerror = fin;
+    CURRENT_U = u;                           // 일부 크롬 GC 버그 방지
+    setTimeout(() => { try { speechSynthesis.speak(u); } catch (e) { fin(); } }, 80);
+  });
+}
+function stopVoice() {
+  try { if (HAS_TTS) speechSynthesis.cancel(); } catch (e) {}
+  const a = CUR_AUDIO;
+  if (a) { CUR_AUDIO = null; try { a.pause(); } catch (e) {} if (a._stop) a._stop(); }
+}
+/* v.el: 말하는 캐릭터(말풍선 표시) · v.keep: 이미 띄운 말풍선 유지 · v.role: 해설/주인공/친구/선생님/말버튼 */
+function say(text, v = {}) {
+  const role = v.role || '';
+  let bub = null;
+  if (v.el) {
+    setCaption('');
+    if (!v.keep && CONFIG.showBubbleText) bub = bubble(v.el, { text });
+  } else if (role === '해설' && !v.noCap) setCaption(text);
+  const est = Math.max(900, text.length * 230 / (v.rate ?? CONFIG.tts.rate));
+  return new Promise(res => {
+    const fin = () => { if (bub) { const b = bub; setTimeout(() => b.remove(), 700); } res(); };
+    stopVoice();
+    if (MUTE_TTS) { setTimeout(fin, est); return; }
+    playFile(text, role).then(ok => {
+      if (ok) fin();
+      else if (!HAS_TTS) setTimeout(fin, est);
+      else speakTTS(text, v, est).then(fin);
+    });
+  });
+}
+const narr = (ex = {}) => Object.assign({ pitch: CONFIG.tts.narratorPitch, rate: CONFIG.tts.rate, role: '해설' }, ex);
+const voiceOf = (id, ex = {}) => Object.assign({
+  pitch: CHARS[id].pitch, rate: CONFIG.tts.rate,
+  role: id === TEACHER ? '선생님' : id === STATE.hero ? '주인공' : '친구'
+}, ex);
 function hasJong(w) { const c = w.charCodeAt(w.length - 1); return c >= 0xAC00 && c <= 0xD7A3 && (c - 0xAC00) % 28 !== 0; }
 const ya = n => n + (hasJong(n) ? '이야' : '야');
 const tpl = s => s.replace(/\{name\}/g, CHARS[STATE.hero].name);
@@ -733,12 +1013,12 @@ const tpl = s => s.replace(/\{name\}/g, CHARS[STATE.hero].name);
    상태·흐름 제어
    ===================================================================== */
 const stage = $('#stage'), overlay = $('#overlay');
-const STATE = { hero: 'mong', log: null };
+const STATE = { hero: 'mong', log: null, setup: null, plan: [], idx: 0 };
 const ABORT = new Error('abort');
-let RUN = 0, TIMERS = [], GATE_NEXT = null;
+let RUN = 0, TIMERS = [], GATE_PICK = null;
 
 function resetLog() {
-  STATE.log = { t0: Date.now(), end: null, ch: { 1: { wrong: 0, hint: false }, 2: { wrong: 0, hint: false }, 3: { wrong: 0, hint: false, taps: 0 } } };
+  STATE.log = { t0: Date.now(), end: null, saved: null, st: {} };
 }
 resetLog();
 
@@ -763,9 +1043,9 @@ function makeCtx(id) {
 }
 function go(fn) {
   RUN++; const id = RUN;
-  GATE_NEXT = null;
+  GATE_PICK = null;
   TIMERS.forEach(clearInterval); TIMERS = [];
-  try { if (HAS_TTS) speechSynthesis.cancel(); } catch (e) {}
+  stopVoice(); flushAac(); closeModal();
   stage.innerHTML = ''; overlay.innerHTML = ''; overlay.className = '';
   setCaption('');
   const c = makeCtx(id);
@@ -789,10 +1069,11 @@ function setMove(el, cls) {
 }
 function retrigger(node, cls) { node.classList.remove(cls); void node.offsetWidth; node.classList.add(cls); }
 function addProp(el, html, cls) { const p = document.createElement('div'); p.className = 'prop ' + cls; p.innerHTML = html; mover(el).appendChild(p); return p; }
-function bubble(el, { icon = '', text = '', side = 'right' } = {}) {
+function bubble(el, { icon = '', text = '', side } = {}) {
   removeBubble(el);
-  const b = document.createElement('div'); b.className = 'bubble ' + side;
-  b.innerHTML = `<div class="b-icon">${icon}</div>${CONFIG.showTeacherLabels && text ? `<div class="b-text">${text}</div>` : ''}`;
+  side = side || (el.classList.contains('pos-right') ? 'left' : 'right');
+  const b = document.createElement('div'); b.className = 'bubble ' + side + (icon ? ' answer' : '');
+  b.innerHTML = (icon ? `<div class="b-icon">${icon}</div>` : '') + (CONFIG.showBubbleText && text ? `<div class="b-text">${text}</div>` : '');
   mover(el).appendChild(b); return b;
 }
 function removeBubble(el) { el.querySelectorAll('.bubble').forEach(b => b.remove()); }
@@ -852,6 +1133,66 @@ function holdButton(btn, ms, done) {
   return fire;
 }
 
+/* =====================================================================
+   단계 정의 · 공통 도우미
+   ===================================================================== */
+const STAGES = {
+  1: { name: '내 마음 알기', fn: s1, aac: 'no', pose: 'pose-x' },
+  2: { name: '싫어요', fn: s2, aac: 'no', pose: 'pose-x' },
+  3: { name: '어려워요·몰라요', fn: s3, aac: 'hard', pose: 'pose-raise' },
+  4: { name: '쉬고 싶어요', fn: s4, aac: 'rest', pose: 'pose-raise' },
+  5: { name: '안 돼요 (내 물건)', fn: s5, aac: 'cant', pose: 'pose-x' },
+  6: { name: '선생님께 알리기', fn: s6, aac: 'help', pose: 'pose-raise' }
+};
+const LEVEL_NAMES = { 1: '동작·버튼', 2: '한 단어', 3: '두세 어절', 4: '이유·대안' };
+const RESP = [['self', '혼자 동작+말'], ['imit', '따라서 함'], ['aac', '동작·버튼만'], ['prompt', '도움 받아 함'], ['none', '반응 없음']];
+const RESP_LABEL = Object.fromEntries(RESP);
+const RESP_CODE = Object.fromEntries(RESP.map(([k, t]) => [t, k]));
+const RESP_SHORT = { self: '혼자', imit: '따라', aac: '동작만', prompt: '도움', none: '없음' };
+const ORD = ['첫 번째', '두 번째', '세 번째', '네 번째', '다섯 번째', '여섯 번째'];
+
+const AAC_ICON = {
+  like: ICON.like, no: ICON.xBadge, cant: ICON.xArms, stop: ICON.stopBadge,
+  hard: ICON.hard, dunno: ICON.dunno, help: ICON.help, rest: ICON.rest
+};
+function aacIcon(id) {
+  const a = ASSETS.aac && ASSETS.aac[id];
+  return a ? `<img src="${a}" alt="" draggable="false">` : AAC_ICON[id];
+}
+
+const T = () => CONFIG.types[STATE.setup.type] || CONFIG.types[CONFIG.defaultType];
+const LV = () => STATE.setup.level;
+const lv = v => (v && typeof v === 'object') ? (v[LV()] ?? v[1]) : v;
+const wrongOf = n => (T().wrong || {})[n] || CONFIG.wrongDefault[n] || 'hold';
+const taskOf3 = () => T().task3 || CONFIG.s3.task;
+const aacOf = n => n === 3 && taskOf3() === 'question' ? 'dunno' : STAGES[n].aac;
+const poseOf = n => STAGES[n].pose;
+const phraseOf = n => lv(n === 3 ? CONFIG.s3[taskOf3()].say : CONFIG['s' + n].say);
+const V = (el, ex = {}) => Object.assign(voiceOf(el.dataset.id, ex), { el });
+function stLog(n) {
+  return STATE.log.st[n] || (STATE.log.st[n] = { wrong: 0, hint: false, resp: null, aac: 0, ph: '', done: false });
+}
+function chipsOf(phrase, level = LV()) {
+  const ws = phrase.replace(/[.!?,~…]/g, ' ').split(/\s+/).filter(Boolean);
+  return (level <= 2 && ws.length === 1) ? Array.from(ws[0]) : ws;
+}
+const esc = s => String(s ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+const pad2 = x => String(x).padStart(2, '0');
+function fmtDate(iso) {
+  const d = new Date(iso);
+  if (isNaN(d)) return String(iso || '');
+  return `${d.getFullYear()}.${d.getMonth() + 1}.${d.getDate()} ${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+}
+function todayKey() { const d = new Date(); return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`; }
+async function copyText(txt, btn) {
+  try { await navigator.clipboard.writeText(txt); btn.textContent = '복사됨'; }
+  catch (e) {
+    const ta = document.createElement('textarea'); ta.value = txt; document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); btn.textContent = '복사됨'; } catch (er) { btn.textContent = '복사 실패'; }
+    ta.remove();
+  }
+}
+
 /* ---------- 선택 카드 (2지선다) ---------- */
 function choose(c, { log, wrong, right, wrongLine, wrongLabel = '', rightLabel = '' }) {
   return new Promise(resolve => {
@@ -890,6 +1231,10 @@ function choose(c, { log, wrong, right, wrongLine, wrongLabel = '', rightLabel =
     }));
   });
 }
+async function stageChoose(c, n, right, phrase, F) {
+  const k = wrongOf(n), W = CONFIG.wrongs[k];
+  await choose(c, { log: stLog(n), wrong: artWrong(k, F), right, wrongLine: W.line, wrongLabel: W.label, rightLabel: `(${phrase})` });
+}
 
 /* 카드 그림 */
 function artThrow() {
@@ -897,55 +1242,135 @@ function artThrow() {
     <div class="layer flyer" style="right:2%;top:2%;width:30%">${ch1ItemHTML()}</div>
     <div class="layer" style="left:52%;top:18%;width:22%;height:22%">${ICON.speed}</div>`;
 }
-function artNo() {
-  return `<div class="layer wave" style="left:2%;top:20%;width:58%;height:70%"><div class="inner shake-no">${charSVG(STATE.hero, 'talk')}</div></div>
-    <div class="layer" style="right:2%;top:6%;width:42%">${ICON.xSign}</div>`;
-}
 function artPush(F) {
   return `<div class="layer pose-push" style="left:0;top:20%;width:58%;height:70%">${charSVG(STATE.hero, 'angry')}</div>
     <div class="layer" style="left:47%;top:34%;width:18%;height:18%">${ICON.burst}</div>
     <div class="layer" style="right:-6%;top:36%;width:44%;height:53%;transform:rotate(28deg)">${charSVG(F, 'surprised')}</div>`;
 }
-function artStop() {
-  return `<div class="layer pose-stop" style="left:0;top:20%;width:58%;height:70%">${charSVG(STATE.hero, 'talk')}</div>
-    <div class="layer" style="right:2%;top:4%;width:44%">${ICON.stopSign}</div>`;
+// 자해 행동은 따라 하지 않도록 직접 그리지 않고 '아야'·반창고 상징으로만 보여 줍니다.
+function artHurt() {
+  return `<div class="layer" style="left:4%;top:18%;width:60%;height:74%">${charSVG(STATE.hero, 'worried')}</div>
+    <div class="layer" style="left:30%;top:57%;width:30%">${ICON.ouch}</div>
+    <div class="layer" style="left:34%;top:61%;width:22%">${ICON.bandage}</div>
+    <div class="layer" style="right:8%;top:10%;width:16%">${ICON.sweatBig}</div>`;
+}
+function artShout() {
+  return `<div class="layer" style="left:2%;top:20%;width:58%;height:70%"><div class="inner shake-no">${charSVG(STATE.hero, 'angry')}</div></div>
+    <div class="layer" style="right:0;top:18%;width:42%">${ICON.loud}</div>`;
+}
+function artHold() {
+  return `<div class="layer" style="left:16%;top:28%;width:58%;height:68%">${charSVG(STATE.hero, 'worried')}</div>
+    <div class="layer" style="left:18%;top:2%;width:54%">${ICON.rain}</div>`;
+}
+function artWrong(kind, F) {
+  return kind === 'hurt' ? artHurt() : kind === 'shout' ? artShout() : kind === 'hold' ? artHold()
+    : kind === 'push' ? artPush(F) : artThrow();
+}
+function artSay(icon, pose) {
+  return `<div class="layer ${pose}" style="left:0;top:20%;width:58%;height:70%">${charSVG(STATE.hero, 'talk')}</div>
+    <div class="layer" style="right:2%;top:6%;width:42%">${icon}</div>`;
+}
+function artTellTeacher() {
+  return `<div class="layer pose-raise" style="left:0;top:22%;width:54%;height:68%">${charSVG(STATE.hero, 'talk')}</div>
+    <div class="layer" style="right:0;top:26%;width:48%;height:66%"><div class="inner bob">${charSVG(TEACHER, 'happy')}</div></div>
+    <div class="layer" style="left:36%;top:0;width:28%">${aacIcon('help')}</div>`;
 }
 function artFace(m) {
   return `<div class="layer" style="left:12%;top:4%;width:76%;height:91%"><div class="inner ${m === 'annoyed' ? 'shake-no' : 'bob'}">${charSVG(STATE.hero, m)}</div></div>`;
 }
 
-/* ---------- 교사 게이트 ---------- */
-function teacherGate(c, { log, chips, phrase, icon }) {
+/* 책상 소품 */
+function puzzleSVG(done) {
+  const hole = starPts(5, 34, 15, 62, 68);
+  return `<svg viewBox="0 0 210 124"><rect x="6" y="18" width="114" height="100" rx="12" fill="#c58b5a" ${OL}/><rect x="16" y="28" width="94" height="80" rx="8" fill="#e0a86e"/>
+    <polygon points="${hole}" fill="#6b3f1c" ${OL}/>
+    ${done ? `<polygon points="${hole}" fill="#ffd93b" stroke="#e0a100" stroke-width="4" stroke-linejoin="round"/>`
+      : `<g class="pz"><polygon points="${starPts(5, 30, 13, 168, 54)}" fill="#ffd93b" stroke="${INK}" stroke-width="3" stroke-linejoin="round" transform="rotate(22 168 54)"/></g>`}</svg>`;
+}
+function paperSVG(filled) {
+  const st = starPts(5, 40, 17, 74, 64);
+  return `<svg viewBox="0 0 180 124"><rect x="6" y="8" width="136" height="110" rx="8" fill="#fff" ${OL}/>
+    <polygon points="${st}" fill="${filled ? '#ffd93b' : '#fff'}" stroke="${INK}" stroke-width="4" stroke-linejoin="round" ${filled ? '' : 'stroke-dasharray="8 6"'}/>
+    <g transform="rotate(-35 150 96)"><rect x="128" y="88" width="34" height="14" rx="3" fill="#ef5350" ${OL}/><rect x="136" y="88" width="14" height="14" fill="#ffcdd2" ${OL}/><polygon points="162,88 174,95 162,102" fill="#ef5350" ${OL}/></g></svg>`;
+}
+
+/* 장면 도우미 */
+function bigButton(icon, label, x = 73, y = 44) {
+  const btn = document.createElement('button'); btn.className = 'bigbtn'; btn.setAttribute('aria-label', label);
+  btn.style.left = x + 'vw'; btn.style.top = y + 'vh';
+  btn.innerHTML = `<div class="bs-a"><div class="bs-b">${icon}</div></div>`;
+  stage.appendChild(btn); sfx.pop();
+  return btn;
+}
+function addDesk(html) {
+  const d = document.createElement('div'); d.className = 'desk'; d.innerHTML = html;
+  stage.appendChild(d); return d;
+}
+function meter(v) {
+  const el = document.createElement('div'); el.className = 'meter'; el.innerHTML = '<i></i>';
+  stage.appendChild(el);
+  const set = x => { const i = el.firstChild; i.style.height = x + '%'; i.style.background = x > 60 ? '#ef5350' : x > 30 ? '#ffb300' : '#66bb6a'; };
+  requestAnimationFrame(() => requestAnimationFrame(() => set(v)));
+  return { el, set };
+}
+async function heroSays(c, hero, n, phrase) {
+  setMood(hero, 'talk'); setAnim(hero, poseOf(n));
+  bubble(hero, { icon: aacIcon(aacOf(n)), text: phrase });
+  await c.say(phrase, V(hero, { rate: .95, keep: true }));
+}
+async function stageStart(c, n) {
+  const S = STATE.setup;
+  setLabel(`${S.name || '이름 없음'} · ${T().name} · 수준 ${LV()}  |  ${n}단계 ${STAGES[n].name}`);
+  stLog(n);
+  await chapterCard(c, STATE.idx, n === 1 ? aacIcon('cant') : aacIcon(aacOf(n)));
+}
+function next() {
+  const n = STATE.plan[STATE.idx++];
+  go(n ? STAGES[n].fn : ending);
+}
+
+/* ---------- 교사 게이트 (따라 말하기 + 반응 기록) ---------- */
+function teacherGate(c, n, phrase) {
+  const log = stLog(n), icon = aacIcon(aacOf(n)), btnMode = LV() === 1, pose = poseOf(n);
+  const note = CONFIG.gateNote[pose === 'pose-x' ? 'x' : 'raise'][btnMode ? 1 : 'n'];
+  log.ph = phrase;
   return new Promise(resolve => {
     overlay.className = 'show dim';
+    const chips = btnMode ? [phrase] : chipsOf(phrase);
+    const small = chips.length > 3 || chips.join('').length > 7;
     const g = document.createElement('div'); g.className = 'gate';
     g.innerHTML = `<div class="gate-board">
-        <div class="gate-hero"><div class="inner bob">${charSVG(STATE.hero, 'talk')}</div></div>
+        <div class="gate-hero"><div class="inner bob ${pose}">${charSVG(STATE.hero, 'talk')}</div></div>
         <div class="gate-right">
-          <div class="gate-icon">${icon}</div>
-          <div class="chips">${chips.map(s => `<span class="chip">${s}</span>`).join('')}</div>
+          ${btnMode ? `<button class="gate-aac" aria-label="${esc(phrase)}">${icon}</button>` : `<div class="gate-icon">${icon}</div>`}
+          <div class="chips${small ? ' small' : ''}">${chips.map(s => `<span class="chip">${s}</span>`).join('')}</div>
           <button class="replay" aria-label="다시 듣기">${ICON.speaker}</button>
         </div>
-      </div>
-      <div class="gate-note">우리 친구도 함께 말해볼까요?</div>`;
-    const tb = document.createElement('button'); tb.className = 'teacher-next';
-    tb.innerHTML = `<span class="fill"></span><span class="lbl">교사 확인: 다음으로 ➔</span><small class="lbl">${CONFIG.teacherHoldMs > 0 ? '길게 누르기 · Enter' : '터치 · Enter'}</small>`;
-    overlay.appendChild(g); overlay.appendChild(tb);
+      </div>`;
+    const rp = document.createElement('div'); rp.className = 'resp';
+    rp.innerHTML = `<div class="resp-h">교사 기록 · ${CONFIG.teacherHoldMs > 0 ? '길게 누르기' : '터치'} · 숫자키 1~5</div>` +
+      RESP.map(([k, t], i) => `<button data-r="${k}"><span class="fill"></span><span class="lbl">${i + 1}. ${t}</span></button>`).join('') +
+      `<button data-r="" class="skip"><span class="fill"></span><span class="lbl">기록 없이 다음 ➔</span></button>`;
+    overlay.appendChild(g); overlay.appendChild(rp);
     sfx.pop();
     const chipEls = [...g.querySelectorAll('.chip')];
+    const aacBtn = g.querySelector('.gate-aac');
     let playing = false, closed = false;
     async function model(first) {
       if (playing || closed) return;
       playing = true; g.classList.remove('listening');
       try {
-        if (first) { await c.say('우리 친구도 함께 말해볼까요?', narr()); if (closed) throw ABORT; }
-        for (const el of chipEls) {
-          el.classList.add('lit'); sfx.blip();
-          await c.say(el.textContent, voiceOf(STATE.hero, { rate: .75 }));
-          if (closed) throw ABORT;
+        if (first) { await c.say(note, narr()); if (closed) throw ABORT; }
+        if (!btnMode) {
+          for (const el of chipEls) {
+            el.classList.add('lit'); sfx.blip();
+            await c.say(el.textContent, voiceOf(STATE.hero, { rate: .75 }));
+            if (closed) throw ABORT;
+          }
+          await c.sleep(150);
         }
-        await c.sleep(150);
         chipEls.forEach(e => e.classList.add('lit'));
+        if (aacBtn) retrigger(aacBtn, 'hit');
         await c.say(phrase, voiceOf(STATE.hero, { rate: .85 }));
         if (closed) throw ABORT;
         chipEls.forEach(e => e.classList.remove('lit'));
@@ -953,30 +1378,47 @@ function teacherGate(c, { log, chips, phrase, icon }) {
       } catch (e) { /* 중단 */ }
       playing = false;
     }
-    model(true);
+    if (aacBtn) aacBtn.addEventListener('pointerdown', async e => {
+      e.preventDefault();
+      if (closed) return;
+      log.aac++; sfx.blip(); retrigger(aacBtn, 'hit');
+      if (playing) return;
+      playing = true; chipEls.forEach(x => x.classList.add('lit'));
+      await say(phrase, voiceOf(STATE.hero));
+      chipEls.forEach(x => x.classList.remove('lit'));
+      playing = false;
+    });
     g.querySelector('.replay').addEventListener('pointerdown', e => { e.preventDefault(); sfx.tap(); model(false); });
-    const finish = () => {
-      if (closed) return; closed = true; GATE_NEXT = null; log.gate = true;
-      try { if (HAS_TTS) speechSynthesis.cancel(); } catch (e) {}
+    const finish = code => {
+      if (closed) return; closed = true; GATE_PICK = null;
+      log.resp = code || null; log.done = true;
+      stopVoice();
       sfx.correct(); overlay.innerHTML = ''; overlay.className = '';
       resolve();
     };
-    GATE_NEXT = holdButton(tb, CONFIG.teacherHoldMs, finish);
+    const fires = {};
+    rp.querySelectorAll('button').forEach(b => { fires[b.dataset.r] = holdButton(b, CONFIG.teacherHoldMs, () => finish(b.dataset.r)); });
+    GATE_PICK = k => fires[k] && fires[k]();
+    model(true);
   });
 }
 
-async function chapterCard(c, n, icon) {
+async function chapterCard(c, num, icon) {
   const d = document.createElement('div'); d.className = 'chapcard wood';
-  d.innerHTML = `<div class="cc-num">${n}</div><div class="cc-icon">${icon}</div>`;
+  d.innerHTML = `<div class="cc-num">${num}</div><div class="cc-icon">${icon}</div>`;
   stage.appendChild(d); sfx.whoosh();
-  await c.say(['첫 번째 이야기', '두 번째 이야기', '세 번째 이야기'][n - 1], narr());
+  await c.say(`${ORD[num - 1] || ''} 이야기`, narr());
   await c.sleep(250);
   d.classList.add('out'); await c.sleep(450); d.remove();
 }
 
 /* =====================================================================
-   [Intro] 타이틀 · 단짝 고르기
+   [Intro] 타이틀 · 교사 설정 · 단짝 고르기
    ===================================================================== */
+function setupSummary() {
+  const S = STATE.setup;
+  return `${S.name || '이름 없음'} · ${T().name} · ${S.stages.join('·')}단계 · 수준 ${S.level}(${LEVEL_NAMES[S.level]})`;
+}
 async function intro(c) {
   setLabel('');
   const t = document.createElement('div'); t.className = 'title wood';
@@ -985,28 +1427,38 @@ async function intro(c) {
   const start = document.createElement('button'); start.className = 'startBtn'; start.setAttribute('aria-label', '시작');
   start.innerHTML = ICON.play; stage.appendChild(start);
 
-  const jumpFns = [ch1, ch2, ch3, ending];
-  const jump = document.createElement('div'); jump.className = 'jumps';
-  jump.innerHTML = '<span>교사용 바로가기</span>' + ['1장', '2장', '3장', '엔딩'].map((x, i) => `<button data-i="${i}">${x}</button>`).join('');
-  stage.appendChild(jump);
-  jump.addEventListener('pointerdown', e => {
+  const tp = document.createElement('div'); tp.className = 'tpanel';
+  tp.innerHTML = `<div class="tp-sum"></div>
+    <div class="tp-row"><button data-a="setup">교사 설정 · 이름</button><button data-a="aac">말 버튼</button><button data-a="rec">기록 보기</button></div>
+    <div class="tp-row"><span>바로가기</span>${[1, 2, 3, 4, 5, 6].map(n => `<button data-j="${n}">${n}단계</button>`).join('')}<button data-j="0">엔딩</button></div>`;
+  stage.appendChild(tp);
+  const sum = () => { tp.querySelector('.tp-sum').textContent = setupSummary(); };
+  sum();
+  tp.addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b) return;
-    e.preventDefault(); resetLog(); go(jumpFns[+b.dataset.i]);
+    if (b.dataset.a === 'setup') openSetup(sum);
+    else if (b.dataset.a === 'aac') go(aacBoard);
+    else if (b.dataset.a === 'rec') openRecords();
+    else if (b.dataset.j) { resetLog(); const j = +b.dataset.j; STATE.plan = j ? [j] : []; STATE.idx = 0; next(); }
   });
   setTimeout(() => {
     if (!c.alive() || !HAS_TTS) return;
     pickVoice();
     if (TTS.count > 0 && !TTS.voice) {
       const w = document.createElement('div'); w.className = 'warn';
-      w.textContent = '이 기기에서 한국어 음성(TTS)을 찾지 못했습니다. 기기 설정에서 한국어 음성을 설치하거나, 소리 버튼으로 음성을 끄고 교사가 직접 읽어 주세요.';
+      w.textContent = '이 기기에서 한국어 음성(TTS)을 찾지 못했습니다. 녹음 음성 파일(audio 폴더)을 넣거나, 소리 버튼으로 음성을 끄고 교사가 직접 읽어 주세요.';
       stage.appendChild(w);
     }
   }, 1500);
 
   await c.tap(start);
-  start.classList.add('gone'); sfx.pop();
+  if (!STATE.setup.name) {
+    await new Promise(res => openSetup(() => { sum(); res(); }, true));
+    c.check();
+  }
+  start.classList.add('gone'); sfx.pop(); tp.remove();
   resetLog();
-  await c.say(`${CONFIG.title.top} ${CONFIG.title.main} 같이 갈 친구를 골라 볼까?`, narr());
+  await c.say(`${CONFIG.title.top} ${CONFIG.title.main} 같이 갈 친구를 골라 볼까?`, narr({ noCap: true }));
 
   const picks = document.createElement('div'); picks.className = 'picks';
   picks.innerHTML = HEROES.map((id, i) =>
@@ -1021,103 +1473,277 @@ async function intro(c) {
   sfx.correct();
   await c.say(`나는 ${ya(CHARS[id].name)}! 같이 가자!`, voiceOf(id));
   await c.sleep(300);
-  go(ch1);
+  STATE.plan = [...STATE.setup.stages]; STATE.idx = 0;
+  next();
 }
 
 /* =====================================================================
-   [Chapter 1] 하기 싫은 것 거절하기 — "싫어요 / 아니요"
+   [1단계] 내 마음 알기 — 기분 알기 → 팔로 X → 숨쉬기 → "싫어요"
    ===================================================================== */
-async function ch1(c) {
-  const C1 = CONFIG.ch1, H = STATE.hero, F = C1.friend;
-  setLabel('1장 · 하기 싫은 것 거절하기 ("싫어요 / 아니요")');
-  await chapterCard(c, 1, ICON.xBadge);
+async function s1(c) {
+  const S = CONFIG.s1, n = 1, H = STATE.hero, F = S.friend || 'pipi';
+  await stageStart(c, n);
+  const hero = makeChar(H, { pos: 'left' }); setAnim(hero, 'bob'); setMove(hero, 'enter-left'); sfx.hops(3);
+  await c.sleep(900);
+  const fr = makeChar(F, { pos: 'right' }); setMove(fr, 'enter-right'); sfx.hops(4);
+  await c.sleep(1350);
+  setMove(fr, ''); setMood(fr, 'proud'); setAnim(fr, 'cheer');
+  let singing = true;
+  const noteOnce = () => {
+    if (!singing) return;
+    const r = fr.getBoundingClientRect();
+    floatIcon(r.left + r.width * (.15 + Math.random() * .4), r.top + r.height * .1, ICON.note);
+    tone(660 + Math.random() * 520, .16, { type: 'square', vol: .04 });
+  };
+  const stopNotes = c.every(700, noteOnce); noteOnce();
+  await c.say(S.intro, narr());
+  setMood(fr, 'talk');
+  await c.say(S.friendLine, V(fr, { rate: 1.05 }));
+  setMood(fr, 'proud');
+  setMood(hero, 'annoyed'); setAnim(hero, 'shake-no'); emote(hero, ICON.loud);
+  const m = meter(90);
+  await c.say(S.heroFeel, V(hero));
+  setAnim(hero, 'bob');
 
+  // ① 내 기분 알기
+  await c.say(tpl(S.faceQ), narr());
+  await choose(c, { log: stLog(n), wrong: artFace('happy'), right: artFace('annoyed'), wrongLine: S.faceWrong, wrongLabel: '(웃는 얼굴)', rightLabel: '(기분 나쁜 얼굴)' });
+  sfx.blip();
+
+  // ② 팔로 X — 손이 입·코로 가기 전에 먼저 몸을 멈추는 대체 동작
+  const xb = bigButton(aacIcon('cant'), '팔로 X', 52, 42);
+  await c.say(S.xQ, narr());
+  xb.classList.add('ready');
+  await c.tap(xb);
+  retrigger(xb, 'hit'); sfx.drum(0); xb.classList.add('done');
+  setMood(hero, 'worried'); setAnim(hero, 'pose-x'); m.set(65);
+  await c.say(S.xDone, narr());
+  xb.remove();
+
+  // ③ 숨쉬기
+  const wb = bigButton(ICON.wind, '숨 쉬기', 52, 42);
+  await c.say(S.breathQ, narr());
+  wb.classList.add('ready');
+  for (let i = 0; i < S.breaths; i++) {
+    await c.tap(wb);
+    wb.classList.add('busy'); retrigger(wb, 'hit'); sfx.whoosh();
+    retrigger(inner(hero), 'breathe');
+    const r = hero.getBoundingClientRect();
+    floatIcon(r.left + r.width * .7, r.top + r.height * .35, ICON.wind);
+    m.set(65 - (i + 1) * 50 / S.breaths);
+    await c.say(S.breath, V(hero, { rate: .7 }));
+    wb.classList.remove('busy', 'hit');
+  }
+  wb.classList.add('done');
+  setMood(hero, 'happy'); setAnim(hero, 'bob');
+  await c.say(S.calmDone, narr());
+  wb.remove();
+
+  // ④ 팔로 X + 말로 알리기
+  const phrase = lv(S.say);
+  await heroSays(c, hero, n, phrase);
+  singing = false; stopNotes();
+  setMood(fr, 'surprised'); setAnim(fr, '');
+  await c.sleep(300);
+  setMood(fr, 'happy'); setAnim(fr, 'bob');
+  await c.say(lv(S.friendOk), V(fr));
+  removeBubble(hero); m.el.remove();
+  setMood(hero, 'proud'); setAnim(hero, 'jump'); sparkle(hero); sfx.sparkle();
+  await c.say(S.praise, narr());
+  setAnim(hero, 'bob');
+
+  await teacherGate(c, n, phrase);
+  next();
+}
+
+/* =====================================================================
+   [2단계] 원하지 않는 것 거절하기 — 팔로 X + "싫어요"
+   ===================================================================== */
+async function s2(c) {
+  const S = CONFIG.s2, n = 2, H = STATE.hero, F = S.friend || others()[1];
+  await stageStart(c, n);
   const hero = makeChar(H, { pos: 'left' }); setAnim(hero, 'bob'); setMove(hero, 'enter-left'); sfx.hops(3);
   await c.sleep(900);
   const fr = makeChar(F, { pos: 'right' }); addProp(fr, ch1ItemHTML(), 'held');
   setMove(fr, 'enter-right'); sfx.hops(4);
   await c.sleep(1350);
   setMove(fr, ''); setAnim(fr, 'bob reach');
-  await c.say(C1.friendLine, voiceOf(F));
+  await c.say(S.friendLine, V(fr));
   setMove(fr, 'lean-in');
   setMood(hero, 'worried'); setAnim(hero, 'shake-no'); emote(hero, ICON.sweatBig);
-  await c.say(C1.heroLine, voiceOf(H));
-  await c.say(C1.question, narr());
+  await c.say(S.heroLine, V(hero));
+  await c.say(S.question, narr());
   setAnim(hero, 'bob');
 
-  await choose(c, { log: STATE.log.ch[1], wrong: artThrow(), right: artNo(), wrongLine: C1.wrongLine, wrongLabel: '(던지기)', rightLabel: '(싫어요 · 아니요)' });
+  const phrase = lv(S.say);
+  await stageChoose(c, n, artSay(ICON.xSign, 'pose-x'), phrase, F);
 
   sfx.correct();
-  setMood(hero, 'talk'); setAnim(hero, 'wave shake-no');
-  bubble(hero, { icon: ICON.xBadge, text: C1.answer });
-  await c.say(C1.answer, voiceOf(H, { rate: .95 }));
-  setAnim(hero, 'bob');
+  await heroSays(c, hero, n, phrase);
   setMood(fr, 'happy'); setAnim(fr, 'bob');
-  await c.say(C1.friendOk, voiceOf(F));
+  await c.say(lv(S.friendOk), V(fr));
   setMove(fr, 'exit-right'); sfx.hops(4);
   removeBubble(hero);
   setMood(hero, 'proud'); setAnim(hero, 'jump'); sparkle(hero); sfx.sparkle();
-  await c.sleep(1300);
+  await c.say(S.praise, narr());
   setAnim(hero, 'bob');
 
-  await teacherGate(c, { log: STATE.log.ch[1], chips: C1.gateChips, phrase: C1.gatePhrase, icon: ICON.xBadge });
-  go(ch2);
+  await teacherGate(c, n, phrase);
+  next();
 }
 
 /* =====================================================================
-   [Chapter 2] 좋아하는 물건 지키기 — "하지 마!"
+   [3단계] 어려운 과제·질문 — 손 들고 "어려워요 / 몰라요"
    ===================================================================== */
-async function ch2(c) {
-  const C2 = CONFIG.ch2, H = STATE.hero, F = others()[0];
-  setLabel('2장 · 좋아하는 물건 지키기 ("하지 마!")');
-  await chapterCard(c, 2, ICON.stopBadge);
+async function s3(c) {
+  const n = 3, H = STATE.hero, task = taskOf3(), S = CONFIG.s3[task];
+  await stageStart(c, n);
+  const hero = makeChar(H, { pos: 'left' }); setAnim(hero, 'bob');
+  const desk = task === 'puzzle' ? addDesk(puzzleSVG(false)) : null;
+  const t = makeChar(TEACHER, { pos: 'right' }); setMove(t, 'enter-right'); sfx.hops(4);
+  await c.sleep(1350);
+  setMove(t, ''); setAnim(t, 'bob');
+  if (!desk) { addProp(t, `<div class="qcard">${ITEMS.pineapple}</div>`, 'held'); setAnim(t, 'bob reach'); }
+  await c.say(S.teacherLine, V(t));
+  if (desk) {
+    setAnim(hero, 'reachR');
+    for (let i = 0; i < 2; i++) { retrigger(desk, 'jolt'); tone(260, .12, { type: 'square', vol: .06 }); await c.sleep(550); }
+  } else {
+    const r = hero.getBoundingClientRect();
+    [0, .35, .7].forEach((d, i) => floatIcon(r.left + r.width * (.3 + i * .2), r.top + r.height * .05, ICON.qmark, d));
+    await c.sleep(700);
+  }
+  setMood(hero, 'worried'); setAnim(hero, 'bob'); emote(hero, ICON.sweatBig);
+  await c.say(S.heroLine, V(hero));
+  await c.say(CONFIG.s3.ask, narr());
 
+  const phrase = lv(S.say);
+  await stageChoose(c, n, artSay(aacIcon(aacOf(n)), 'pose-raise'), phrase, TEACHER);
+
+  sfx.correct();
+  await heroSays(c, hero, n, phrase);
+  setMood(t, 'happy'); setAnim(t, 'bob');
+  await c.say(S.teacherOk, V(t));
+  removeBubble(hero); setMood(hero, 'happy'); setAnim(hero, 'bob');
+  if (desk) {
+    setAnim(t, 'bob reach'); await c.sleep(500);
+    desk.innerHTML = puzzleSVG(true); sparkle(desk); sfx.sparkle();
+    setAnim(t, 'bob');
+    await c.sleep(500);
+  } else {
+    setMood(t, 'talk'); await c.say(S.answer, V(t)); setMood(t, 'happy');
+    setMood(hero, 'talk'); await c.say(S.repeat, V(hero));
+  }
+  setMood(hero, 'proud'); setAnim(hero, 'jump'); sparkle(hero); sfx.sparkle();
+  await c.say(S.praise, narr());
+  setAnim(hero, 'bob');
+
+  await teacherGate(c, n, phrase);
+  next();
+}
+
+/* =====================================================================
+   [4단계] 하기 싫은 활동 — 손 들고 "쉬고 싶어요" → 쉬고 나서 다시 하기
+   ===================================================================== */
+async function s4(c) {
+  const S = CONFIG.s4, n = 4, H = STATE.hero;
+  await stageStart(c, n);
+  const hero = makeChar(H, { pos: 'left' }); setAnim(hero, 'bob');
+  const desk = addDesk(paperSVG(false));
+  const t = makeChar(TEACHER, { pos: 'right' }); setMove(t, 'enter-right'); sfx.hops(4);
+  await c.sleep(1350);
+  setMove(t, ''); setAnim(t, 'bob');
+  await c.say(S.teacherLine, V(t));
+  setMood(hero, 'worried'); setAnim(hero, 'shake-no'); emote(hero, ICON.sweatBig);
+  await c.say(S.heroLine, V(hero));
+  setAnim(hero, 'bob');
+  await c.say(S.question, narr());
+
+  const phrase = lv(S.say);
+  await stageChoose(c, n, artSay(aacIcon('rest'), 'pose-raise'), phrase, TEACHER);
+
+  sfx.correct();
+  await heroSays(c, hero, n, phrase);
+  setMood(t, 'happy');
+  await c.say(lv(S.teacherOk), V(t));
+  removeBubble(hero);
+
+  // 먼저 쉬기 → 다음에 조금 하기 (말하면 무조건 안 하게 되는 것으로 배우지 않도록)
+  const ft = document.createElement('div'); ft.className = 'ftboard wood';
+  ft.innerHTML = `<div class="ft-item on">${aacIcon('rest')}<svg class="ring" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45"/><circle class="p" cx="50" cy="50" r="45" style="animation-duration:${S.restSec}s"/></svg></div><div class="ft-arrow">➜</div><div class="ft-item">${ICON.crayon}</div>`;
+  stage.appendChild(ft); sfx.pop();
+  const t0 = Date.now();
+  setMood(hero, 'happy'); setAnim(hero, 'breathe-loop');
+  await c.say(S.restLine, narr());
+  const left = S.restSec * 1000 - (Date.now() - t0);
+  if (left > 0) await c.sleep(left);
+  const its = ft.querySelectorAll('.ft-item'); its[0].classList.remove('on'); its[1].classList.add('on'); sfx.blip();
+  setAnim(hero, 'bob');
+  await c.say(S.thenLine, narr());
+  desk.classList.add('tap-me');
+  await c.tap(desk);
+  desk.classList.remove('tap-me');
+  desk.innerHTML = paperSVG(true); sparkle(desk); sfx.correct();
+  await c.sleep(600);
+  ft.remove();
+  setMood(t, 'proud');
+  setMood(hero, 'proud'); setAnim(hero, 'jump'); sparkle(hero); sfx.sparkle();
+  await c.say(S.praise, narr());
+  setAnim(hero, 'bob');
+
+  await teacherGate(c, n, phrase);
+  next();
+}
+
+/* =====================================================================
+   [5단계] 내 물건 지키기 — 팔로 X + "안 돼요"
+   ===================================================================== */
+async function s5(c) {
+  const S = CONFIG.s5, n = 5, H = STATE.hero, F = others()[0];
+  await stageStart(c, n);
   const hero = makeChar(H, { pos: 'left' }); setAnim(hero, 'bob');
   const toys = document.createElement('div'); toys.className = 'toys play';
   toys.innerHTML = `<div class="toy tablet">${itemHTML('tablet')}</div><div class="toy clay">${itemHTML('clay')}</div>`;
   stage.appendChild(toys);
   sfx.play();
   await c.sleep(400);
-  await c.say(C2.heroLine, voiceOf(H));
+  await c.say(S.heroLine, V(hero));
 
   const fr = makeChar(F, { pos: 'right' }); setMove(fr, 'enter-right'); sfx.hops(4);
   await c.sleep(1350);
   setMove(fr, 'lean-in'); setAnim(fr, 'reach');
   toys.className = 'toys tug';
-  await c.say(C2.friendLine, voiceOf(F));
+  await c.say(S.friendLine, V(fr));
   setMood(hero, 'surprised'); emote(hero, ICON.sweatBig);
   await c.sleep(400);
   setMood(hero, 'worried');
-  await c.say(C2.question, narr());
+  await c.say(S.question, narr());
 
-  await choose(c, { log: STATE.log.ch[2], wrong: artPush(F), right: artStop(), wrongLine: C2.wrongLine, wrongLabel: '(밀기)', rightLabel: '(하지 마!)' });
+  const phrase = lv(S.say);
+  await stageChoose(c, n, artSay(aacIcon('cant'), 'pose-x'), phrase, F);
 
   sfx.correct();
-  setMood(hero, 'talk'); setAnim(hero, 'pose-stop');
-  const sign = addProp(hero, ICON.stopSign, 'hold-stop');
-  const sp = c.say(C2.answer, voiceOf(H, { rate: .95 }));
+  const sp = heroSays(c, hero, n, phrase);
   await c.sleep(250);
   setMood(fr, 'surprised'); setAnim(fr, ''); setMove(fr, 'recoil'); toys.className = 'toys';
   await sp;
-  await c.say(C2.friendSorry, voiceOf(F));
+  await c.say(lv(S.friendSorry), V(fr));
   setMood(fr, 'happy'); setAnim(fr, 'bob');
-  sign.remove();
+  removeBubble(hero);
   setMood(hero, 'proud'); setAnim(hero, 'jump'); sparkle(hero); sfx.sparkle(); toys.className = 'toys safe';
-  await c.say(C2.praise, narr());
+  await c.say(S.praise, narr());
   setAnim(hero, 'bob');
 
-  await teacherGate(c, { log: STATE.log.ch[2], chips: C2.gateChips, phrase: C2.gatePhrase, icon: ICON.stopBadge });
-  go(ch3);
+  await teacherGate(c, n, phrase);
+  next();
 }
 
 /* =====================================================================
-   [Chapter 3] 불편한 장난 멈추게 하기 — "하지 마! / 싫어요!"
+   [6단계] 말해도 멈추지 않을 때 — 팔로 X "하지 마세요" → 손 들고 "선생님, 도와주세요"
    ===================================================================== */
-async function ch3(c) {
-  const C3 = CONFIG.ch3, H = STATE.hero, F = others()[1], log = STATE.log.ch[3];
-  setLabel('3장 · 불편한 장난 멈추게 하기 ("하지 마! / 싫어요!")');
-  await chapterCard(c, 3, ICON.stopBadge);
-
+async function s6(c) {
+  const S = CONFIG.s6, n = 6, H = STATE.hero, F = others()[1];
+  await stageStart(c, n);
   const hero = makeChar(H, { pos: 'left' }); setAnim(hero, 'bob');
   const fr = makeChar(F, { pos: 'near' }); setMove(fr, 'enter-right'); sfx.hops(4);
   await c.sleep(1350);
@@ -1130,84 +1756,92 @@ async function ch3(c) {
   const stopTimer = c.every(700, pokeOnce);
   startPoke();
   setMood(hero, 'annoyed');
-  await c.say(C3.intro, narr());
+  await c.say(S.intro, narr());
 
-  // 1단계: 감정 인지
-  await c.say(tpl(C3.faceQ), narr());
-  if (C3.emotionChoice) {
-    pausePoke();
-    await choose(c, { log, wrong: artFace('happy'), right: artFace('annoyed'), wrongLine: C3.faceWrong, wrongLabel: '(웃는 얼굴)', rightLabel: '(기분 나쁜 얼굴)' });
-    startPoke();
-  } else {
-    hero.classList.add('tap-me');
-    await c.tap(inner(hero));
-    hero.classList.remove('tap-me');
-  }
-  sfx.blip();
-  setMood(hero, 'annoyed'); setAnim(hero, 'shake-no');
-  await c.say(C3.feel, voiceOf(H));
-  setAnim(hero, 'bob');
+  // 먼저 팔로 X + "하지 마세요!"
+  const sb = bigButton(aacIcon('stop'), S.stopWord);
+  await c.say(S.stopQ, narr());
+  sb.classList.add('ready');
+  await c.tap(sb);
+  retrigger(sb, 'hit'); sfx.drum(1); sb.classList.add('done');
+  pausePoke(); setMood(fr, 'surprised'); retrigger(mover(fr), 'flinch');
+  setMood(hero, 'talk'); setAnim(hero, 'pose-x');
+  bubble(hero, { icon: aacIcon('stop'), text: S.stopWord });
+  await c.say(S.stopWord, V(hero, { rate: 1, keep: true }));
+  await c.sleep(500);
+  removeBubble(hero); sb.remove();
+  setMood(fr, 'proud');
+  await c.say(S.friendAgain, V(fr));
+  setMood(hero, 'annoyed'); setAnim(hero, 'bob');
+  startPoke();
+  await c.sleep(1400);
+  setMood(hero, 'worried'); emote(hero, ICON.sweatBig);
+  await c.say(S.question, narr());
+  pausePoke();
 
-  // 2단계: 적극적 표현 — 큰 멈춤 버튼 3번
-  const btn = document.createElement('button'); btn.className = 'bigstop'; btn.setAttribute('aria-label', '하지 마');
-  btn.innerHTML = `<div class="bs-a"><div class="bs-b">${ICON.stopBadge}</div></div>`;
-  stage.appendChild(btn); sfx.pop();
-  await c.say(C3.buttonQ, narr());
-  btn.classList.add('ready');
-  for (let i = 0; i < C3.words.length; i++) {
-    await c.tap(btn);
-    log.taps++;
-    btn.classList.add('busy');
-    btn.style.setProperty('--s', (1 + .15 * (i + 1)).toFixed(2));
-    retrigger(btn, 'hit');
-    sfx.drum(i);
-    pausePoke(); setMood(fr, 'surprised'); retrigger(mover(fr), 'flinch');
-    setMood(hero, 'talk'); setAnim(hero, 'pose-stop');
-    bubble(hero, { icon: ICON.stopBadge, text: C3.words[i] });
-    await c.say(C3.words[i], voiceOf(H, { rate: 1, volume: 1 }));
-    btn.classList.remove('busy', 'hit');
-    if (i < C3.words.length - 1) {
-      await c.sleep(350);
-      setMood(hero, 'annoyed'); setAnim(hero, 'bob');
-      startPoke();
-    }
-  }
-  stopTimer(); poking = false;
-  btn.classList.add('done'); sfx.correct();
-  removeBubble(hero);
-  setMood(fr, 'worried'); setAnim(fr, '');
-  await c.sleep(400);
-  await c.say(C3.friendSorry, voiceOf(F));
+  const phrase = lv(S.say);
+  await stageChoose(c, n, artTellTeacher(), phrase, F);
+
+  startPoke();
+  sfx.correct();
+  const t = makeChar(TEACHER, { pos: 'right' }); setMove(t, 'enter-right'); sfx.hops(4);
+  await heroSays(c, hero, n, phrase);
+  await c.sleep(300);
+  setMove(t, ''); setAnim(t, 'bob');
+  stopTimer(); pausePoke(); setMood(fr, 'surprised');
+  removeBubble(hero); setMood(hero, 'worried'); setAnim(hero, 'bob');
+  await c.say(S.teacherLine, V(t));
+  setMood(fr, 'worried');
+  await c.say(S.friendSorry, V(fr));
   setMood(fr, 'happy'); setAnim(fr, 'wave-hi');
-  setMood(hero, 'happy'); setAnim(hero, 'bob');
+  setMood(hero, 'happy'); setMood(t, 'proud');
   heartsBetween(hero, fr); sfx.sparkle();
-  await c.say(C3.praise, narr());
-  btn.remove();
+  await c.say(S.praise, narr());
 
-  await teacherGate(c, { log, chips: C3.gateChips, phrase: C3.gatePhrase, icon: ICON.stopBadge });
-  go(ending);
+  await teacherGate(c, n, phrase);
+  next();
 }
 
 /* =====================================================================
-   [Ending] 칭찬 스탬프
+   [Ending] 칭찬 스탬프 · 기록 저장
    ===================================================================== */
-function logText() {
-  const L = STATE.log, n = CHARS[STATE.hero].name;
-  const sec = Math.round(((L.end || Date.now()) - L.t0) / 1000);
-  const d = new Date();
-  const h = x => x.hint ? ' (정답 힌트 제공)' : '';
-  return `${d.getFullYear()}.${d.getMonth() + 1}.${d.getDate()} · 주인공 ${n}\n` +
-    `1장 오답 ${L.ch[1].wrong}회${h(L.ch[1])}\n` +
-    `2장 오답 ${L.ch[2].wrong}회${h(L.ch[2])}\n` +
-    `3장 감정 고르기 오답 ${L.ch[3].wrong}회${h(L.ch[3])} · 멈춤 버튼 ${L.ch[3].taps}회\n` +
-    `총 소요 ${Math.floor(sec / 60)}분 ${sec % 60}초`;
+function saveSession() {
+  const L = STATE.log;
+  if (L.saved) return L.saved;
+  const st = Object.keys(L.st).map(Number).sort((a, b) => a - b)
+    .map(n => { const s = L.st[n]; return { n, ph: s.ph, r: s.resp, w: s.wrong, h: s.hint, a: s.aac, done: s.done }; });
+  if (!st.some(s => s.done)) return (L.saved = { rec: null });
+  const S = STATE.setup;
+  const rec = {
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+    d: new Date(L.t0).toISOString(), nm: S.name || '(이름 없음)', tk: S.type, tn: T().name, lv: S.level, hero: STATE.hero,
+    sec: Math.round(((L.end || Date.now()) - L.t0) / 1000), st: st.filter(s => s.done)
+  };
+  const all = loadRecs();
+  const prev = [...all].reverse().find(r => r.nm === rec.nm) || null;
+  all.push(rec);
+  while (all.length > 800) all.shift();
+  const ok = store.set(KEY.recs, all);
+  enqueue({ sheet: CONFIG.story, rows: sheetRows(rec) });
+  return (L.saved = { rec, prev, ok });
+}
+function sessionText({ rec, prev, ok }) {
+  const lines = [`${fmtDate(rec.d)} · ${rec.nm} · ${rec.tn} · 수준 ${rec.lv}(${LEVEL_NAMES[rec.lv]}) · 주인공 ${CHARS[rec.hero].name}`];
+  rec.st.forEach(s => lines.push(`${s.n}단계 ${STAGES[s.n].name}: ${RESP_LABEL[s.r] || '미기록'} · 오답 ${s.w}회${s.h ? '(힌트)' : ''}${s.a ? ` · 버튼 ${s.a}회` : ''}`));
+  const self = r => r.st.filter(s => s.r === 'self').length;
+  let cmp = `혼자 동작+말 ${self(rec)}/${rec.st.length}단계`;
+  if (prev) { const a = self(rec), b = self(prev); cmp += ` (지난번 ${b}/${prev.st.length} ${a > b ? '▲' : a < b ? '▼' : '='})`; }
+  lines.push(cmp, `총 소요 ${Math.floor(rec.sec / 60)}분 ${rec.sec % 60}초`);
+  if (!ok) lines.push('※ 이 브라우저에는 기록이 저장되지 않았어요.');
+  return lines.join('\n');
 }
 async function ending(c) {
   setLabel('엔딩 · 칭찬 스탬프');
   STATE.log.end = Date.now();
+  const res = saveSession();
   const H = STATE.hero, o = others();
   const row = document.createElement('div'); row.className = 'party';
-  [o[0], H, 'pipi', o[1]].forEach((id, i) => {
+  [o[0], H, 'pipi', o[1], TEACHER].forEach((id, i) => {
     row.innerHTML += `<div class="pc ${id === H ? 'hero' : ''}"><div class="inner cheer" style="animation-delay:${i * .12}s">${charSVG(id, 'proud')}</div></div>`;
   });
   stage.appendChild(row);
@@ -1216,27 +1850,320 @@ async function ending(c) {
   const st = document.createElement('div'); st.className = 'stamp';
   st.innerHTML = `<svg viewBox="0 0 200 200"><circle cx="100" cy="100" r="90" fill="rgba(255,255,255,.9)" stroke="#e53935" stroke-width="10"/><circle cx="100" cy="100" r="74" fill="none" stroke="#e53935" stroke-width="4"/><polygon points="${starPts(5, 30, 12, 100, 76)}" fill="#e53935"/><text x="100" y="146" text-anchor="middle" font-size="24" font-weight="900" fill="#e53935" font-family="Apple SD Gothic Neo, Malgun Gothic, sans-serif">참 잘했어요</text></svg>`;
   stage.appendChild(st); sfx.stamp();
-  await c.say(CONFIG.ending.line, narr());
 
-  const lg = document.createElement('div'); lg.className = 'teacherLog';
-  lg.textContent = '교사 기록\n' + logText();
-  const cp = document.createElement('button'); cp.textContent = '기록 복사';
-  cp.addEventListener('click', async () => {
-    const txt = logText();
-    try { await navigator.clipboard.writeText(txt); cp.textContent = '복사됨'; }
-    catch (e) {
-      const ta = document.createElement('textarea'); ta.value = txt; document.body.appendChild(ta); ta.select();
-      try { document.execCommand('copy'); cp.textContent = '복사됨'; } catch (er) { cp.textContent = '복사 실패'; }
-      ta.remove();
-    }
-  });
-  lg.appendChild(cp); stage.appendChild(lg);
+  if (res.rec) {
+    const lg = document.createElement('div'); lg.className = 'teacherLog';
+    lg.textContent = '교사 기록\n' + sessionText(res);
+    const sync = document.createElement('div'); sync.className = 'sync';
+    if (sheetCfg().url) {
+      sync.textContent = '구글 시트에 저장 중…';
+      flushQueue().then(left => { sync.textContent = left ? `구글 시트 저장 대기 ${left}건 (연결되면 자동 전송)` : '구글 시트에 저장했어요.'; });
+    } else sync.textContent = '구글 시트 미연결 · 이 기기에만 저장했어요.';
+    const cp = document.createElement('button'); cp.textContent = '기록 복사';
+    cp.addEventListener('click', () => copyText(recsTSV([res.rec]), cp));
+    lg.appendChild(sync); lg.appendChild(cp); stage.appendChild(lg);
+  }
+  await c.say(CONFIG.ending.line, narr());
 
   const again = document.createElement('button'); again.className = 'againBtn';
   again.innerHTML = `<div class="ab">${ICON.replay}</div>${CONFIG.showTeacherLabels ? '<span>처음부터 다시 하기</span>' : ''}`;
   stage.appendChild(again);
   await c.tap(again);
   sfx.pop(); go(intro);
+}
+
+/* =====================================================================
+   말 버튼 보드 (대체 의사소통) — 수업 중에도 따로 열어 쓸 수 있어요
+   ===================================================================== */
+let AAC_PENDING = {};
+function countAac(id) {
+  const all = store.get(KEY.aac, {}), nm = STATE.setup.name || '(이름 없음)', day = todayKey();
+  const p = all[nm] || (all[nm] = {}), d = p[day] || (p[day] = {});
+  d[id] = (d[id] || 0) + 1;
+  store.set(KEY.aac, all);
+  AAC_PENDING[id] = (AAC_PENDING[id] || 0) + 1;
+}
+function flushAac() {
+  const ids = Object.keys(AAC_PENDING);
+  if (!ids.length) return;
+  const nm = STATE.setup.name || '(이름 없음)', day = todayKey();
+  const rows = ids.map(id => ({ '날짜': day, '이름': nm, '버튼': (CONFIG.aac.find(a => a.id === id) || {}).word || id, '횟수': AAC_PENDING[id], '상황': CONFIG.story }));
+  AAC_PENDING = {};
+  enqueue({ sheet: '말 버튼 사용', rows });
+}
+function aacBoard(c) {
+  setLabel(`말 버튼 · ${STATE.setup.name || '이름 없음'}`);
+  const b = document.createElement('div'); b.className = 'aacboard';
+  b.innerHTML = CONFIG.aac.map(a => `<button class="aacbtn" data-id="${a.id}"><div class="ai">${aacIcon(a.id)}</div>${CONFIG.showBubbleText ? `<div class="at">${a.word}</div>` : ''}</button>`).join('');
+  stage.appendChild(b);
+  const close = document.createElement('button'); close.className = 'teacher-next';
+  close.innerHTML = `<span class="fill"></span><span class="lbl">닫기 ✕</span><small class="lbl">길게 누르기</small>`;
+  stage.appendChild(close);
+  holdButton(close, 700, () => go(intro));
+  b.addEventListener('pointerdown', e => {
+    const btn = e.target.closest('.aacbtn'); if (!btn) return;
+    e.preventDefault();
+    const a = CONFIG.aac.find(x => x.id === btn.dataset.id);
+    retrigger(btn, 'hit'); sfx.blip();
+    countAac(a.id);
+    say(a.word, { role: '말버튼', pitch: CONFIG.aacVoice.pitch, rate: CONFIG.aacVoice.rate, noCap: true });
+  });
+  return Promise.resolve();
+}
+
+/* =====================================================================
+   저장소 (이 기기) · 구글 시트 연동
+   ===================================================================== */
+const KEY = { setup: 'ssr.setup.v2', people: 'ssr.people.v2', recs: 'ssr.records.v2', aac: 'ssr.aac.v2', sheet: 'ssr.sheet.v2', queue: 'ssr.queue.v2', voice: 'ssr.voice' };
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } }
+};
+const loadRecs = () => store.get(KEY.recs, []);
+function sheetCfg() {
+  const s = store.get(KEY.sheet, {});
+  return { url: (s.url || CONFIG.sheet.url || '').trim(), key: (s.key || CONFIG.sheet.key || '').trim() };
+}
+async function sheetCall(body) {
+  const s = sheetCfg();
+  if (!s.url) throw new Error('웹앱 주소가 없어요');
+  const r = await fetch(s.url, { method: 'POST', body: JSON.stringify(Object.assign({ key: s.key }, body)) });
+  const j = await r.json();
+  if (!j.ok) throw new Error(j.error || '실패');
+  return j;
+}
+function enqueue(payload) {
+  if (!sheetCfg().url) return;
+  const q = store.get(KEY.queue, []); q.push(payload); store.set(KEY.queue, q);
+  flushQueue();
+}
+let FLUSHING = null;
+function flushQueue() {
+  if (FLUSHING) return FLUSHING;
+  FLUSHING = (async () => {
+    let q = store.get(KEY.queue, []);
+    while (q.length && sheetCfg().url) {
+      try { await sheetCall(Object.assign({ action: 'append' }, q[0])); } catch (e) { break; }
+      q = store.get(KEY.queue, []); q.shift(); store.set(KEY.queue, q);
+    }
+    FLUSHING = null;
+    return store.get(KEY.queue, []).length;
+  })();
+  return FLUSHING;
+}
+function sheetRows(rec) {
+  return rec.st.map(s => ({
+    '회차ID': rec.id, '수행일시': rec.d, '이름': rec.nm, '유형': rec.tn, '수준': `${rec.lv} ${LEVEL_NAMES[rec.lv]}`,
+    '단계': s.n, '단계명': STAGES[s.n].name, '목표 문장': s.ph, '반응': RESP_LABEL[s.r] || '미기록',
+    '오답': s.w, '힌트': s.h ? 'O' : '', '버튼 누름': s.a || 0, '소요(초)': rec.sec, '주인공': CHARS[rec.hero] ? CHARS[rec.hero].name : rec.hero
+  }));
+}
+function recsFromRows(rows) {
+  const by = new Map();
+  rows.forEach(r => {
+    const id = String(r['회차ID'] || r['수행일시']);
+    if (!by.has(id)) by.set(id, { id, d: r['수행일시'], nm: r['이름'], tn: r['유형'], lv: parseInt(r['수준'], 10) || 0, sec: +r['소요(초)'] || 0, st: [] });
+    by.get(id).st.push({ n: +r['단계'], ph: r['목표 문장'], r: RESP_CODE[r['반응']] || null, w: +r['오답'] || 0, h: r['힌트'] === 'O', a: +r['버튼 누름'] || 0, done: true });
+  });
+  return [...by.values()];
+}
+function recsTSV(recs) {
+  const rows = recs.flatMap(sheetRows);
+  if (!rows.length) return '';
+  const head = Object.keys(rows[0]).filter(k => k !== '회차ID');
+  return [head.join('\t')].concat(rows.map(r => head.map(h => h === '수행일시' ? fmtDate(r[h]) : r[h]).join('\t'))).join('\n');
+}
+
+/* ---------- 교사 설정 창 ---------- */
+function loadSetup() {
+  const s = store.get(KEY.setup, null);
+  const ok = s && CONFIG.types[s.type] && Array.isArray(s.stages) && s.level >= 1 && s.level <= 4;
+  STATE.setup = Object.assign({ name: '' }, ok ? s : fromType(CONFIG.defaultType));
+  STATE.setup.stages = STATE.setup.stages.filter(n => STAGES[n]);
+  if (!STATE.setup.stages.length) STATE.setup.stages = [1];
+}
+function fromType(k) { const p = CONFIG.types[k]; return { type: k, stages: [...p.stages], level: p.level }; }
+function saveSetup() {
+  const S = STATE.setup;
+  store.set(KEY.setup, S);
+  if (S.name) { const pp = store.get(KEY.people, {}); pp[S.name] = { type: S.type, stages: S.stages, level: S.level, t: Date.now() }; store.set(KEY.people, pp); }
+}
+function setupNote() {
+  const S = STATE.setup;
+  const lines = [`수준 ${S.level}(${LEVEL_NAMES[S.level]}) 목표 문장 — ` + S.stages.map(n => `${n}단계 “${phraseOf(n)}”`).join(' / ')];
+  const wr = S.stages.filter(n => n > 1).map(n => `${n}단계 ${CONFIG.wrongs[wrongOf(n)].label.replace(/[()]/g, '')}`);
+  if (wr.length) lines.push('오답 카드 — ' + wr.join(' · '));
+  if (S.stages.includes(3)) lines.push('3단계 장면 — ' + (taskOf3() === 'question' ? '어려운 질문 (몰라요)' : '어려운 과제 (어려워요)'));
+  lines.push('거절(1·2·5단계, 6단계 첫 장면)은 팔로 X를 만들며 말하고, 어려움·쉬기·도움 요청(3·4·6단계)은 손을 들고 말해요.');
+  return lines.join('\n');
+}
+function voiceOpts() {
+  const L = TTS.list || [];
+  return L.length ? L.map(v => `<option value="${esc(v.name)}"${TTS.voice === v ? ' selected' : ''}>${esc(v.name)}</option>`).join('') : '<option>한국어 음성을 찾지 못했어요</option>';
+}
+const modal = $('#modal');
+function closeModal() { modal.className = ''; modal.innerHTML = ''; modal.onclick = null; modal.onchange = null; }
+function openSetup(onDone, needName = false) {
+  const S = STATE.setup;
+  let msg = '', more = false, warn = false;
+  pickVoice();
+  const people = () => Object.entries(store.get(KEY.people, {})).sort((a, b) => (b[1].t || 0) - (a[1].t || 0)).slice(0, 12).map(x => x[0]);
+  const grab = () => {
+    const nm = $('#mName'); if (nm) S.name = nm.value.trim();
+    const u = $('#mUrl'), k = $('#mKey');
+    if (u && k) store.set(KEY.sheet, { url: u.value.trim(), key: k.value.trim() });
+    const d = modal.querySelector('details'); if (d) more = d.open;
+  };
+  const draw = () => {
+    const sc = sheetCfg();
+    modal.innerHTML = `<div class="mpanel">
+      <h2>교사 설정</h2>
+      <div class="mrow"><b>이름</b><div class="opts"><input id="mName" type="text" maxlength="20" placeholder="학생 이름" value="${esc(S.name)}">${people().map(n => `<button class="opt${n === S.name ? ' on' : ''}" data-n="${esc(n)}">${esc(n)}</button>`).join('')}</div></div>
+      <div class="mrow"><b>유형</b><div class="opts">${Object.entries(CONFIG.types).map(([k, p]) => `<button class="opt${S.type === k ? ' on' : ''}" data-t="${k}">${esc(p.name)}</button>`).join('')}</div></div>
+      <div class="mrow"><b>단계</b><div class="opts">${Object.keys(STAGES).map(Number).map(n => `<button class="opt${S.stages.includes(n) ? ' on' : ''}" data-s="${n}">${n}. ${STAGES[n].name}</button>`).join('')}</div></div>
+      <div class="mrow"><b>표현 수준</b><div class="opts">${[1, 2, 3, 4].map(l => `<button class="opt${S.level === l ? ' on' : ''}" data-l="${l}">${l}. ${LEVEL_NAMES[l]}</button>`).join('')}</div></div>
+      <div class="mnote">${esc(setupNote())}</div>
+      <details${more ? ' open' : ''}><summary>구글 시트 연결 · 목소리</summary>
+        <div class="mrow"><b>시트 웹앱</b><div class="opts"><input id="mUrl" type="url" placeholder="https://script.google.com/macros/s/…/exec" value="${esc(sc.url)}"></div></div>
+        <div class="mrow"><b>비밀 키</b><div class="opts"><input id="mKey" type="password" placeholder="Apps Script에 적은 키" value="${esc(sc.key)}"><button class="opt" data-a="ping">연결 확인</button><span class="mstat">${esc(msg)}</span></div></div>
+        <div class="mrow"><b>목소리</b><div class="opts"><select id="mVoice">${voiceOpts()}</select><button class="opt" data-a="vtest">들어 보기</button><button class="opt" data-a="vlist">녹음 음성 파일 목록</button></div></div>
+      </details>
+      ${warn ? '<p class="mwarn">학생 이름을 먼저 적어 주세요.</p>' : ''}
+      <div class="mbtns"><button class="mok">확인</button></div></div>`;
+  };
+  draw();
+  modal.className = 'show';
+  modal.onchange = e => {
+    if (e.target.id === 'mVoice') { try { localStorage.setItem(KEY.voice, e.target.value); } catch (er) {} pickVoice(); }
+  };
+  modal.onclick = e => {
+    const b = e.target.closest('button'); if (!b) return;
+    grab();
+    if (b.dataset.n) { S.name = b.dataset.n; const p = store.get(KEY.people, {})[S.name]; if (p && CONFIG.types[p.type]) Object.assign(S, { type: p.type, stages: [...p.stages], level: p.level }); }
+    else if (b.dataset.t) Object.assign(S, fromType(b.dataset.t));
+    else if (b.dataset.s) {
+      const n = +b.dataset.s, i = S.stages.indexOf(n);
+      if (i >= 0) { if (S.stages.length > 1) S.stages.splice(i, 1); }
+      else { S.stages.push(n); S.stages.sort((a, z) => a - z); }
+    }
+    else if (b.dataset.l) S.level = +b.dataset.l;
+    else if (b.dataset.a === 'ping') {
+      msg = '확인 중…'; draw();
+      sheetCall({ action: 'ping' })
+        .then(j => { msg = `연결됨 · 시트 탭: ${(j.sheets || []).join(', ')}`; flushQueue(); })
+        .catch(er => { msg = '연결 실패: ' + er.message; })
+        .finally(() => { if (modal.className === 'show' && $('#mUrl')) { grab(); draw(); } });
+      return;
+    }
+    else if (b.dataset.a === 'vtest') { say('안녕하세요. 싫어요. 선생님, 도와주세요.', narr({ noCap: true })); return; }
+    else if (b.dataset.a === 'vlist') { saveSetup(); openVoiceList(() => openSetup(onDone, needName)); return; }
+    else if (b.classList.contains('mok')) {
+      if (needName && !S.name) { warn = true; draw(); return; }
+      saveSetup(); closeModal(); if (onDone) onDone(); return;
+    }
+    warn = false; saveSetup(); draw();
+  };
+}
+
+/* ---------- 기록 보기 창 ---------- */
+function openRecords(nm = STATE.setup.name, remote = null, note = '') {
+  const local = loadRecs();
+  const names = [...new Set([...local.map(r => r.nm), ...Object.keys(store.get(KEY.people, {}))].filter(Boolean))];
+  if (!nm && names.length) nm = names[0];
+  const recs = (remote || local.filter(r => r.nm === nm)).slice().sort((a, b) => (String(a.d) < String(b.d) ? -1 : 1));
+  const legend = RESP.map(([k, t]) => `<span><i class="dot d-${k}"></i> ${t}</span>`).join('') + '<span><i class="dot d-na"></i> 미기록</span>';
+  const trend = Object.keys(STAGES).map(Number).map(n => {
+    const seq = recs.filter(r => r.st.some(s => s.n === n)).slice(-10);
+    if (!seq.length) return '';
+    const of = r => r.st.find(x => x.n === n);
+    const dots = seq.map(r => `<i class="dot d-${of(r).r || 'na'}" title="${esc(fmtDate(r.d))} · ${RESP_LABEL[of(r).r] || '미기록'}"></i>`).join('');
+    return `<tr><td>${n}. ${STAGES[n].name}</td><td><span class="dots">${dots}</span></td><td>${seq.filter(r => of(r).r === 'self').length}/${seq.length}</td></tr>`;
+  }).join('');
+  const rows = recs.slice().reverse().slice(0, 30).map(r => `<tr><td>${esc(fmtDate(r.d))}</td><td>${r.lv || ''}</td><td>${r.st.map(s => `${s.n}단계 ${RESP_SHORT[s.r] || '미기록'}${s.w ? ` (오답 ${s.w})` : ''}`).join('<br>')}</td></tr>`).join('');
+  const aacDays = Object.entries(store.get(KEY.aac, {})[nm] || {}).sort((a, b) => (a[0] < b[0] ? 1 : -1)).slice(0, 14);
+  const aac = aacDays.map(([day, cnt]) => `<tr><td>${day}</td><td>${CONFIG.aac.filter(a => cnt[a.id]).map(a => `${a.word} ${cnt[a.id]}`).join(' · ')}</td></tr>`).join('');
+  const hasSheet = !!sheetCfg().url;
+  modal.innerHTML = `<div class="mpanel">
+    <h2>기록 보기 <small>${remote ? '구글 시트' : '이 기기'}</small></h2>
+    <div class="opts">${names.map(x => `<button class="opt${x === nm ? ' on' : ''}" data-tab="${esc(x)}">${esc(x)}</button>`).join('') || '<span>아직 기록한 학생이 없어요.</span>'}</div>
+    ${note ? `<p class="mnote">${esc(note)}</p>` : ''}
+    <h3>단계별 반응 변화 <small>(왼쪽이 오래된 기록 · 최근 10회)</small></h3>
+    <div class="legend">${legend}</div>
+    ${trend ? `<table class="rt"><tr><th>단계</th><th>반응</th><th>혼자 동작+말</th></tr>${trend}</table>` : '<p>아직 기록이 없어요.</p>'}
+    <h3>회차별 기록 <small>(최근 30회)</small></h3>
+    ${rows ? `<table class="rt"><tr><th>날짜</th><th>수준</th><th>결과</th></tr>${rows}</table>` : '<p>아직 기록이 없어요.</p>'}
+    <h3>말 버튼 사용 <small>(이 기기 · 날짜별)</small></h3>
+    ${aac ? `<table class="rt"><tr><th>날짜</th><th>누른 버튼</th></tr>${aac}</table>` : '<p>아직 기록이 없어요.</p>'}
+    <p class="mnote">${hasSheet ? '‘구글 시트에서 불러오기’를 누르면 다른 기기에서 한 기록까지 모두 볼 수 있어요.' : '지금은 이 기기에만 저장돼요. 교사 설정 → 구글 시트 연결을 하면 여러 기기 기록을 모아 볼 수 있어요.'}</p>
+    <div class="mbtns">${remote ? '' : '<button class="mdel">이 기기의 이 학생 기록 지우기</button>'}${hasSheet && nm ? `<button class="mload">${remote ? '다시 불러오기' : '구글 시트에서 불러오기'}</button>` : ''}${remote ? '<button class="mlocal">이 기기 기록 보기</button>' : ''}<button class="mcopy">표 복사</button><button class="mok">닫기</button></div></div>`;
+  modal.className = 'show';
+  modal.onclick = e => {
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.dataset.tab) openRecords(b.dataset.tab);
+    else if (b.classList.contains('mload')) {
+      b.textContent = '불러오는 중…';
+      sheetCall({ action: 'list', sheet: CONFIG.story, name: nm })
+        .then(j => openRecords(nm, recsFromRows(j.rows || []), `구글 시트 ‘${CONFIG.story}’ 탭에서 ${nm} 기록을 불러왔어요.`))
+        .catch(er => openRecords(nm, null, '불러오기 실패: ' + er.message));
+    }
+    else if (b.classList.contains('mlocal')) openRecords(nm);
+    else if (b.classList.contains('mcopy')) copyText(recsTSV(recs) || '기록 없음', b);
+    else if (b.classList.contains('mdel')) {
+      if (!nm || !confirm(`이 기기에 저장된 ${nm} 기록을 모두 지울까요? 되돌릴 수 없어요. (구글 시트 기록은 그대로 남아요)`)) return;
+      store.set(KEY.recs, loadRecs().filter(r => r.nm !== nm));
+      const a = store.get(KEY.aac, {}); delete a[nm]; store.set(KEY.aac, a);
+      openRecords(nm);
+    }
+    else if (b.classList.contains('mok')) closeModal();
+  };
+}
+
+/* ---------- 녹음 음성 파일 목록 (클로바더빙 등) ---------- */
+const ROLE_OF = {
+  intro: '해설', faceQ: '해설', faceWrong: '해설', xQ: '해설', xDone: '해설', breathQ: '해설', calmDone: '해설',
+  praise: '해설', question: '해설', restLine: '해설', thenLine: '해설', stopQ: '해설',
+  heroFeel: '주인공', heroLine: '주인공', say: '주인공', breath: '주인공', repeat: '주인공', stopWord: '주인공',
+  friendLine: '친구', friendOk: '친구', friendSorry: '친구', friendAgain: '친구',
+  teacherLine: '선생님', teacherOk: '선생님', answer: '선생님'
+};
+function voiceLines() {
+  const out = [], seen = new Set();
+  const add = (role, t) => { if (!t) return; const k = role + '|' + t; if (seen.has(k)) return; seen.add(k); out.push({ role, t }); };
+  const names = HEROES.map(h => CHARS[h].name);
+  const expand = (role, t) => /\{name\}/.test(t) ? names.forEach(x => add(role, t.replace(/\{name\}/g, x))) : add(role, t);
+  const walk = o => Object.entries(o).forEach(([k, v]) => {
+    const role = ROLE_OF[k]; if (!role) return;
+    if (v && typeof v === 'object') Object.values(v).forEach(t => expand(role, t)); else expand(role, v);
+  });
+  const chipLines = v => [2, 3, 4].forEach(l => chipsOf(typeof v === 'object' ? (v[l] ?? v[1]) : v, l).forEach(ch => add('주인공', ch)));
+  add('해설', `${CONFIG.title.top} ${CONFIG.title.main} 같이 갈 친구를 골라 볼까?`);
+  HEROES.forEach(h => add('주인공', `나는 ${ya(CHARS[h].name)}! 같이 가자!`));
+  ORD.forEach(o => add('해설', `${o} 이야기`));
+  [CONFIG.s1, CONFIG.s2, CONFIG.s3.puzzle, CONFIG.s3.question, CONFIG.s4, CONFIG.s5, CONFIG.s6].forEach(walk);
+  add('해설', CONFIG.s3.ask);
+  Object.values(CONFIG.wrongs).forEach(w => add('해설', w.line));
+  Object.values(CONFIG.gateNote).forEach(g => Object.values(g).forEach(t => add('해설', t)));
+  [CONFIG.s1, CONFIG.s2, CONFIG.s3.puzzle, CONFIG.s3.question, CONFIG.s4, CONFIG.s5, CONFIG.s6].forEach(o => chipLines(o.say));
+  add('해설', CONFIG.ending.line);
+  CONFIG.aac.forEach(a => add('말버튼', a.word));
+  return out;
+}
+function openVoiceList(back) {
+  const L = voiceLines();
+  const rows = L.map(x => `<tr><td>${x.role}</td><td>${esc(x.t)}</td><td><code>${esc(audioPath(x.t, x.role))}</code></td></tr>`).join('');
+  modal.innerHTML = `<div class="mpanel">
+    <h2>녹음 음성 파일 목록 <small>${L.length}개</small></h2>
+    <p class="mnote">클로바더빙 같은 곳에서 역할별로 목소리를 하나씩 정해(해설·주인공·친구·선생님·말버튼) 아래 대사를 만들어 mp3로 내려받으세요.
+파일 이름을 ‘파일 경로’와 똑같이 맞춰 index.html 옆 audio 폴더에 넣으면, 그 대사는 녹음 음성으로 나와요. 없는 파일은 기기 음성으로 읽어요.
+역할 폴더에 없으면 audio 폴더 바로 아래(예: audio/싫어요.mp3)도 찾아봐요. 무료로 쓸 때는 각 서비스의 이용 조건(출처 표기 등)을 확인해 주세요.</p>
+    <table class="rt"><tr><th>역할</th><th>대사</th><th>파일 경로</th></tr>${rows}</table>
+    <div class="mbtns"><button class="mcopy">목록 복사</button><button class="mok">뒤로</button></div></div>`;
+  modal.className = 'show';
+  modal.onclick = e => {
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.classList.contains('mcopy')) copyText(['역할\t대사\t파일 경로'].concat(L.map(x => `${x.role}\t${x.t}\t${audioPath(x.t, x.role)}`)).join('\n'), b);
+    else if (b.classList.contains('mok')) back ? back() : closeModal();
+  };
 }
 
 /* ---------- 폭죽 ---------- */
@@ -1274,7 +2201,7 @@ function confetti(ms) {
    ===================================================================== */
 function applySound() {
   MUTE_TTS = SOUND >= 1; MUTE_SFX = SOUND === 2;
-  if (MUTE_TTS && HAS_TTS) { try { speechSynthesis.cancel(); } catch (e) {} }
+  if (MUTE_TTS) stopVoice();
   $('#bSound').innerHTML = SOUND === 0 ? ICON.sOn : SOUND === 1 ? ICON.sOn + '<small>음성끔</small>' : ICON.sOff;
 }
 $('#bSound').addEventListener('click', () => { SOUND = (SOUND + 1) % 3; applySound(); });
@@ -1289,13 +2216,20 @@ $('#bFull').addEventListener('click', () => {
 });
 $('#bHome').insertAdjacentHTML('beforeend', ICON.home);
 holdButton($('#bHome'), 700, () => go(intro));
+$('#bAac').insertAdjacentHTML('beforeend', ICON.chat);
+holdButton($('#bAac'), 700, () => go(aacBoard));
 document.addEventListener('keydown', e => {
-  if ((e.key === 'Enter' || e.key === 'ArrowRight' || e.key === 'n' || e.key === 'N') && GATE_NEXT) { e.preventDefault(); GATE_NEXT(); }
+  if (!GATE_PICK) return;
+  if (e.key === 'Enter' || e.key === 'ArrowRight' || e.key === 'n' || e.key === 'N') { e.preventDefault(); GATE_PICK(''); }
+  else if (/^[1-5]$/.test(e.key)) { e.preventDefault(); GATE_PICK(RESP[+e.key - 1][0]); }
 });
 document.addEventListener('contextmenu', e => e.preventDefault());
+window.addEventListener('online', () => flushQueue());
 
 buildBG();
 applySound();
+loadSetup();
+flushQueue();
 go(intro);
 </script>
 </body>
