@@ -237,6 +237,7 @@ button{font-family:inherit;border:0;padding:0;background:none;cursor:pointer;tou
 .teacherLog{position:absolute;left:1vw;top:5.5vh;z-index:20;background:rgba(255,255,255,.9);border:1.5px solid #7a4a22;border-radius:10px;padding:8px 10px;font-size:12px;color:#5a3218;white-space:pre-line;max-width:38vw;line-height:1.5}
 .teacherLog button{display:block;margin-top:6px;background:#fff3d6;border:1.5px solid #7a4a22;border-radius:6px;padding:3px 8px;font-size:12px;color:#5a3218}
 .teacherLog .sync{margin-top:4px;color:#2e7d32}
+.teacherLog .sync.bad{color:#c0392b;font-weight:800}
 
 /* 해설 자막판 (위쪽) · 교사용 표시 */
 #caption{position:absolute;left:0;right:0;margin:0 auto;width:max-content;top:1.5vh;z-index:15;background:rgba(255,253,245,.95);color:var(--ink);font-size:min(4.2vh,3vw);font-weight:900;line-height:1.3;padding:1vh 2.4vw;border-radius:2.5vmin;border:.6vmin solid #b8733a;box-shadow:0 .8vmin 0 rgba(0,0,0,.15);max-width:min(56vw,calc(100vw - 340px));text-align:center;word-break:keep-all;pointer-events:none;animation:popIn .3s both}
@@ -248,6 +249,57 @@ button{font-family:inherit;border:0;padding:0;background:none;cursor:pointer;tou
 #tbar button{position:relative;width:42px;height:42px;border-radius:10px;background:rgba(255,255,255,.88);border:2px solid #7a4a22;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center}
 #tbar svg{width:22px;height:22px;position:relative;z-index:1}
 #tbar small{position:relative;z-index:1;font-size:8px;color:#c0392b;line-height:1}
+
+/* 사회적 상황 이야기 책 */
+.book{position:absolute;inset:0;z-index:5;display:flex;align-items:center;justify-content:center}
+.bk-page{position:relative;width:min(80vw,140vh);height:min(86vh,62vw);background:#fffdf5;border:1.2vmin solid #b8733a;border-radius:4vmin;box-shadow:0 1.6vmin 0 #7a4a22,0 3vh 6vh rgba(0,0,0,.3);display:flex;flex-direction:column;overflow:hidden}
+.bk-page.turn{animation:turnIn .45s cubic-bezier(.3,1.3,.5,1)}
+@keyframes turnIn{0%{transform:translateX(4vw) rotateY(-12deg);opacity:.2}100%{transform:none;opacity:1}}
+.bk-art{position:relative;flex:1 1 auto;min-height:0;margin:2vmin 2vmin 0;border-radius:3vmin;background:linear-gradient(#c9f2ff,#eaffdc 66%,#b9e59a 66%,#a3d985);overflow:hidden}
+.bk-ch{position:absolute;bottom:3%;height:90%;aspect-ratio:200/240}
+.bk-ch.l{left:10%} .bk-ch.r{right:10%} .bk-ch.c{left:0;right:0;margin:auto}
+.bk-ch .inner svg{width:100%;height:100%}
+.bk-ic{position:absolute;left:0;right:0;margin:auto;top:6%;width:min(22vh,16vw)}
+.bk-ic.side{left:auto;right:12%;margin:0;top:10%}
+.bk-ic svg,.bk-ic img{width:100%;height:auto;display:block}
+.bk-text{flex:0 0 auto;min-height:24%;display:flex;align-items:center;justify-content:center;padding:1.4vh 9vw 3.4vh;font-size:min(5.6vh,3.8vw);font-weight:900;color:var(--ink);text-align:center;word-break:keep-all;line-height:1.3}
+.bk-page.title .bk-text{font-size:min(8vh,5.6vw);color:#b8733a}
+.bk-tag{position:absolute;top:3vmin;left:3.5vmin;font-size:12px;background:rgba(255,255,255,.9);border:1px solid #d7b88a;border-radius:8px;padding:2px 8px;color:#7a4a22;pointer-events:none}
+.bk-tag:empty{display:none}
+.bk-say{position:absolute;right:2.2vmin;bottom:2.2vmin;width:min(9vh,7vw);aspect-ratio:1;border-radius:50%;background:#4fc3f7;border:.6vmin solid #fff;box-shadow:0 .8vmin 0 #2b8fc4;display:flex;align-items:center;justify-content:center}
+.bk-say svg{width:62%}
+.bk-dots{position:absolute;left:0;right:0;bottom:1.4vh;display:flex;justify-content:center;gap:6px;pointer-events:none}
+.bk-dots i{width:1.4vmin;height:1.4vmin;border-radius:50%;background:#e3cfa8}
+.bk-dots i.on{background:#b8733a;transform:scale(1.4)}
+.bk-nav{position:absolute;top:50%;width:min(14vh,9vw);aspect-ratio:1;margin-top:calc(min(14vh,9vw) / -2);border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffe082,#ffb300 70%);border:.9vmin solid #fff;box-shadow:0 1vmin 0 #c77800,0 2vh 3vh rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;z-index:6}
+.bk-nav svg{width:55%;margin-left:8%}
+.bk-prev{left:1.2vw;transform:scaleX(-1)} .bk-next{right:1.2vw}
+.book.read .bk-next{animation:pulse 1s ease-in-out infinite}
+.bk-next.go{width:auto;height:auto;aspect-ratio:auto;margin-top:0;transform:translateY(-50%);padding:1.4vh 2vw;border-radius:5vmin;gap:.6vw;background:radial-gradient(circle at 35% 30%,#a8f584,#3fb43a 70%);box-shadow:0 1vmin 0 #2a8a2a;flex-direction:column}
+.bk-next.go svg{width:min(8vh,6vw)}
+.bk-next.go span{font-size:min(2.6vh,15px);color:#fff;font-weight:900;text-shadow:0 1px 2px rgba(0,0,0,.4);white-space:nowrap}
+.book.read .bk-next.go{animation:pulseY 1s ease-in-out infinite}
+@keyframes pulseY{0%,100%{transform:translateY(-50%) scale(1)}50%{transform:translateY(-50%) scale(1.08)}}
+
+/* 상황 고르기 */
+.menu-h{position:absolute;top:3vh;left:0;right:0;margin:auto;width:max-content;padding:1.4vh 5vw;font-size:min(6vh,4.6vw);font-weight:900;z-index:4;animation:popIn .5s cubic-bezier(.3,1.5,.5,1) both}
+.mgrid{position:absolute;top:18vh;bottom:9vh;left:5vw;right:5vw;display:grid;grid-template-columns:repeat(3,1fr);grid-auto-rows:1fr;gap:2.6vmin;align-content:center;z-index:4}
+.mcard{position:relative;background:#fffdf5;border-radius:4vmin;border:1vmin solid #e7a955;box-shadow:0 1.2vmin 0 #b9772f,0 2vh 3vh rgba(0,0,0,.2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1vh;padding:1.5vmin;min-height:0;animation:cardIn .5s cubic-bezier(.3,1.5,.5,1) both}
+.mcard.done{background:#f1ffe8;border-color:#7ed957;box-shadow:0 1.2vmin 0 #4caf50,0 2vh 3vh rgba(0,0,0,.2)}
+.mcard.picked{animation:chosen .6s cubic-bezier(.3,1.6,.5,1) both;border-color:#55c24a}
+.mc-ic{flex:1 1 0;min-height:0;width:100%;display:flex;align-items:center;justify-content:center}
+.mc-ic > svg,.mc-ic > img{height:100%;width:auto;max-width:100%;display:block}
+.mface{height:100%;aspect-ratio:200/240} .mface svg{width:100%;height:100%}
+.mc-t{font-size:min(3.6vh,2.6vw);font-weight:900;color:#5a3218;text-align:center;word-break:keep-all;line-height:1.2}
+.mc-done{position:absolute;top:-2.4vmin;right:-2.4vmin;width:min(11vh,8vw);animation:stamp .5s both}
+.mc-done svg{width:100%;height:auto;display:block}
+.mc-quick{position:absolute;left:1.6vmin;top:1.4vmin;font-size:11px;background:rgba(255,255,255,.95);border:1.5px solid #7a4a22;border-radius:8px;padding:2px 7px;color:#5a3218}
+.menu-end{position:absolute;right:3vw;top:3vh;z-index:5;display:flex;flex-direction:column;align-items:center;gap:.6vh;opacity:.55}
+.menu-end.ready{opacity:1}
+.menu-end .ab{width:min(12vh,9vw);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff3a0,#ffc107 70%);border:.9vmin solid #fff;box-shadow:0 1vmin 0 #c79100;display:flex;align-items:center;justify-content:center}
+.menu-end.ready .ab{animation:pulse 1.3s ease-in-out infinite}
+.menu-end .ab svg{width:64%}
+.menu-end span{font-size:min(2.6vh,15px);color:#fff;font-weight:900;text-shadow:0 1px 3px rgba(0,0,0,.7)}
 
 /* 책상 소품 (퍼즐·색칠) · 질문 카드 */
 .desk{position:absolute;left:calc(50% - min(14vh,11vw));bottom:5vh;width:min(28vh,22vw);z-index:4}
@@ -332,6 +384,8 @@ table.rt{border-collapse:collapse;width:100%;font-size:13px;margin-top:6px}
   .picks{top:36vh;gap:3vw}
   .gate-board{flex-direction:column;gap:2vh}
   .aacboard{grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(4,1fr)}
+  .mgrid{grid-template-columns:repeat(2,1fr)}
+  .bk-page{width:84vw;height:72vh}
   .mrow{flex-direction:column;gap:4px}
 }
 </style>
@@ -480,6 +534,103 @@ const CONFIG = {
     praise: '선생님께 잘 알렸어요!'
   },
   ending: { line: '멋지게 말했어요! 참 잘했어요!' },
+
+  /* 사회적 상황 이야기 (Carol Gray, Social Stories 10.2 기준)
+     - 제목 → 도입(누가·어디서·언제) → 본문(무엇을·어떻게·왜) → 결론(정리)
+     - 1인칭('나는')으로만 쓰고 2인칭(너·~해 봐)은 쓰지 않아요. 긍정적이고 문자 그대로 정확하게.
+     - 문장 유형: 설명·조망(다른 사람의 생각·마음)·긍정(함께 지키는 가치) = 설명문 / 코칭(내가 할 수 있는 행동, 선생님이 도와주는 방법)
+     - 설명문 수 ÷ 코칭문 수 ≥ 2  (교사 설정 화면에서 자동으로 확인해 줘요)
+     그림: l=왼쪽 c=가운데 r=오른쪽 캐릭터(hero 주인공 / friend 친구 / teacher 선생님 / pipi), i=그림 아이콘
+           캐릭터는 '누구:표정:자세' (표정 happy worried annoyed angry talk proud surprised, 자세 pose-x 팔로 X · pose-raise 손 들기) */
+  practiceLine: '이제 연습해 볼까요?',
+  menuLine: '어떤 이야기를 할까? 하나를 골라 봐!',
+  stories: {
+    1: { title: '기분이 나쁠 때', art: 'c=hero:annoyed i=loud', pages: [
+      ['설명', '나는 학교에서 친구들과 함께 지내요.', 'l=hero:happy r=pipi:happy'],
+      ['설명', '가끔 교실이 아주 시끄러워요.', 'l=hero:annoyed r=pipi:proud i=loud'],
+      ['조망', '시끄러우면 내 기분이 나빠질 수 있어요.', 'c=hero:annoyed'],
+      ['설명', '기분이 나쁘면 손이 입이나 얼굴로 가고 싶을 때가 있어요.', 'c=hero:worried i=sweatBig'],
+      ['긍정', '내 몸은 소중해요.', 'c=hero:happy i=heart'],
+      ['코칭', '기분이 나쁠 때, 나는 팔로 X를 만들 수 있어요.', 'c=hero:worried:pose-x i=cant'],
+      ['코칭', '"후~" 숨을 쉬고, "싫어요."라고 말할 수 있어요.', 'c=hero:talk:pose-x i=wind'],
+      ['조망', '내가 말로 알려 주면, 친구와 선생님이 내 마음을 알 수 있어요.', 'l=hero:talk r=teacher:happy'],
+      ['설명', '팔로 X, 숨쉬기, "싫어요." 이렇게 나는 내 몸을 지킬 수 있어요.', 'c=hero:proud:pose-x i=star']
+    ] },
+    2: { title: '먹기 싫은 음식이 있을 때', art: 'c=hero:worried i=broccoli', pages: [
+      ['설명', '점심시간에 나는 친구와 함께 밥을 먹어요.', 'l=hero:happy r=friend:happy'],
+      ['설명', '친구가 나에게 음식을 줄 때가 있어요.', 'l=hero:surprised r=friend:talk i=broccoli'],
+      ['조망', '친구는 맛있는 것을 나누고 싶어서 줘요.', 'r=friend:happy i=heart'],
+      ['조망', '그런데 나는 먹고 싶지 않을 때도 있어요.', 'c=hero:worried i=broccoli'],
+      ['긍정', '싫은 것은 싫다고 말해도 괜찮아요.', 'c=hero:happy'],
+      ['설명', '음식을 던지면 친구가 다칠 수 있어요.', 'r=friend:surprised i=burst'],
+      ['코칭', '나는 팔로 X를 만들고 "싫어요."라고 말할 수 있어요.', 'c=hero:talk:pose-x i=no'],
+      ['조망', '내가 말하면 친구는 "알았어!" 하고 내 마음을 알 수 있어요.', 'l=hero:happy r=friend:happy'],
+      ['설명', '먹기 싫을 때, 나는 말로 알릴 수 있어요.', 'c=hero:proud:pose-x i=star']
+    ] },
+    3: { title: '어렵거나 모를 때', art: 'c=hero:worried i=hard', pages: [
+      ['설명', '수업 시간에 나는 선생님과 여러 가지 활동을 해요.', 'l=hero:happy r=teacher:happy'],
+      ['설명', '가끔 퍼즐이 어렵거나, 질문의 답을 모를 때가 있어요.', 'c=hero:worried i=puzzle'],
+      ['긍정', '누구나 어려운 것이 있어요. 어른도 그래요.', 'l=hero:happy r=teacher:happy'],
+      ['조망', '어려우면 마음이 답답해서 소리가 나오려고 할 때가 있어요.', 'c=hero:annoyed i=loud'],
+      ['설명', '소리를 지르면 선생님은 무엇이 어려운지 알기 어려워요.', 'r=teacher:surprised i=qmark'],
+      ['코칭', '어려울 때 나는 손을 들고 "어려워요."라고 말할 수 있어요.', 'c=hero:talk:pose-raise i=hard'],
+      ['코칭', '답을 모를 때는 "몰라요."라고 말할 수 있어요.', 'c=hero:talk:pose-raise i=dunno'],
+      ['코칭', '선생님은 그 말을 들으면 나를 도와줄 수 있어요.', 'l=hero:happy r=teacher:talk'],
+      ['긍정', '몰라도 괜찮아요. 같이 배우면 돼요.', 'l=hero:happy r=teacher:happy i=heart'],
+      ['설명', '어려울 때 말로 알리면, 나는 선생님과 함께 할 수 있어요.', 'c=hero:proud:pose-raise i=star']
+    ] },
+    4: { title: '하기 싫은 활동이 있을 때', art: 'c=hero:worried i=paper', pages: [
+      ['설명', '학교에서는 시간마다 여러 가지 활동을 해요.', 'l=hero:happy r=teacher:happy i=paper'],
+      ['설명', '색칠하기처럼 하기 싫은 활동이 있을 때도 있어요.', 'c=hero:worried i=paper'],
+      ['조망', '오래 하면 몸과 마음이 힘들어질 수 있어요.', 'c=hero:worried i=sweatBig'],
+      ['설명', '힘들 때 소리를 지르면 친구들이 깜짝 놀라요.', 'r=pipi:surprised i=loud'],
+      ['코칭', '힘들 때 나는 손을 들고 "쉬고 싶어요."라고 말할 수 있어요.', 'c=hero:talk:pose-raise i=rest'],
+      ['코칭', '선생님은 "조금 쉬고 다시 하자."라고 말해 줄 수 있어요.', 'l=hero:happy r=teacher:talk i=rest'],
+      ['설명', '쉬는 동안 나는 "후~" 숨을 쉬어요.', 'c=hero:happy i=wind'],
+      ['설명', '조금 쉬고 나면 다시 할 수 있을 때가 많아요.', 'c=hero:happy i=paper'],
+      ['긍정', '힘들 때 말로 알리는 것은 좋은 방법이에요.', 'c=hero:proud:pose-raise i=star']
+    ] },
+    5: { title: '내 물건을 지킬 때', art: 'c=hero:happy i=tablet', pages: [
+      ['설명', '쉬는 시간에 나는 탭이나 클레이로 놀아요.', 'c=hero:happy i=tablet'],
+      ['설명', '친구가 와서 내 장난감을 가져가려고 할 때가 있어요.', 'l=hero:surprised r=friend:talk i=clay'],
+      ['조망', '친구도 그 장난감이 재미있어 보여서 그래요.', 'r=friend:happy i=tablet'],
+      ['조망', '갑자기 가져가면 내 마음이 속상할 수 있어요.', 'c=hero:worried'],
+      ['설명', '친구를 밀면 친구가 넘어져서 다칠 수 있어요.', 'r=friend:surprised i=burst'],
+      ['코칭', '나는 팔로 X를 만들고 "안 돼요."라고 말할 수 있어요.', 'c=hero:talk:pose-x i=cant'],
+      ['코칭', '다 놀고 나서 "빌려줄게요."라고 말할 수도 있어요.', 'l=hero:happy r=friend:happy i=heart'],
+      ['조망', '내가 말하면 친구는 기다려야 한다는 것을 알 수 있어요.', 'r=friend:happy'],
+      ['설명', '나는 말로 내 물건을 지킬 수 있어요.', 'c=hero:proud:pose-x i=star']
+    ] },
+    6: { title: '친구가 계속 툭툭 칠 때', art: 'l=hero:annoyed r=friend:proud', pages: [
+      ['설명', '친구들은 놀면서 장난을 칠 때가 있어요.', 'l=hero:happy r=friend:proud'],
+      ['설명', '어떤 친구는 나를 툭툭 치며 장난을 해요.', 'l=hero:annoyed r=friend:proud i=burst'],
+      ['조망', '친구는 재미있어서 그러는 것일 수 있어요.', 'r=friend:proud'],
+      ['조망', '하지만 나는 툭툭 맞는 것이 싫을 수 있어요.', 'c=hero:annoyed'],
+      ['코칭', '싫을 때 나는 팔로 X를 만들고 "하지 마세요."라고 말할 수 있어요.', 'c=hero:talk:pose-x i=stop'],
+      ['설명', '그래도 친구가 멈추지 않을 때가 있어요.', 'l=hero:worried r=friend:proud'],
+      ['설명', '꾹 참기만 하면 마음이 계속 힘들어요.', 'c=hero:worried i=rain'],
+      ['코칭', '그때 나는 선생님께 손을 들고 "도와주세요."라고 말할 수 있어요.', 'l=hero:talk:pose-raise r=teacher:happy i=help'],
+      ['코칭', '선생님은 친구가 멈추도록 도와줄 수 있어요.', 'l=friend:worried r=teacher:talk'],
+      ['긍정', '선생님께 알리는 것은 잘하는 일이에요.', 'l=hero:happy r=teacher:proud i=heart'],
+      ['설명', '말해도 멈추지 않으면, 나는 선생님께 알릴 수 있어요.', 'c=hero:proud:pose-raise i=star']
+    ] }
+  },
+  // 칭찬 이야기 — 오늘 한 상황만 골라서 엔딩 전에 읽어 줘요 (10.2 기준: 이야기의 절반 이상은 잘한 일을 칭찬)
+  applause: {
+    title: '오늘의 칭찬 이야기',
+    open: '오늘 나는 정글 친구들과 이야기를 읽고 연습했어요.',
+    lines: {
+      1: '기분이 나쁠 때, 나는 팔로 X를 만들고 "싫어요."라고 말했어요.',
+      2: '먹기 싫을 때, 나는 "싫어요."라고 말했어요.',
+      3: '어려울 때, 나는 손을 들고 "어려워요."라고 말했어요.',
+      '3q': '모를 때, 나는 손을 들고 "몰라요."라고 말했어요.',
+      4: '힘들 때, 나는 "쉬고 싶어요."라고 말했어요.',
+      5: '나는 "안 돼요."라고 말하며 내 물건을 지켰어요.',
+      6: '나는 선생님께 "도와주세요."라고 알렸어요.'
+    },
+    teacher: '선생님은 내가 말로 알려 줘서 기뻐요.',
+    close: '나는 참 멋지게 했어요!'
+  },
 
   /* 말 버튼 보드 (대체 의사소통). 그림을 바꾸려면 ASSETS.aac에 이미지 경로를 넣으세요. */
   aac: [
@@ -872,6 +1023,20 @@ function pickVoice() {
   TTS.voice = ko.find(v => v.name === want) || ko.find(v => /Natural|Online|Neural/i.test(v.name)) ||
     ko.find(v => /Google/i.test(v.name)) || ko.find(v => /Yuna|SunHi|Heami|Samsung|female/i.test(v.name)) || ko[0] || null;
   TTS.count = vs.length;
+  // 역할별 기본 목소리: 자연 음성이 여러 개면 역할마다 다르게 (선생님은 남자 목소리 우선)
+  const good = ko.filter(v => /Natural|Online|Neural/i.test(v.name));
+  const pool = good.length ? good : ko;
+  const male = pool.filter(v => /InJoon|Hyunsu|BongJin|GookMin|Male|남/i.test(v.name));
+  const fem = pool.filter(v => !male.includes(v));
+  const f = i => fem[i] || fem[0] || pool[0] || null;
+  TTS.auto = { '해설': f(0), '주인공': f(1), '친구': f(2) || f(1), '선생님': male[0] || f(0), '말버튼': f(0) };
+}
+const VOICE_ROLES = ['해설', '주인공', '친구', '선생님', '말버튼'];
+function roleVoice(role) {
+  let m = {};
+  try { m = JSON.parse(localStorage.getItem('ssr.voices') || '{}'); } catch (e) {}
+  const L = TTS.list || [];
+  return L.find(v => v.name === m[role]) || (TTS.auto && TTS.auto[role]) || TTS.voice;
 }
 if (HAS_TTS) { pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
 
@@ -942,7 +1107,8 @@ function setCaption(t) { $('#caption').textContent = CONFIG.showCaption ? (t || 
 /* 녹음 음성 파일: audio/역할/대사.mp3 → audio/대사.mp3 → 기기 음성(TTS) 순서로 찾음 */
 const AUDIO_MISS = new Set();
 let CUR_AUDIO = null;
-const cleanName = t => t.replace(/[\\/:*?"<>|#%]/g, '').replace(/\s+/g, ' ').trim();
+// 파일 이름 = 대사에서 문장부호만 뺀 것 (예: "시끄러워요. 싫어요." → 시끄러워요 싫어요.mp3)
+const cleanName = t => t.replace(/[\\/:*?"<>|#%.,!~…]/g, '').replace(/\s+/g, ' ').trim();
 const audioPath = (text, role) => `${CONFIG.audioDir}/${role ? role + '/' : ''}${cleanName(text)}.mp3`;
 function playFile(text, role) {
   if (!CONFIG.audioDir) return Promise.resolve(false);
@@ -965,7 +1131,8 @@ function playFile(text, role) {
 function speakTTS(text, v, est) {
   return new Promise(res => {
     const u = new SpeechSynthesisUtterance(text);
-    u.lang = 'ko-KR'; if (TTS.voice) u.voice = TTS.voice;
+    const vc = roleVoice(v.role);
+    u.lang = 'ko-KR'; if (vc) u.voice = vc;
     u.rate = v.rate ?? CONFIG.tts.rate; u.pitch = v.pitch ?? CONFIG.tts.pitch; u.volume = v.volume ?? 1;
     let done = false;
     const fin = () => { if (done) return; done = true; clearTimeout(gt); res(); };
@@ -1013,12 +1180,13 @@ const tpl = s => s.replace(/\{name\}/g, CHARS[STATE.hero].name);
    상태·흐름 제어
    ===================================================================== */
 const stage = $('#stage'), overlay = $('#overlay');
-const STATE = { hero: 'mong', log: null, setup: null, plan: [], idx: 0 };
+const STATE = { hero: 'mong', log: null, setup: null, cur: 0, done: new Set() };
 const ABORT = new Error('abort');
 let RUN = 0, TIMERS = [], GATE_PICK = null;
 
 function resetLog() {
   STATE.log = { t0: Date.now(), end: null, saved: null, st: {} };
+  STATE.done = new Set(); STATE.cur = 0;
 }
 resetLog();
 
@@ -1321,12 +1489,129 @@ async function heroSays(c, hero, n, phrase) {
 async function stageStart(c, n) {
   const S = STATE.setup;
   setLabel(`${S.name || '이름 없음'} · ${T().name} · 수준 ${LV()}  |  ${n}단계 ${STAGES[n].name}`);
-  stLog(n);
-  await chapterCard(c, STATE.idx, n === 1 ? aacIcon('cant') : aacIcon(aacOf(n)));
+  stLog(n); STATE.cur = n;
+  await chapterCard(c, n, n === 1 ? aacIcon('cant') : aacIcon(aacOf(n)));
 }
+// 한 상황을 마치면 상황 고르기 화면으로 돌아감
 function next() {
-  const n = STATE.plan[STATE.idx++];
-  go(n ? STAGES[n].fn : ending);
+  if (STATE.cur) STATE.done.add(STATE.cur);
+  go(menu);
+}
+
+/* =====================================================================
+   사회적 상황 이야기 책 (Carol Gray 10.2) · 상황 고르기
+   ===================================================================== */
+const ST_KIND = { '설명': 'D', '조망': 'D', '긍정': 'D', '코칭': 'C' };
+function storyRatio(pages) {
+  const d = pages.filter(p => ST_KIND[p[0]] === 'D').length, k = pages.filter(p => ST_KIND[p[0]] === 'C').length;
+  return { d, k, r: d / Math.max(1, k) };
+}
+function friendOf(n) {
+  return n === 1 ? (CONFIG.s1.friend || 'pipi') : n === 2 ? (CONFIG.s2.friend || others()[1]) : n === 5 ? others()[0] : others()[1];
+}
+function artIcon(k) {
+  if (AAC_ICON[k]) return aacIcon(k);
+  if (k === 'puzzle') return puzzleSVG(false);
+  if (k === 'paper') return paperSVG(false);
+  return ICON[k] || ITEMS[k] || '';
+}
+function pageArt(spec, n) {
+  const P = Object.fromEntries(String(spec || '').split(/\s+/).filter(Boolean).map(s => s.split('=')));
+  const who = w => w === 'hero' ? STATE.hero : w === 'teacher' ? TEACHER : w === 'friend' ? friendOf(n) : (CHARS[w] ? w : STATE.hero);
+  const ch = (v, cls) => { const [w, m = 'happy', pose = ''] = v.split(':'); return `<div class="bk-ch ${cls}"><div class="inner bob ${pose}">${charSVG(who(w), m)}</div></div>`; };
+  return (P.l ? ch(P.l, 'l') : '') + (P.c ? ch(P.c, 'c') : '') + (P.r ? ch(P.r, 'r') : '') +
+    (P.i ? `<div class="bk-ic${P.c ? ' side' : ''}">${artIcon(P.i)}</div>` : '');
+}
+/* 책 넘기기: 한 쪽에 한 문장, 읽어 준 뒤 학생이 ▶를 눌러 넘김 */
+async function storyBook(c, { n = 0, title, art, pages, last }) {
+  const all = [['제목', title, art]].concat(pages);
+  const rt = storyRatio(pages);
+  const bk = document.createElement('div'); bk.className = 'book';
+  bk.innerHTML = `<div class="bk-page"><div class="bk-art"></div><div class="bk-text"></div><div class="bk-tag"></div>
+      <button class="bk-say" data-nav="say" aria-label="다시 듣기">${ICON.speaker}</button><div class="bk-dots"></div></div>
+    <button class="bk-nav bk-prev" data-nav="prev" aria-label="앞으로">${ICON.play}</button>
+    <button class="bk-nav bk-next" data-nav="next" aria-label="다음">${ICON.play}</button>`;
+  stage.appendChild(bk);
+  const pg = bk.querySelector('.bk-page'), nx = bk.querySelector('.bk-next');
+  const nav = () => new Promise(res => {
+    const h = e => { const b = e.target.closest('[data-nav]'); if (!b) return; e.preventDefault(); bk.removeEventListener('pointerdown', h); res(b.dataset.nav); };
+    bk.addEventListener('pointerdown', h);
+  }).then(v => { c.check(); return v; });
+  let i = 0;
+  for (;;) {
+    const [kind, text, a] = all[i];
+    const lastPage = i === all.length - 1;
+    pg.classList.toggle('title', i === 0);
+    bk.querySelector('.bk-art').innerHTML = pageArt(a, n);
+    bk.querySelector('.bk-text').textContent = tpl(text);
+    bk.querySelector('.bk-tag').textContent = !CONFIG.showTeacherLabels ? '' : i === 0
+      ? `설명·조망·긍정 ${rt.d} ÷ 코칭 ${rt.k} = ${rt.r.toFixed(1)} ${rt.r >= 2 ? '✓' : '(2 이상 필요)'}`
+      : `${i === 1 ? '도입 · ' : lastPage ? '결론 · ' : ''}${kind}문`;
+    bk.querySelector('.bk-dots').innerHTML = all.map((_, j) => `<i class="${j === i ? 'on' : ''}"></i>`).join('');
+    bk.querySelector('.bk-prev').style.visibility = i ? 'visible' : 'hidden';
+    nx.classList.toggle('go', lastPage);
+    nx.innerHTML = lastPage ? `${ICON.play}<span>${last}</span>` : ICON.play;
+    retrigger(pg, 'turn'); bk.classList.remove('read');
+    c.say(tpl(text), narr({ noCap: true })).then(() => bk.classList.add('read'), () => {});
+    const a2 = await nav();
+    stopVoice(); sfx.tap();
+    if (a2 === 'prev') i = Math.max(0, i - 1);
+    else if (a2 === 'next') { if (lastPage) break; i++; }
+  }
+  bk.remove();
+}
+function storyOf(n) {
+  const fn = async c => {
+    const S = CONFIG.stories[n];
+    setLabel(`${STATE.setup.name || '이름 없음'} · 이야기 ${n} · ${S.title}`);
+    STATE.cur = n;
+    await storyBook(c, { n, title: S.title, art: S.art, pages: S.pages, last: '연습하러 가기' });
+    go(STAGES[n].fn);
+  };
+  return fn;
+}
+function menuIcon(n) { return n === 1 ? `<div class="mface">${charSVG(STATE.hero, 'annoyed')}</div>` : aacIcon(aacOf(n)); }
+async function menu(c) {
+  const S = STATE.setup;
+  setLabel(`${S.name || '이름 없음'} · 상황 고르기 · 수준 ${S.level}`);
+  const h = document.createElement('div'); h.className = 'menu-h wood'; h.textContent = '어떤 이야기를 할까?';
+  stage.appendChild(h);
+  const g = document.createElement('div'); g.className = 'mgrid';
+  g.innerHTML = S.stages.map((n, i) => `<button class="mcard${STATE.done.has(n) ? ' done' : ''}" data-n="${n}" style="animation-delay:${i * .08}s">
+      <div class="mc-ic">${menuIcon(n)}</div><div class="mc-t">${CONFIG.stories[n].title}</div>
+      ${STATE.done.has(n) ? `<div class="mc-done">${ICON.star}</div>` : ''}
+      ${CONFIG.showTeacherLabels ? `<span class="mc-quick" data-q="${n}">연습만 ▶</span>` : ''}</button>`).join('');
+  stage.appendChild(g);
+  const end = document.createElement('button'); end.className = 'menu-end';
+  end.innerHTML = `<div class="ab">${ICON.star}</div><span>오늘은 끝!</span>`;
+  if (STATE.done.size) end.classList.add('ready');
+  stage.appendChild(end);
+  sfx.pop();
+  c.say(CONFIG.menuLine, narr({ noCap: true })).catch(() => {});
+  const pick = await new Promise(res => {
+    const hnd = e => {
+      const q = e.target.closest('[data-q]'), b = e.target.closest('.mcard'), x = e.target.closest('.menu-end');
+      if (!q && !b && !x) return;
+      e.preventDefault(); stage.removeEventListener('pointerdown', hnd);
+      res(x ? { end: true } : { n: +(q ? q.dataset.q : b.dataset.n), quick: !!q });
+    };
+    stage.addEventListener('pointerdown', hnd);
+  });
+  c.check();
+  if (pick.end) { sfx.pop(); go(ending); return; }
+  const card = g.querySelector(`[data-n="${pick.n}"]`);
+  card.classList.add('picked'); sfx.correct();
+  await c.say(CONFIG.stories[pick.n].title, narr({ noCap: true }));
+  STATE.cur = pick.n;
+  go(pick.quick ? STAGES[pick.n].fn : storyOf(pick.n));
+}
+function applausePages() {
+  const done = [...STATE.done].sort((a, b) => a - b);
+  if (!done.length) return null;
+  const A = CONFIG.applause;
+  return [['설명', A.open, 'l=hero:happy r=pipi:happy']]
+    .concat(done.map(n => ['설명', A.lines[n === 3 && taskOf3() === 'question' ? '3q' : n], `c=hero:proud:${poseOf(n)} i=${n === 1 ? 'cant' : aacOf(n)}`]))
+    .concat([['조망', A.teacher, 'l=hero:happy r=teacher:proud i=heart'], ['긍정', A.close, 'c=hero:proud i=star']]);
 }
 
 /* ---------- 교사 게이트 (따라 말하기 + 반응 기록) ---------- */
@@ -1407,7 +1692,7 @@ async function chapterCard(c, num, icon) {
   const d = document.createElement('div'); d.className = 'chapcard wood';
   d.innerHTML = `<div class="cc-num">${num}</div><div class="cc-icon">${icon}</div>`;
   stage.appendChild(d); sfx.whoosh();
-  await c.say(`${ORD[num - 1] || ''} 이야기`, narr());
+  await c.say(CONFIG.practiceLine, narr());
   await c.sleep(250);
   d.classList.add('out'); await c.sleep(450); d.remove();
 }
@@ -1432,14 +1717,21 @@ async function intro(c) {
     <div class="tp-row"><button data-a="setup">교사 설정 · 이름</button><button data-a="aac">말 버튼</button><button data-a="rec">기록 보기</button></div>
     <div class="tp-row"><span>바로가기</span>${[1, 2, 3, 4, 5, 6].map(n => `<button data-j="${n}">${n}단계</button>`).join('')}<button data-j="0">엔딩</button></div>`;
   stage.appendChild(tp);
-  const sum = () => { tp.querySelector('.tp-sum').textContent = setupSummary(); };
+  const sum = () => {
+    tp.querySelector('.tp-sum').textContent = setupSummary();
+    flushQueue().then(left => {
+      const s = sheetCfg();
+      tp.querySelector('.tp-sum').textContent = setupSummary() + ' · ' +
+        (!s.url || !s.key ? '구글 시트 미연결 (교사 설정에서 키 입력)' : left ? `시트 전송 대기 ${left}건 · ${SHEET_ERR}` : '구글 시트 연결됨');
+    });
+  };
   sum();
   tp.addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b) return;
     if (b.dataset.a === 'setup') openSetup(sum);
     else if (b.dataset.a === 'aac') go(aacBoard);
     else if (b.dataset.a === 'rec') openRecords();
-    else if (b.dataset.j) { resetLog(); const j = +b.dataset.j; STATE.plan = j ? [j] : []; STATE.idx = 0; next(); }
+    else if (b.dataset.j) { resetLog(); const j = +b.dataset.j; STATE.cur = j; go(j ? storyOf(j) : ending); }
   });
   setTimeout(() => {
     if (!c.alive() || !HAS_TTS) return;
@@ -1473,8 +1765,7 @@ async function intro(c) {
   sfx.correct();
   await c.say(`나는 ${ya(CHARS[id].name)}! 같이 가자!`, voiceOf(id));
   await c.sleep(300);
-  STATE.plan = [...STATE.setup.stages]; STATE.idx = 0;
-  next();
+  go(menu);
 }
 
 /* =====================================================================
@@ -1836,6 +2127,9 @@ function sessionText({ rec, prev, ok }) {
   return lines.join('\n');
 }
 async function ending(c) {
+  setLabel('엔딩 · 칭찬 이야기');
+  const ap = applausePages();
+  if (ap) await storyBook(c, { title: CONFIG.applause.title, art: 'c=hero:proud i=star', pages: ap, last: '칭찬 도장 받기' });
   setLabel('엔딩 · 칭찬 스탬프');
   STATE.log.end = Date.now();
   const res = saveSession();
@@ -1857,8 +2151,8 @@ async function ending(c) {
     const sync = document.createElement('div'); sync.className = 'sync';
     if (sheetCfg().url) {
       sync.textContent = '구글 시트에 저장 중…';
-      flushQueue().then(left => { sync.textContent = left ? `구글 시트 저장 대기 ${left}건 (연결되면 자동 전송)` : '구글 시트에 저장했어요.'; });
-    } else sync.textContent = '구글 시트 미연결 · 이 기기에만 저장했어요.';
+      flushQueue().then(left => { sync.textContent = sheetStatus(left); sync.classList.toggle('bad', !!left); });
+    } else { sync.textContent = sheetStatus(store.get(KEY.queue, []).length); sync.classList.add('bad'); }
     const cp = document.createElement('button'); cp.textContent = '기록 복사';
     cp.addEventListener('click', () => copyText(recsTSV([res.rec]), cp));
     lg.appendChild(sync); lg.appendChild(cp); stage.appendChild(lg);
@@ -1932,24 +2226,37 @@ async function sheetCall(body) {
   if (!j.ok) throw new Error(j.error || '실패');
   return j;
 }
+// 주소·키가 아직 없어도 기록은 모아 두었다가, 연결되면 한꺼번에 보냄
 function enqueue(payload) {
-  if (!sheetCfg().url) return;
-  const q = store.get(KEY.queue, []); q.push(payload); store.set(KEY.queue, q);
+  const q = store.get(KEY.queue, []); q.push(payload);
+  while (q.length > 300) q.shift();
+  store.set(KEY.queue, q);
   flushQueue();
 }
-let FLUSHING = null;
+let FLUSHING = null, SHEET_ERR = '';
 function flushQueue() {
-  if (FLUSHING) return FLUSHING;
-  FLUSHING = (async () => {
+  if (FLUSHING) return FLUSHING.then(() => flushQueue());   // 보내는 중에 새로 쌓인 기록도 이어서 보냄
+  const p = (async () => {
     let q = store.get(KEY.queue, []);
-    while (q.length && sheetCfg().url) {
-      try { await sheetCall(Object.assign({ action: 'append' }, q[0])); } catch (e) { break; }
-      q = store.get(KEY.queue, []); q.shift(); store.set(KEY.queue, q);
+    const s = sheetCfg();
+    if (q.length && !s.url) SHEET_ERR = '웹앱 주소가 없어요';
+    else if (q.length && !s.key) SHEET_ERR = '비밀 키를 아직 넣지 않았어요';
+    else {
+      while (q.length) {
+        try { await sheetCall(Object.assign({ action: 'append' }, q[0])); SHEET_ERR = ''; }
+        catch (e) { SHEET_ERR = e.message === 'Failed to fetch' ? '인터넷 연결을 확인해 주세요' : e.message; break; }
+        q = store.get(KEY.queue, []); q.shift(); store.set(KEY.queue, q);
+      }
     }
-    FLUSHING = null;
     return store.get(KEY.queue, []).length;
   })();
-  return FLUSHING;
+  FLUSHING = p;
+  p.finally(() => { if (FLUSHING === p) FLUSHING = null; });
+  return p;
+}
+function sheetStatus(left) {
+  if (!left) return SHEET_ERR ? `구글 시트: ${SHEET_ERR}` : '구글 시트에 저장했어요.';
+  return `구글 시트로 못 보냄 (${left}건 대기): ${SHEET_ERR || '잠시 후 다시 보내요'} → 교사 설정 · 이름 → 구글 시트 연결에서 확인하면 자동으로 보내요.`;
 }
 function sheetRows(rec) {
   return rec.st.map(s => ({
@@ -1995,12 +2302,17 @@ function setupNote() {
   if (wr.length) lines.push('오답 카드 — ' + wr.join(' · '));
   if (S.stages.includes(3)) lines.push('3단계 장면 — ' + (taskOf3() === 'question' ? '어려운 질문 (몰라요)' : '어려운 과제 (어려워요)'));
   lines.push('거절(1·2·5단계, 6단계 첫 장면)은 팔로 X를 만들며 말하고, 어려움·쉬기·도움 요청(3·4·6단계)은 손을 들고 말해요.');
+  lines.push('이야기 문장 비율 (설명·조망·긍정 ÷ 코칭, 기준 2 이상) — ' + S.stages.map(n => {
+    const r = storyRatio(CONFIG.stories[n].pages); return `${n}단계 ${r.r.toFixed(1)}${r.r >= 2 ? ' ✓' : ' ⚠'}`;
+  }).join(' · '));
+  lines.push('고른 상황만 메뉴에 나오고, 학생이 하나씩 골라 “이야기 읽기 → 연습”을 해요.');
   return lines.join('\n');
 }
-function voiceOpts() {
-  const L = TTS.list || [];
-  return L.length ? L.map(v => `<option value="${esc(v.name)}"${TTS.voice === v ? ' selected' : ''}>${esc(v.name)}</option>`).join('') : '<option>한국어 음성을 찾지 못했어요</option>';
+function voiceOpts(role) {
+  const L = TTS.list || [], cur = roleVoice(role);
+  return L.length ? L.map(v => `<option value="${esc(v.name)}"${cur === v ? ' selected' : ''}>${esc(v.name.replace(/^Microsoft /, '').replace(/ - Korean.*$/, ''))}</option>`).join('') : '<option>한국어 음성을 찾지 못했어요</option>';
 }
+const VOICE_SAMPLE = { '해설': '친구에게 어떻게 말할까?', '주인공': '하지 마세요!', '친구': '알았어, 미안해!', '선생님': '말해 줘서 고마워.', '말버튼': '도와주세요' };
 const modal = $('#modal');
 function closeModal() { modal.className = ''; modal.innerHTML = ''; modal.onclick = null; modal.onchange = null; }
 function openSetup(onDone, needName = false) {
@@ -2020,13 +2332,14 @@ function openSetup(onDone, needName = false) {
       <h2>교사 설정</h2>
       <div class="mrow"><b>이름</b><div class="opts"><input id="mName" type="text" maxlength="20" placeholder="학생 이름" value="${esc(S.name)}">${people().map(n => `<button class="opt${n === S.name ? ' on' : ''}" data-n="${esc(n)}">${esc(n)}</button>`).join('')}</div></div>
       <div class="mrow"><b>유형</b><div class="opts">${Object.entries(CONFIG.types).map(([k, p]) => `<button class="opt${S.type === k ? ' on' : ''}" data-t="${k}">${esc(p.name)}</button>`).join('')}</div></div>
-      <div class="mrow"><b>단계</b><div class="opts">${Object.keys(STAGES).map(Number).map(n => `<button class="opt${S.stages.includes(n) ? ' on' : ''}" data-s="${n}">${n}. ${STAGES[n].name}</button>`).join('')}</div></div>
+      <div class="mrow"><b>상황 (메뉴)</b><div class="opts">${Object.keys(STAGES).map(Number).map(n => `<button class="opt${S.stages.includes(n) ? ' on' : ''}" data-s="${n}">${n}. ${CONFIG.stories[n].title}</button>`).join('')}</div></div>
       <div class="mrow"><b>표현 수준</b><div class="opts">${[1, 2, 3, 4].map(l => `<button class="opt${S.level === l ? ' on' : ''}" data-l="${l}">${l}. ${LEVEL_NAMES[l]}</button>`).join('')}</div></div>
       <div class="mnote">${esc(setupNote())}</div>
       <details${more ? ' open' : ''}><summary>구글 시트 연결 · 목소리</summary>
         <div class="mrow"><b>시트 웹앱</b><div class="opts"><input id="mUrl" type="url" placeholder="https://script.google.com/macros/s/…/exec" value="${esc(sc.url)}"></div></div>
         <div class="mrow"><b>비밀 키</b><div class="opts"><input id="mKey" type="password" placeholder="Apps Script에 적은 키" value="${esc(sc.key)}"><button class="opt" data-a="ping">연결 확인</button><span class="mstat">${esc(msg)}</span></div></div>
-        <div class="mrow"><b>목소리</b><div class="opts"><select id="mVoice">${voiceOpts()}</select><button class="opt" data-a="vtest">들어 보기</button><button class="opt" data-a="vlist">녹음 음성 파일 목록</button></div></div>
+        ${VOICE_ROLES.map(r => `<div class="mrow"><b>${r} 목소리</b><div class="opts"><select class="mVoice" data-role="${r}">${voiceOpts(r)}</select><button class="opt" data-vt="${r}">들어 보기</button></div></div>`).join('')}
+        <div class="mrow"><b></b><div class="opts"><span class="mstat">엣지에서 열면 자연스러운 음성(Natural)이 여러 개 나와요.</span><button class="opt" data-a="vlist">녹음 음성 파일 목록</button></div></div>
       </details>
       ${warn ? '<p class="mwarn">학생 이름을 먼저 적어 주세요.</p>' : ''}
       <div class="mbtns"><button class="mok">확인</button></div></div>`;
@@ -2034,7 +2347,10 @@ function openSetup(onDone, needName = false) {
   draw();
   modal.className = 'show';
   modal.onchange = e => {
-    if (e.target.id === 'mVoice') { try { localStorage.setItem(KEY.voice, e.target.value); } catch (er) {} pickVoice(); }
+    const r = e.target.dataset && e.target.dataset.role;
+    if (!r) return;
+    try { const m = JSON.parse(localStorage.getItem('ssr.voices') || '{}'); m[r] = e.target.value; localStorage.setItem('ssr.voices', JSON.stringify(m)); } catch (er) {}
+    say(VOICE_SAMPLE[r], { role: r, noCap: true });
   };
   modal.onclick = e => {
     const b = e.target.closest('button'); if (!b) return;
@@ -2055,7 +2371,7 @@ function openSetup(onDone, needName = false) {
         .finally(() => { if (modal.className === 'show' && $('#mUrl')) { grab(); draw(); } });
       return;
     }
-    else if (b.dataset.a === 'vtest') { say('안녕하세요. 싫어요. 선생님, 도와주세요.', narr({ noCap: true })); return; }
+    else if (b.dataset.vt) { const r = b.dataset.vt; say(VOICE_SAMPLE[r], { role: r, noCap: true, pitch: r === '선생님' ? CHARS[TEACHER].pitch : r === '해설' ? CONFIG.tts.narratorPitch : CONFIG.tts.pitch }); return; }
     else if (b.dataset.a === 'vlist') { saveSetup(); openVoiceList(() => openSetup(onDone, needName)); return; }
     else if (b.classList.contains('mok')) {
       if (needName && !S.name) { warn = true; draw(); return; }
@@ -2138,7 +2454,10 @@ function voiceLines() {
   const chipLines = v => [2, 3, 4].forEach(l => chipsOf(typeof v === 'object' ? (v[l] ?? v[1]) : v, l).forEach(ch => add('주인공', ch)));
   add('해설', `${CONFIG.title.top} ${CONFIG.title.main} 같이 갈 친구를 골라 볼까?`);
   HEROES.forEach(h => add('주인공', `나는 ${ya(CHARS[h].name)}! 같이 가자!`));
-  ORD.forEach(o => add('해설', `${o} 이야기`));
+  add('해설', CONFIG.practiceLine); add('해설', CONFIG.menuLine);
+  Object.values(CONFIG.stories).forEach(s => { add('해설', s.title); s.pages.forEach(p => expand('해설', p[1])); });
+  const A = CONFIG.applause;
+  [A.title, A.open, ...Object.values(A.lines), A.teacher, A.close].forEach(t => add('해설', t));
   [CONFIG.s1, CONFIG.s2, CONFIG.s3.puzzle, CONFIG.s3.question, CONFIG.s4, CONFIG.s5, CONFIG.s6].forEach(walk);
   add('해설', CONFIG.s3.ask);
   Object.values(CONFIG.wrongs).forEach(w => add('해설', w.line));
@@ -2154,7 +2473,7 @@ function openVoiceList(back) {
   modal.innerHTML = `<div class="mpanel">
     <h2>녹음 음성 파일 목록 <small>${L.length}개</small></h2>
     <p class="mnote">클로바더빙 같은 곳에서 역할별로 목소리를 하나씩 정해(해설·주인공·친구·선생님·말버튼) 아래 대사를 만들어 mp3로 내려받으세요.
-파일 이름을 ‘파일 경로’와 똑같이 맞춰 index.html 옆 audio 폴더에 넣으면, 그 대사는 녹음 음성으로 나와요. 없는 파일은 기기 음성으로 읽어요.
+파일 이름은 대사에서 문장부호(. , ! ? ~ …)만 뺀 것이에요. ‘파일 경로’와 똑같이 맞춰 index.html 옆 audio 폴더에 넣으면, 그 대사는 녹음 음성으로 나와요. 없는 파일은 기기 음성으로 읽어요.
 역할 폴더에 없으면 audio 폴더 바로 아래(예: audio/싫어요.mp3)도 찾아봐요. 무료로 쓸 때는 각 서비스의 이용 조건(출처 표기 등)을 확인해 주세요.</p>
     <table class="rt"><tr><th>역할</th><th>대사</th><th>파일 경로</th></tr>${rows}</table>
     <div class="mbtns"><button class="mcopy">목록 복사</button><button class="mok">뒤로</button></div></div>`;
