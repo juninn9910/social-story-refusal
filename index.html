@@ -1,0 +1,1302 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#7fd8ff">
+<title>거절 표현하기 정글 모험</title>
+<style>
+:root{--ink:#4a2b1a}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overflow:hidden;background:#9fdc7a;
+  font-family:"Jua","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR","Nanum Gothic",sans-serif;
+  user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;overscroll-behavior:none}
+button{font-family:inherit;border:0;padding:0;background:none;cursor:pointer;touch-action:manipulation;color:inherit}
+#app{position:fixed;inset:0;overflow:hidden}
+#bg,#stage,#overlay{position:absolute;inset:0}
+#bg svg{width:100%;height:100%;display:block}
+#bg img{width:100%;height:100%;object-fit:cover;display:block}
+#stage{z-index:2}
+#confetti{position:absolute;inset:0;z-index:6;pointer-events:none}
+#overlay{z-index:10;pointer-events:none;display:flex;align-items:center;justify-content:center;transition:background .3s}
+#overlay.show{pointer-events:auto}
+#overlay.dim{background:rgba(25,55,20,.42)}
+
+/* 배경 움직임 */
+.sway{transform-box:fill-box;transform-origin:50% 60%;animation:sway 4s ease-in-out infinite alternate}
+.leafTop{transform-box:fill-box;transform-origin:0 50%;animation:sway 5s ease-in-out infinite alternate}
+.cloud{animation:drift 26s ease-in-out infinite alternate}
+@keyframes sway{from{transform:rotate(-2.5deg)}to{transform:rotate(2.5deg)}}
+@keyframes drift{from{transform:translateX(-50px)}to{transform:translateX(70px)}}
+
+/* 캐릭터 */
+.char{position:absolute;bottom:7vh;height:min(46vh,40vw);aspect-ratio:200/240;z-index:3}
+.char.pos-left{left:5vw}
+.char.pos-right{right:5vw}
+.char.pos-near{left:calc(5vw + min(46vh,40vw) * 0.8)}
+.mover,.inner{position:absolute;inset:0}
+.mover{transform-origin:50% 100%}
+.inner{transform-origin:50% 100%}
+.inner svg,.inner img,.pick-char svg,.layer > svg{width:100%;height:100%;display:block;overflow:visible}
+.char-img{object-fit:contain}
+
+.armL,.armR{transition:transform .35s cubic-bezier(.3,1.6,.5,1)}
+.pose-up .armL{transform:rotate(140deg)} .pose-up .armR{transform:rotate(-140deg)}
+.pose-stop .armR{transform:rotate(-125deg)}
+.pose-throw .armR{transform:rotate(-155deg)} .pose-throw .armL{transform:rotate(25deg)}
+.pose-push .armR{transform:rotate(-62deg)} .pose-push .armL{transform:rotate(-112deg)}
+.reach .armL{transform:rotate(62deg)}
+.wave .armR{animation:waveR .45s ease-in-out infinite alternate}
+.poke .armL{animation:pokeA .35s ease-in-out infinite alternate}
+.cheer .armL{animation:cheerL .35s ease-in-out infinite alternate}
+.cheer .armR{animation:cheerR .35s ease-in-out infinite alternate}
+.wave-hi .armR{animation:waveR .4s ease-in-out infinite alternate}
+@keyframes waveR{from{transform:rotate(-95deg)}to{transform:rotate(-140deg)}}
+@keyframes pokeA{from{transform:rotate(45deg)}to{transform:rotate(76deg)}}
+@keyframes cheerL{from{transform:rotate(110deg)}to{transform:rotate(150deg)}}
+@keyframes cheerR{from{transform:rotate(-110deg)}to{transform:rotate(-150deg)}}
+
+.bob{animation:bob 1.6s ease-in-out infinite}
+.shake-no{animation:shakeNo .5s ease-in-out infinite}
+.jump{animation:jump .65s cubic-bezier(.3,.7,.4,1) infinite}
+.poke-move{animation:pokeMove .7s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0) scale(1,1)}50%{transform:translateY(-2.5%) scale(1.01,.99)}}
+@keyframes shakeNo{0%,100%{transform:rotate(0)}25%{transform:rotate(-6deg)}75%{transform:rotate(6deg)}}
+@keyframes jump{0%,100%{transform:translateY(0) scale(1.03,.97)}45%{transform:translateY(-16%) scale(.97,1.03)}}
+@keyframes pokeMove{0%,100%{transform:translateX(0)}50%{transform:translateX(-7%) rotate(-3deg)}}
+
+.enter-right{animation:enterRight 1.3s cubic-bezier(.25,.8,.35,1) both}
+.enter-left{animation:enterLeft 1s cubic-bezier(.25,.8,.35,1) both}
+.exit-right{animation:exitRight 1.2s ease-in both}
+.lean-in{transform:translateX(-10%) rotate(-5deg);transition:transform .5s cubic-bezier(.3,1.5,.5,1)}
+.recoil{animation:recoil .8s cubic-bezier(.3,1.4,.5,1) both}
+.jolt{animation:jolt .3s ease-out}
+.flinch{animation:flinch .5s ease-out both}
+@keyframes enterRight{0%{transform:translate(70vw,0)}15%{transform:translate(56vw,-7%)}30%{transform:translate(42vw,0)}45%{transform:translate(29vw,-7%)}60%{transform:translate(17vw,0)}75%{transform:translate(7vw,-5%)}88%{transform:translate(1vw,0)}100%{transform:translate(0,0)}}
+@keyframes enterLeft{0%{transform:translate(-50vw,0)}25%{transform:translate(-34vw,-7%)}50%{transform:translate(-18vw,0)}75%{transform:translate(-6vw,-5%)}100%{transform:translate(0,0)}}
+@keyframes exitRight{0%{transform:translate(0,0)}20%{transform:translate(8vw,-6%)}40%{transform:translate(22vw,0)}60%{transform:translate(38vw,-6%)}80%{transform:translate(55vw,0)}100%{transform:translate(85vw,0)}}
+@keyframes recoil{0%{transform:translateX(-10%) rotate(-5deg)}35%{transform:translateX(22%) rotate(12deg)}100%{transform:translateX(16%) rotate(3deg)}}
+@keyframes jolt{0%{transform:translateX(0)}30%{transform:translateX(-4%) rotate(-3deg)}100%{transform:translateX(0)}}
+@keyframes flinch{0%{transform:translateX(0)}40%{transform:translateX(10%) rotate(6deg)}100%{transform:translateX(6%) rotate(2deg)}}
+
+.char.tap-me .inner::after{content:"";position:absolute;left:12%;right:12%;top:8%;height:58%;border-radius:50%;border:1vmin dashed #fff;box-shadow:0 0 0 .6vmin rgba(255,224,0,.7);animation:pulse 1s ease-in-out infinite}
+
+/* 소품 */
+.prop{position:absolute;z-index:2}
+.prop svg,.prop img{width:100%;height:auto;display:block}
+.prop.held{left:-26%;top:44%;width:40%;animation:wiggle 1.2s ease-in-out infinite}
+.prop.hold-stop{left:62%;top:-22%;width:52%;animation:popIn .4s cubic-bezier(.3,1.6,.5,1) both}
+.toys{position:absolute;bottom:6vh;left:calc(5vw + min(46vh,40vw) * 0.72);display:flex;align-items:flex-end;gap:1vw;z-index:4}
+.toy{width:min(20vh,17vw)} .toy.clay{width:min(18vh,15vw)}
+.toy svg,.toy img{width:100%;height:auto;display:block}
+.toys.play .toy{animation:wiggle 1.4s ease-in-out infinite} .toys.play .toy.clay{animation-delay:.3s}
+.toys.tug{animation:tug .35s ease-in-out infinite}
+.toys.safe .toy{animation:hop .6s ease-out 2}
+@keyframes tug{0%,100%{transform:translateX(0)}50%{transform:translateX(1.2vw)}}
+
+/* 말풍선·효과 */
+.bubble{position:absolute;bottom:88%;background:#fff;border:.6vmin solid var(--ink);border-radius:4vmin;padding:1.4vmin 2vmin;display:flex;flex-direction:column;align-items:center;z-index:5;animation:popIn .4s cubic-bezier(.3,1.6,.5,1) both;box-shadow:0 .8vmin 0 rgba(0,0,0,.15)}
+.bubble.right{left:58%} .bubble.left{right:58%}
+.bubble::after{content:"";position:absolute;bottom:-1.9vmin;width:3vmin;height:3vmin;background:#fff;border-right:.6vmin solid var(--ink);border-bottom:.6vmin solid var(--ink);transform:rotate(45deg)}
+.bubble.right::after{left:3vmin} .bubble.left::after{right:3vmin}
+.b-icon{width:min(13vh,11vw)} .b-icon svg{width:100%;height:auto;display:block}
+.b-text{font-size:min(3.2vh,2.8vw);color:#c0392b;font-weight:900;margin-top:.6vh;white-space:nowrap}
+.emote{position:absolute;left:62%;top:-4%;width:22%;z-index:6;animation:emoteUp 1.8s ease-out both;pointer-events:none}
+.emote svg{width:100%;height:auto;display:block}
+@keyframes emoteUp{0%{transform:translateY(20%) scale(.3);opacity:0}20%{transform:translateY(0) scale(1.1);opacity:1}80%{opacity:1}100%{transform:translateY(-40%) scale(1);opacity:0}}
+.spark{position:absolute;width:5vmin;height:5vmin;margin:-2.5vmin;z-index:7;pointer-events:none;animation:spark 1.1s ease-out both}
+.spark svg,.pokefx svg,.floaty-icon svg{width:100%;height:100%;display:block}
+@keyframes spark{0%{transform:translate(0,0) scale(.2) rotate(0);opacity:1}70%{opacity:1}100%{transform:translate(var(--dx),var(--dy)) scale(1) rotate(180deg);opacity:0}}
+.pokefx{position:absolute;width:7vmin;height:7vmin;margin:-3.5vmin;z-index:7;pointer-events:none;animation:pokefx .5s ease-out both}
+@keyframes pokefx{0%{transform:scale(.2) rotate(0);opacity:1}100%{transform:scale(1.2) rotate(40deg);opacity:0}}
+.floaty-icon{position:absolute;width:7vmin;height:7vmin;margin-left:-3.5vmin;z-index:7;pointer-events:none;animation:floatUp 2s ease-out both}
+@keyframes floatUp{0%{transform:translateY(0) scale(.3);opacity:0}20%{opacity:1;transform:translateY(-2vh) scale(1.1)}100%{transform:translateY(-16vh) scale(1);opacity:0}}
+
+/* 공통 키프레임 */
+@keyframes popIn{0%{transform:scale(0);opacity:0}100%{transform:scale(1);opacity:1}}
+@keyframes popOut{to{transform:scale(0);opacity:0}}
+@keyframes wiggle{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(4deg)}}
+@keyframes hop{0%,100%{transform:translateY(0)}50%{transform:translateY(-3vh)}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+
+/* 나무 판자 */
+.wood{background:repeating-linear-gradient(175deg,rgba(255,255,255,.07) 0 .8vmin,rgba(0,0,0,.05) .8vmin 2vmin),linear-gradient(180deg,#e0a35a,#b8733a);
+  border:.9vmin solid #7a4a22;border-radius:3.5vmin;box-shadow:inset 0 .6vmin 0 rgba(255,255,255,.35),0 1.2vmin 0 #6b3f1c,0 2.4vmin 3vmin rgba(0,0,0,.25);color:#fff8e6;text-shadow:0 .45vmin 0 #6b3f1c}
+
+/* 인트로 */
+.title{position:absolute;top:5vh;left:50%;padding:2.2vh 6vw 2.6vh;text-align:center;white-space:nowrap;transform-origin:50% -10vh;animation:titleDrop 1s cubic-bezier(.3,1.5,.5,1) both,swing 4s 1s ease-in-out infinite;z-index:4}
+.title::before,.title::after{content:"";position:absolute;top:-9vh;width:.9vmin;height:9vh;background:#8a5a2b;border-radius:1vmin}
+.title::before{left:18%} .title::after{right:18%}
+@keyframes titleDrop{0%{transform:translate(-50%,-45vh)}100%{transform:translate(-50%,0)}}
+@keyframes swing{0%,100%{transform:translate(-50%,0) rotate(-1.5deg)}50%{transform:translate(-50%,0) rotate(1.5deg)}}
+.t-top{font-size:min(5vh,4.2vw);font-weight:800;letter-spacing:.1em}
+.t-main{font-size:min(11vh,9vw);font-weight:900;line-height:1.05}
+.startBtn{position:absolute;left:50%;top:62%;width:min(26vh,26vw);aspect-ratio:1;margin-left:calc(min(26vh,26vw) / -2);margin-top:calc(min(26vh,26vw) / -2);border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#a8f584,#3fb43a 70%);border:1.2vmin solid #fff;box-shadow:0 1.4vmin 0 #2a8a2a,0 3vh 5vh rgba(0,0,0,.3);animation:pulse 1.4s ease-in-out infinite;z-index:5;display:flex;align-items:center;justify-content:center}
+.startBtn svg{width:50%;margin-left:8%}
+.startBtn.gone{animation:popOut .35s both;pointer-events:none}
+.picks{position:absolute;left:0;right:0;top:42vh;display:flex;justify-content:center;gap:4vw;z-index:5}
+.pick{position:relative;width:min(30vh,26vw);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,#fffdf2 55%,#ffe7b0);border:1.2vmin solid var(--c);
+  box-shadow:0 1.2vmin 0 rgba(0,0,0,.18),0 2.5vh 4vh rgba(0,0,0,.25);animation:popIn .5s cubic-bezier(.3,1.6,.5,1) both}
+.pick-char{position:absolute;left:8%;right:8%;bottom:6%;top:-16%;animation:bob 1.6s ease-in-out infinite}
+.pick:nth-child(2) .pick-char{animation-delay:.3s} .pick:nth-child(3) .pick-char{animation-delay:.6s}
+.pick-name{position:absolute;bottom:-5.5vh;left:0;right:0;font-size:min(3vh,2.6vw);color:#fff;text-shadow:0 2px 0 #5a3218,0 0 6px rgba(0,0,0,.4);font-weight:800}
+.pick.chosen{animation:chosenPick .7s cubic-bezier(.3,1.6,.5,1) both}
+@keyframes chosenPick{to{transform:scale(1.25)}}
+.pick.out{transition:.4s;opacity:0;transform:scale(.5)}
+.jumps{position:absolute;left:1vw;bottom:1vh;z-index:20;display:flex;gap:6px;align-items:center;font-size:12px;color:#fff;text-shadow:0 1px 2px #000;opacity:.8}
+.jumps button{background:rgba(255,255,255,.88);color:#5a3218;border:1.5px solid #7a4a22;border-radius:8px;padding:4px 8px;font-size:12px;text-shadow:none}
+.warn{position:absolute;left:1vw;bottom:5vh;z-index:20;max-width:46vw;background:rgba(255,245,220,.95);border:1.5px solid #c0392b;border-radius:8px;padding:6px 10px;font-size:12px;color:#7a2a1a}
+
+/* 챕터 카드 */
+.chapcard{position:absolute;left:50%;top:38%;z-index:8;display:flex;align-items:center;gap:3vw;padding:3vh 5vw;transform:translate(-50%,-50%);animation:ccIn .6s cubic-bezier(.3,1.5,.5,1) both}
+.cc-num{width:min(16vh,13vw);aspect-ratio:1;border-radius:50%;background:#fff8e6;color:#b8733a;display:flex;align-items:center;justify-content:center;font-size:min(11vh,9vw);font-weight:900;text-shadow:none;border:.8vmin solid #7a4a22}
+.cc-icon{width:min(16vh,13vw)} .cc-icon svg{width:100%;height:auto;display:block}
+.chapcard.out{animation:ccOut .45s ease-in both}
+@keyframes ccIn{0%{transform:translate(-50%,-160%) rotate(-8deg);opacity:0}100%{transform:translate(-50%,-50%) rotate(0);opacity:1}}
+@keyframes ccOut{from{transform:translate(-50%,-50%) scale(1);opacity:1}to{transform:translate(-50%,-50%) scale(.3);opacity:0}}
+
+/* 선택 카드 */
+.choices{display:flex;gap:5vw;align-items:center;justify-content:center}
+.card{position:relative;width:min(40vw,60vh);aspect-ratio:1/1.08;background:linear-gradient(#fffdf5,#fff3d6);border-radius:5vmin;border:1.1vmin solid #e7a955;
+  box-shadow:0 1.4vmin 0 #b9772f,0 3vh 5vh rgba(0,0,0,.3);animation:cardIn .55s cubic-bezier(.3,1.5,.5,1) both,floaty 2.6s ease-in-out infinite;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;transition:opacity .3s,filter .3s}
+.card .card-art{position:relative;width:92%;aspect-ratio:1/1}
+.layer{position:absolute}
+.layer > .inner{position:absolute;inset:0}
+.card-note{position:absolute;bottom:1.1vh;font-size:min(2.2vh,2vw);color:#9a7448}
+.card.nope{animation:nope .5s ease-in-out;filter:saturate(.45) brightness(.96)}
+.card.hint{border-color:#ffd000;box-shadow:0 1.4vmin 0 #d4a100,0 0 0 1.4vmin rgba(255,224,0,.55),0 0 8vmin #ffe14d;animation:hintPulse 1s ease-in-out infinite}
+.card.chosen{animation:chosen .6s cubic-bezier(.3,1.6,.5,1) both;border-color:#55c24a}
+.card.fade{opacity:.25;filter:grayscale(.6)}
+.flyer{animation:flyer 1s ease-in-out infinite}
+@keyframes cardIn{0%{transform:translateY(40vh) scale(.6);opacity:0}100%{transform:translateY(0) scale(1);opacity:1}}
+@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-1.2vh)}}
+@keyframes nope{0%,100%{transform:translateX(0)}20%{transform:translateX(-2vw) rotate(-2deg)}40%{transform:translateX(1.6vw) rotate(2deg)}60%{transform:translateX(-1vw)}80%{transform:translateX(.6vw)}}
+@keyframes hintPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+@keyframes chosen{0%{transform:scale(1)}50%{transform:scale(1.15)}100%{transform:scale(1.08)}}
+@keyframes flyer{0%,100%{transform:translate(0,0) rotate(20deg)}50%{transform:translate(6%,-6%) rotate(40deg)}}
+
+/* 교사 게이트 */
+.gate{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2.5vh}
+.gate-board{display:flex;align-items:center;gap:3vw;padding:3vh 4vw;background:#fffaf0;border-radius:5vmin;border:1vmin solid #ffd36b;box-shadow:0 1.4vmin 0 #e0a83a,0 3vh 6vh rgba(0,0,0,.3);animation:popIn .5s cubic-bezier(.3,1.5,.5,1) both}
+.gate-hero{position:relative;width:min(30vh,26vw);aspect-ratio:200/240}
+.gate-right{display:flex;flex-direction:column;align-items:center;gap:2.4vh}
+.gate-icon{width:min(15vh,13vw)} .gate-icon svg{width:100%;height:auto;display:block}
+.chips{display:flex;gap:1.4vw}
+.chip{font-size:min(10vh,8vw);font-weight:900;color:#8a5a2a;background:#fff;border:.8vmin solid #f0c27a;border-radius:2.5vmin;padding:.4vh 2vw;transition:transform .25s cubic-bezier(.3,1.6,.5,1),background .2s,color .2s;white-space:nowrap}
+.chip.lit{background:#ffe066;transform:scale(1.15) translateY(-1vh);color:#c0392b;border-color:#f4a91d}
+.gate.listening .chips{animation:listen 1.6s ease-in-out infinite}
+@keyframes listen{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+.replay{width:min(13vh,11vw);aspect-ratio:1;border-radius:50%;background:#4fc3f7;border:.8vmin solid #fff;box-shadow:0 1vmin 0 #2b8fc4;display:flex;align-items:center;justify-content:center}
+.replay svg{width:62%}
+.replay:active{transform:scale(.94)}
+.gate-note{font-size:min(2.4vh,16px);color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.6)}
+.teacher-next{position:fixed;top:1.2vh;right:1.2vw;z-index:40;background:rgba(255,255,255,.94);border:2px solid #7a4a22;border-radius:12px;padding:8px 14px;font-size:15px;color:#5a3218;overflow:hidden;display:flex;flex-direction:column;align-items:center;line-height:1.25}
+.teacher-next small{font-size:11px;opacity:.7}
+.fill{position:absolute;left:0;top:0;bottom:0;width:100%;background:#8fe07a;transform:scaleX(0);transform-origin:left;z-index:0}
+.lbl{position:relative;z-index:1}
+
+/* 3장 큰 멈춤 버튼 */
+.bigstop{position:absolute;left:73vw;top:44vh;width:min(34vh,24vw);aspect-ratio:1;margin-left:calc(min(34vh,24vw) / -2);margin-top:calc(min(34vh,24vw) / -2);z-index:6;transform:scale(var(--s,1));transition:transform .35s cubic-bezier(.3,1.6,.5,1),opacity .5s}
+.bs-a{width:100%;height:100%;animation:popIn .5s cubic-bezier(.3,1.6,.5,1) both}
+.bs-b{width:100%;height:100%;filter:drop-shadow(0 1.4vmin 0 rgba(0,0,0,.25))}
+.bs-b svg{width:100%;height:100%;display:block}
+.bigstop.ready:not(.busy) .bs-b{animation:pulse 1.1s ease-in-out infinite}
+.bigstop.busy .bs-b{filter:drop-shadow(0 1.4vmin 0 rgba(0,0,0,.25)) brightness(.88)}
+.bigstop.hit .bs-b{animation:hit .4s ease-out}
+.bigstop.done{opacity:0;transform:scale(2);pointer-events:none}
+@keyframes hit{0%{transform:scale(1)}30%{transform:scale(.86)}100%{transform:scale(1)}}
+
+/* 엔딩 */
+.party{position:absolute;left:0;right:0;bottom:6vh;display:flex;justify-content:center;align-items:flex-end;gap:1vw;z-index:4}
+.pc{position:relative;width:min(24vh,19vw);aspect-ratio:200/240}
+.pc.hero{width:min(34vh,25vw)}
+.pc .inner{animation:jump .7s cubic-bezier(.3,.7,.4,1) infinite}
+.stamp{position:absolute;left:50%;top:3vh;width:min(36vh,30vw);margin-left:calc(min(36vh,30vw) / -2);z-index:7;animation:stamp .5s cubic-bezier(.5,0,.5,1.3) both}
+.stamp svg{width:100%;height:auto;display:block}
+@keyframes stamp{0%{transform:scale(3) rotate(-30deg);opacity:0}70%{transform:scale(.92) rotate(-8deg);opacity:1}100%{transform:scale(1) rotate(0)}}
+.againBtn{position:absolute;right:4vw;top:12vh;z-index:8;display:flex;flex-direction:column;align-items:center;gap:1vh;animation:popIn .5s cubic-bezier(.3,1.6,.5,1) both}
+.againBtn .ab{width:min(16vh,14vw);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 35% 30%,#a8f584,#3fb43a 70%);border:1vmin solid #fff;box-shadow:0 1.2vmin 0 #2a8a2a;display:flex;align-items:center;justify-content:center;animation:pulse 1.4s ease-in-out infinite}
+.againBtn .ab svg{width:60%}
+.againBtn span{font-size:min(2.2vh,15px);color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.7)}
+.teacherLog{position:absolute;left:1vw;top:5.5vh;z-index:20;background:rgba(255,255,255,.9);border:1.5px solid #7a4a22;border-radius:10px;padding:8px 10px;font-size:12px;color:#5a3218;white-space:pre-line;max-width:38vw;line-height:1.5}
+.teacherLog button{display:block;margin-top:6px;background:#fff3d6;border:1.5px solid #7a4a22;border-radius:6px;padding:3px 8px;font-size:12px;color:#5a3218}
+
+/* 교사용 표시 */
+#caption{position:absolute;left:50%;bottom:1vh;transform:translateX(-50%);z-index:15;background:rgba(40,25,10,.55);color:#fff;font-size:min(2.3vh,15px);padding:4px 12px;border-radius:10px;max-width:60vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
+#caption:empty{display:none}
+#chapLabel{position:absolute;left:1vw;top:1vh;z-index:15;background:rgba(255,255,255,.8);color:#5a3218;font-size:min(2vh,14px);padding:4px 10px;border-radius:10px;pointer-events:none}
+#chapLabel:empty{display:none}
+#tbar{position:absolute;right:1vw;bottom:1vh;z-index:30;display:flex;gap:8px;opacity:.6}
+#tbar:hover,#tbar:focus-within{opacity:1}
+#tbar button{position:relative;width:42px;height:42px;border-radius:10px;background:rgba(255,255,255,.88);border:2px solid #7a4a22;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center}
+#tbar svg{width:22px;height:22px;position:relative;z-index:1}
+#tbar small{position:relative;z-index:1;font-size:8px;color:#c0392b;line-height:1}
+
+@media (orientation:portrait){
+  .choices{flex-direction:column;gap:3vh}
+  .card{width:min(70vw,40vh)}
+  .picks{top:36vh;gap:3vw}
+  .gate-board{flex-direction:column;gap:2vh}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="bg"></div>
+  <div id="stage"></div>
+  <canvas id="confetti"></canvas>
+  <div id="overlay"></div>
+  <div id="chapLabel"></div>
+  <div id="caption"></div>
+  <div id="tbar">
+    <button id="bSound" title="소리: 전체 켬 → 음성만 끔 → 전체 끔"></button>
+    <button id="bFull" title="전체 화면"></button>
+    <button id="bHome" title="처음으로 (길게 누르기)"><span class="fill"></span></button>
+  </div>
+</div>
+
+<script>
+'use strict';
+/* =====================================================================
+   CONFIG — 교사가 바꿀 수 있는 설정 (대사·난이도·진행 방식)
+   ===================================================================== */
+const CONFIG = {
+  title: { top: '거절 표현하기', main: '정글 모험!' },
+  tts: { rate: 0.88, pitch: 1.15, narratorPitch: 1.1 },  // 말 속도·높이 (0.1~2)
+  sfxVolume: 0.8,           // 효과음 크기 (0~1)
+  shuffleChoices: true,     // 정답 카드 위치를 매번 무작위로 (위치 암기 방지)
+  hintAfterWrong: 2,        // 오답 n회 후 정답 카드 반짝임 (0 = 끔)
+  teacherHoldMs: 600,       // 교사 버튼 길게 누르기 시간(ms). 0이면 한 번 터치
+  showCaption: true,        // 화면 하단 교사용 자막
+  showTeacherLabels: true,  // 카드·말풍선의 작은 글씨
+  ch1: {
+    friend: 'pipi',
+    item: 'broccoli',       // ITEMS 중 하나 (또는 ASSETS.items.ch1Item 이미지)
+    friendLine: '브로콜리 먹어 봐! 맛있어!',
+    heroLine: '나는 이거 하기 싫어!',
+    question: '친구에게 어떻게 말할까?',
+    wrongLine: '던지면 친구가 다쳐요. 말로 해 볼까?',
+    answer: '싫어요! 아니요!',
+    friendOk: '알았어!',
+    gateChips: ['싫', '어', '요'],
+    gatePhrase: '싫어요!'
+  },
+  ch2: {
+    heroLine: '나는 탭이랑 클레이가 좋아!',
+    friendLine: '나 줘! 나 줘!',
+    question: '내 탭이랑 클레이를 뺏으려고 해! 어떻게 말할까?',
+    wrongLine: '밀면 친구가 넘어져요. 말로 해 볼까?',
+    answer: '하지 마!',
+    friendSorry: '앗, 미안해!',
+    praise: '내 물건을 잘 지켰어요!',
+    gateChips: ['하', '지', '마'],
+    gatePhrase: '하지 마!'
+  },
+  ch3: {
+    emotionChoice: true,    // true: 두 얼굴 중 고르기 / false: 주인공 얼굴 터치만
+    intro: '친구가 자꾸 툭툭 쳐요.',
+    faceQ: '{name} 기분이 어때 보여? 얼굴을 눌러 봐!',
+    faceWrong: '웃는 얼굴일까? 툭툭 맞으면 기분이 나빠요. 다시 볼까?',
+    feel: '아, 귀찮아! 기분이 나빠!',
+    buttonQ: '빨간 버튼을 누르면서 크게 말해 봐!',
+    words: ['하지 마!', '싫어요!', '멈춰!'],
+    friendSorry: '미안해, 이제 안 할게!',
+    praise: '말로 해서 장난을 멈췄어요!',
+    gateChips: ['하지 마', '싫어요'],
+    gatePhrase: '하지 마! 싫어요!'
+  },
+  ending: { line: '멋지게 말했어요! 참 잘했어요!' }
+};
+
+/* =====================================================================
+   ASSETS — 이미지 교체 슬롯 (null이면 기본 SVG 그림 사용)
+   예) mong: { default: 'img/hero.png', worried: 'img/hero_worried.png' }
+   표정 키: happy, worried, annoyed, angry, talk, proud, surprised
+   ===================================================================== */
+const ASSETS = {
+  characters: { mong: null, ruru: null, boogi: null, pipi: null },
+  items: { ch1Item: null, tablet: null, clay: null },
+  background: null
+};
+
+/* 캐릭터 이름·목소리 (이름을 바꾸면 TTS 대사에도 반영됩니다) */
+const CHARS = {
+  mong:  { name: '몽이', kind: '원숭이',   color: '#d9893f', pitch: 1.45 },
+  ruru:  { name: '루루', kind: '아기사자', color: '#f2b632', pitch: 1.3 },
+  boogi: { name: '부기', kind: '거북이',   color: '#5fb24b', pitch: 1.15 },
+  pipi:  { name: '삐삐', kind: '앵무새',   color: '#f25450', pitch: 1.7 }
+};
+const HEROES = ['mong', 'ruru', 'boogi'];
+
+/* =====================================================================
+   기본 그래픽
+   ===================================================================== */
+const INK = '#4a2b1a';
+const OL = `stroke="${INK}" stroke-width="3" stroke-linejoin="round"`;
+const STK = `stroke="${INK}" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"`;
+
+function starPts(n, R, r, cx, cy) {
+  const p = [];
+  for (let i = 0; i < n * 2; i++) {
+    const a = -Math.PI / 2 + i * Math.PI / n, rr = i % 2 ? r : R;
+    p.push((cx + Math.cos(a) * rr).toFixed(1) + ',' + (cy + Math.sin(a) * rr).toFixed(1));
+  }
+  return p.join(' ');
+}
+
+const OCT_OUT = '146.5,52.4 146.5,107.6 107.6,146.5 52.4,146.5 13.5,107.6 13.5,52.4 52.4,13.5 107.6,13.5';
+const OCT_IN = '137.3,56.3 137.3,103.7 103.7,137.3 56.3,137.3 22.7,103.7 22.7,56.3 56.3,22.7 103.7,22.7';
+const PALM = `<g fill="#fff"><rect x="56" y="72" width="48" height="44" rx="16"/><rect x="57" y="42" width="10" height="40" rx="5"/><rect x="69" y="34" width="10" height="46" rx="5"/><rect x="81" y="36" width="10" height="44" rx="5"/><rect x="93" y="46" width="10" height="34" rx="5"/><rect x="40" y="78" width="11" height="30" rx="5.5" transform="rotate(-38 45.5 93)"/></g>`;
+const STOP_FACE = `<polygon points="${OCT_OUT}" fill="#e53935" stroke="${INK}" stroke-width="4" stroke-linejoin="round"/><polygon points="${OCT_IN}" fill="none" stroke="#fff" stroke-width="6" stroke-linejoin="round"/>${PALM}`;
+const X_FACE = `<circle cx="80" cy="80" r="74" fill="${INK}"/><circle cx="80" cy="80" r="71" fill="#fff"/><circle cx="80" cy="80" r="63" fill="none" stroke="#e53935" stroke-width="14"/><path d="M53 53 L107 107 M107 53 L53 107" stroke="#e53935" stroke-width="20" stroke-linecap="round"/>`;
+const POST = `<rect x="72" y="140" width="16" height="82" rx="6" fill="#a86a3a" stroke="${INK}" stroke-width="3"/>`;
+
+const ICON = {
+  xBadge: `<svg viewBox="0 0 160 160">${X_FACE}</svg>`,
+  xSign: `<svg viewBox="0 0 160 225">${POST}${X_FACE}</svg>`,
+  stopBadge: `<svg viewBox="0 0 160 160">${STOP_FACE}</svg>`,
+  stopSign: `<svg viewBox="0 0 160 225">${POST}${STOP_FACE}</svg>`,
+  star: `<svg viewBox="0 0 100 100"><polygon points="${starPts(5, 46, 20, 50, 52)}" fill="#ffd93b" stroke="#e0a100" stroke-width="4" stroke-linejoin="round"/></svg>`,
+  burst: `<svg viewBox="0 0 100 100"><polygon points="${starPts(8, 48, 24, 50, 50)}" fill="#ffe14d" stroke="#ff8f00" stroke-width="4" stroke-linejoin="round"/></svg>`,
+  heart: `<svg viewBox="0 0 100 90"><path d="M50 84 C 10 56 2 34 14 18 C 26 4 44 8 50 24 C 56 8 74 4 86 18 C 98 34 90 56 50 84Z" fill="#ff5a7a" stroke="${INK}" stroke-width="4"/></svg>`,
+  sweatBig: `<svg viewBox="0 0 60 80"><path d="M30 6 Q 54 46 30 72 Q 6 46 30 6Z" fill="#8fd8ff" stroke="#2f8fd0" stroke-width="4"/></svg>`,
+  play: `<svg viewBox="0 0 100 100"><path d="M30 18 L84 50 L30 82 Z" fill="#fff" stroke="#2a8a2a" stroke-width="5" stroke-linejoin="round"/></svg>`,
+  speaker: `<svg viewBox="0 0 100 100"><path d="M16 38 H36 L60 18 V82 L36 62 H16 Z" fill="#fff"/><path d="M70 34 Q 82 50 70 66 M79 24 Q 98 50 79 76" stroke="#fff" stroke-width="7" fill="none" stroke-linecap="round"/></svg>`,
+  replay: `<svg viewBox="0 0 100 100"><path d="M76 34 A 30 30 0 1 0 80 58" stroke="#fff" stroke-width="10" fill="none" stroke-linecap="round"/><path d="M60 16 L88 26 L72 48 Z" fill="#fff"/></svg>`,
+  speed: `<svg viewBox="0 0 100 100"><path d="M10 80 L60 30 M26 94 L80 40 M4 56 L40 20" stroke="#8a6a4a" stroke-width="7" stroke-linecap="round" fill="none"/></svg>`,
+  sOn: `<svg viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z" fill="#5a3218"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" stroke="#5a3218" stroke-width="2" fill="none" stroke-linecap="round"/></svg>`,
+  sOff: `<svg viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z" fill="#5a3218"/><path d="M16 9l6 6M22 9l-6 6" stroke="#c0392b" stroke-width="2.2" stroke-linecap="round"/></svg>`,
+  full: `<svg viewBox="0 0 24 24"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5" stroke="#5a3218" stroke-width="2.2" fill="none" stroke-linecap="round"/></svg>`,
+  home: `<svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7M6 9.5V20h12V9.5" stroke="#5a3218" stroke-width="2.2" fill="none" stroke-linejoin="round" stroke-linecap="round"/></svg>`
+};
+
+const ITEMS = {
+  broccoli: `<svg viewBox="0 0 100 112"><path d="M41 58 L37 104 Q50 112 63 104 L59 58 Z" fill="#d6ecaa" ${OL}/><circle cx="28" cy="50" r="20" fill="#3f9a3a" ${OL}/><circle cx="72" cy="50" r="20" fill="#3f9a3a" ${OL}/><circle cx="50" cy="32" r="25" fill="#4caf43" ${OL}/><circle cx="50" cy="58" r="17" fill="#45a83d" ${OL}/><g fill="#2f7d2a"><circle cx="42" cy="26" r="4"/><circle cx="58" cy="34" r="4"/><circle cx="24" cy="48" r="3.5"/><circle cx="74" cy="46" r="3.5"/><circle cx="50" cy="56" r="3"/></g></svg>`,
+  tablet: `<svg viewBox="0 0 150 106"><rect x="4" y="4" width="142" height="98" rx="16" fill="#3b4060" ${OL}/><rect x="17" y="15" width="116" height="76" rx="7" fill="#7fd3ff"/><circle cx="45" cy="45" r="15" fill="#ffd93b"/><path d="M78 72 L96 38 L114 72 Z" fill="#ff7aa2"/><rect x="34" y="66" width="30" height="14" rx="4" fill="#7ed957"/><circle cx="140" cy="53" r="3" fill="#9aa3c7"/></svg>`,
+  clay: `<svg viewBox="0 0 150 90"><path d="M10 78 Q 6 50 30 46 Q 52 40 56 62 Q 60 84 34 86 Q 14 88 10 78 Z" fill="#ff6b6b" ${OL}/><circle cx="82" cy="62" r="22" fill="#4fc3f7" ${OL}/><path d="M100 80 Q 112 60 124 72 Q 136 84 144 66" stroke="${INK}" stroke-width="15" fill="none" stroke-linecap="round"/><path d="M100 80 Q 112 60 124 72 Q 136 84 144 66" stroke="#ffd93b" stroke-width="10" fill="none" stroke-linecap="round"/><circle cx="64" cy="30" r="13" fill="#7ed957" ${OL}/><circle cx="26" cy="58" r="4" fill="#fff" opacity=".6"/><circle cx="76" cy="54" r="4" fill="#fff" opacity=".6"/></svg>`
+};
+function itemHTML(key) {
+  const a = ASSETS.items[key];
+  return a ? `<img src="${a}" alt="" draggable="false">` : ITEMS[key];
+}
+function ch1ItemHTML() {
+  return ASSETS.items.ch1Item ? `<img src="${ASSETS.items.ch1Item}" alt="" draggable="false">` : (ITEMS[CONFIG.ch1.item] || ITEMS.broccoli);
+}
+
+/* ---------- 얼굴 부품 ---------- */
+function eyes(m, o = {}) {
+  const y = o.y ?? 90, dx = o.dx ?? 22, lid = o.lid ?? '#ccc';
+  if (m === 'proud') {
+    return [-1, 1].map(s => { const cx = 100 + s * dx; return `<path d="M${cx - 12} ${y + 4} Q ${cx} ${y - 10} ${cx + 12} ${y + 4}" ${STK}/>`; }).join('');
+  }
+  const r = m === 'surprised' ? 16 : 13, ry = r + 3, pr = m === 'surprised' ? 6 : 8;
+  return [-1, 1].map(s => {
+    const cx = 100 + s * dx;
+    let e = `<ellipse cx="${cx}" cy="${y}" rx="${r}" ry="${ry}" fill="#fff" ${OL}/>`;
+    e += `<circle cx="${cx + s}" cy="${y + 3}" r="${pr}" fill="#2b1a10"/><circle cx="${cx + 3}" cy="${y - 1}" r="3" fill="#fff"/>`;
+    if (m === 'annoyed' || m === 'angry') {
+      e += `<path d="M${cx - r - 1} ${y - 1} C ${cx - r - 1} ${y - ry - 6} ${cx + r + 1} ${y - ry - 6} ${cx + r + 1} ${y - 1} Z" fill="${lid}" ${OL}/>`;
+    }
+    return e;
+  }).join('');
+}
+function brows(m, o = {}) {
+  const y = (o.y ?? 90) - 27, dx = o.dx ?? 22;
+  let a;
+  if (m === 'worried') a = [[-13, 5, 9, -5], [13, 5, -9, -5]];
+  else if (m === 'annoyed') a = [[-13, -4, 9, 4], [13, -4, -9, 4]];
+  else if (m === 'angry') a = [[-14, -8, 9, 6], [14, -8, -9, 6]];
+  else if (m === 'surprised') a = [[-12, -6, 10, -9], [12, -6, -10, -9]];
+  else return '';
+  return a.map(([x1, y1, x2, y2], i) => {
+    const cx = 100 + (i ? dx : -dx);
+    return `<path d="M${cx + x1} ${y + y1} L${cx + x2} ${y + y2}" stroke="${INK}" stroke-width="6" stroke-linecap="round"/>`;
+  }).join('');
+}
+function cheeks(m, o = {}) {
+  if (m === 'worried' || m === 'surprised') return '';
+  const y = o.y ?? 114, dx = o.dx ?? 42;
+  const col = m === 'angry' ? '#ff6b6b' : '#ff9eb5';
+  return `<ellipse cx="${100 - dx}" cy="${y}" rx="11" ry="7" fill="${col}" opacity=".55"/><ellipse cx="${100 + dx}" cy="${y}" rx="11" ry="7" fill="${col}" opacity=".55"/>`;
+}
+function mouth(m, y = 124) {
+  const c = 100;
+  switch (m) {
+    case 'proud': case 'talk':
+      return `<path d="M${c - 17} ${y - 3} Q ${c} ${y + 28} ${c + 17} ${y - 3} Z" fill="#8a2f2f" ${OL}/><path d="M${c - 8} ${y + 12} Q ${c} ${y + 6} ${c + 8} ${y + 12} Q ${c} ${y + 20} ${c - 8} ${y + 12} Z" fill="#ff8f8f"/>`;
+    case 'worried':
+      return `<path d="M${c - 14} ${y + 6} Q ${c - 7} ${y} ${c} ${y + 6} Q ${c + 7} ${y + 12} ${c + 14} ${y + 6}" ${STK}/>`;
+    case 'annoyed':
+      return `<path d="M${c - 14} ${y + 9} Q ${c} ${y - 3} ${c + 14} ${y + 9}" ${STK}/>`;
+    case 'angry':
+      return `<path d="M${c - 16} ${y + 13} Q ${c} ${y - 7} ${c + 16} ${y + 13} Z" fill="#8a2f2f" ${OL}/>`;
+    case 'surprised':
+      return `<ellipse cx="${c}" cy="${y + 6}" rx="8" ry="10" fill="#8a2f2f" ${OL}/>`;
+    default:
+      return `<path d="M${c - 16} ${y} Q ${c} ${y + 16} ${c + 16} ${y}" ${STK}/>`;
+  }
+}
+function face(m, o = {}) {
+  return eyes(m, o) + brows(m, o) + cheeks(m, { y: (o.y ?? 90) + 24, dx: o.cdx ?? 42 }) + (o.noMouth ? '' : mouth(m, o.my ?? 124));
+}
+function arms(col, o = {}) {
+  const hand = o.hand || col, w = o.w || 20, h = o.h || 44;
+  const one = (cx, rot, cls) => `<g class="${cls}" style="transform-origin:${cx}px 152px"><g transform="rotate(${rot} ${cx} 152)"><rect x="${cx - w / 2}" y="146" width="${w}" height="${h}" rx="${w / 2}" fill="${col}" ${OL}/><circle cx="${cx}" cy="${146 + h}" r="${w / 2 + 3}" fill="${hand}" ${OL}/></g></g>`;
+  return one(64, 28, 'armL') + one(136, -28, 'armR');
+}
+const SWEAT = `<path d="M160 50 Q 171 68 160 76 Q 149 68 160 50Z" fill="#8fd8ff" stroke="#2f8fd0" stroke-width="2.5"/>`;
+const ANGER = `<g transform="translate(152 34)" stroke="#e53935" stroke-width="5" fill="none" stroke-linecap="round"><path d="M-12 -4 Q -4 -4 -4 -12"/><path d="M4 -12 Q 4 -4 12 -4"/><path d="M12 4 Q 4 4 4 12"/><path d="M-4 12 Q -4 4 -12 4"/></g>`;
+function svgWrap(body, m) {
+  const extra = (m === 'worried' ? SWEAT : '') + ((m === 'angry' || m === 'annoyed') ? ANGER : '');
+  return `<svg viewBox="0 0 200 240" xmlns="http://www.w3.org/2000/svg"><ellipse cx="100" cy="233" rx="58" ry="7" fill="rgba(0,0,0,.18)"/>${body}${extra}</svg>`;
+}
+
+/* ---------- 오리지널 캐릭터 4종 ---------- */
+const DRAW = {
+  mong(m) { // 원숭이 몽이
+    const B = '#b8743e', F = '#f8dcae';
+    const tail = 'M138 196 C 182 206 196 160 172 140 C 160 130 150 142 160 150';
+    return svgWrap(`
+      <path d="${tail}" fill="none" stroke="${INK}" stroke-width="16" stroke-linecap="round"/>
+      <path d="${tail}" fill="none" stroke="${B}" stroke-width="10" stroke-linecap="round"/>
+      <ellipse cx="78" cy="224" rx="20" ry="11" fill="${F}" ${OL}/><ellipse cx="122" cy="224" rx="20" ry="11" fill="${F}" ${OL}/>
+      <ellipse cx="100" cy="182" rx="46" ry="44" fill="${B}" ${OL}/>
+      <ellipse cx="100" cy="190" rx="28" ry="29" fill="${F}"/>
+      <circle cx="40" cy="94" r="24" fill="${B}" ${OL}/><circle cx="40" cy="94" r="13" fill="${F}"/>
+      <circle cx="160" cy="94" r="24" fill="${B}" ${OL}/><circle cx="160" cy="94" r="13" fill="${F}"/>
+      <circle cx="100" cy="92" r="60" fill="${B}" ${OL}/>
+      <path d="M90 36 Q 96 14 114 26 Q 104 24 102 36 Z" fill="${B}" ${OL}/>
+      <path d="M100 68 C 84 48 52 56 55 90 C 52 124 72 146 100 146 C 128 146 148 124 145 90 C 148 56 116 48 100 68 Z" fill="${F}"/>
+      <ellipse cx="94" cy="110" rx="3" ry="2.5" fill="${INK}"/><ellipse cx="106" cy="110" rx="3" ry="2.5" fill="${INK}"/>
+      ${face(m, { lid: F, my: 122 })}
+      ${arms(B, { hand: F })}`, m);
+  },
+  ruru(m) { // 아기사자 루루
+    const H = '#ffd45e', M = '#ec8a2c', F = '#fff1c9';
+    let mane = '';
+    for (let i = 0; i < 16; i++) {
+      const a = i / 16 * Math.PI * 2;
+      mane += `<circle cx="${(100 + Math.cos(a) * 64).toFixed(1)}" cy="${(92 + Math.sin(a) * 64).toFixed(1)}" r="18" fill="${M}" ${OL}/>`;
+    }
+    return svgWrap(`
+      <path d="M136 200 Q 176 210 178 178" fill="none" stroke="${INK}" stroke-width="12" stroke-linecap="round"/>
+      <path d="M136 200 Q 176 210 178 178" fill="none" stroke="${H}" stroke-width="7" stroke-linecap="round"/>
+      <circle cx="178" cy="172" r="11" fill="${M}" ${OL}/>
+      <ellipse cx="78" cy="224" rx="20" ry="11" fill="${H}" ${OL}/><ellipse cx="122" cy="224" rx="20" ry="11" fill="${H}" ${OL}/>
+      <ellipse cx="100" cy="182" rx="46" ry="44" fill="${H}" ${OL}/>
+      <ellipse cx="100" cy="190" rx="27" ry="28" fill="${F}"/>
+      ${mane}<circle cx="100" cy="92" r="64" fill="${M}"/>
+      <circle cx="58" cy="46" r="15" fill="${H}" ${OL}/><circle cx="58" cy="46" r="7" fill="#ffb3a7"/>
+      <circle cx="142" cy="46" r="15" fill="${H}" ${OL}/><circle cx="142" cy="46" r="7" fill="#ffb3a7"/>
+      <circle cx="100" cy="94" r="54" fill="${H}" ${OL}/>
+      <ellipse cx="100" cy="120" rx="25" ry="17" fill="${F}"/>
+      <path d="M92 108 Q 100 104 108 108 Q 104 116 100 117 Q 96 116 92 108 Z" fill="#8a4b2a"/>
+      ${face(m, { lid: H, y: 88, my: 121, cdx: 40 })}
+      ${arms(H, { hand: F })}`, m);
+  },
+  boogi(m) { // 거북이 부기
+    const H = '#97d86c', S = '#3f8f3b', S2 = '#5fb24b', P = '#f4e7a4';
+    return svgWrap(`
+      <ellipse cx="76" cy="225" rx="19" ry="10" fill="${H}" ${OL}/><ellipse cx="124" cy="225" rx="19" ry="10" fill="${H}" ${OL}/>
+      <ellipse cx="100" cy="182" rx="60" ry="46" fill="${S}" ${OL}/>
+      <circle cx="52" cy="172" r="9" fill="${S2}"/><circle cx="56" cy="198" r="8" fill="${S2}"/><circle cx="148" cy="172" r="9" fill="${S2}"/><circle cx="144" cy="198" r="8" fill="${S2}"/>
+      <ellipse cx="100" cy="188" rx="34" ry="34" fill="${P}" ${OL}/>
+      <path d="M70 176 H130 M68 198 H132 M100 156 V222" stroke="#d9c57a" stroke-width="3"/>
+      <circle cx="100" cy="94" r="56" fill="${H}" ${OL}/>
+      <circle cx="68" cy="60" r="6" fill="#7cc458"/><circle cx="132" cy="58" r="8" fill="#7cc458"/><circle cx="142" cy="76" r="4" fill="#7cc458"/>
+      ${face(m, { lid: H, my: 122, cdx: 40 })}
+      ${arms(H, { hand: H, w: 22, h: 40 })}`, m);
+  },
+  pipi(m) { // 앵무새 삐삐
+    const R = '#f25450', Y = '#ffc93c', Bl = '#3d8bfd', G = '#3fbf6f';
+    const open = ['talk', 'proud', 'angry', 'surprised'].includes(m);
+    const foot = x => `<path d="M${x} 216 l-9 12 M${x} 216 l0 14 M${x} 216 l9 12" stroke="#f08a24" stroke-width="5" stroke-linecap="round"/>`;
+    return svgWrap(`
+      <path d="M84 206 L66 236 L94 226 Z" fill="${Bl}" ${OL}/><path d="M100 210 L102 238 L118 224 Z" fill="${G}" ${OL}/>
+      ${foot(84)}${foot(116)}
+      <ellipse cx="100" cy="180" rx="44" ry="44" fill="${R}" ${OL}/>
+      <ellipse cx="100" cy="190" rx="26" ry="28" fill="${Y}"/>
+      <path d="M96 42 C 86 14 70 10 66 18 C 78 22 86 32 90 46 Z" fill="${Bl}" ${OL}/>
+      <path d="M100 40 C 98 10 108 0 116 6 C 108 14 106 26 106 42 Z" fill="${Y}" ${OL}/>
+      <path d="M106 44 C 116 18 134 16 138 24 C 126 26 118 34 112 48 Z" fill="${G}" ${OL}/>
+      <circle cx="100" cy="94" r="56" fill="${R}" ${OL}/>
+      <ellipse cx="78" cy="90" rx="20" ry="22" fill="#fff"/><ellipse cx="122" cy="90" rx="20" ry="22" fill="#fff"/>
+      ${face(m, { lid: R, noMouth: true, cdx: 44 })}
+      ${open ? `<path d="M88 120 Q 100 148 112 120 Z" fill="#e8972a" ${OL}/>` : ''}
+      <path d="M84 106 Q 100 94 116 106 Q 116 124 100 136 Q 96 120 84 106 Z" fill="${Y}" ${OL}/>
+      ${arms(Bl, { hand: Bl, w: 24, h: 44 })}`, m);
+  }
+};
+function charSVG(id, mood = 'happy') {
+  const a = ASSETS.characters && ASSETS.characters[id];
+  if (a) {
+    const src = a[mood] || a.default;
+    if (src) return `<img src="${src}" alt="" draggable="false" class="char-img">`;
+  }
+  return DRAW[id](mood);
+}
+
+/* ---------- 정글 배경 ---------- */
+function buildBG() {
+  if (ASSETS.background) { $('#bg').innerHTML = `<img src="${ASSETS.background}" alt="">`; return; }
+  const rnd = i => { const x = Math.sin(i * 99.13) * 43758.5453; return x - Math.floor(x); };
+  let far = '';
+  for (let i = 0; i < 27; i++) {
+    const x = i * 64 - 20, r = 46 + rnd(i) * 34, y = 585 - rnd(i + 7) * 40;
+    far += `<circle cx="${x}" cy="${y.toFixed(1)}" r="${r.toFixed(1)}" fill="${i % 2 ? '#5db85a' : '#4fab4d'}"/>`;
+  }
+  const frond = (a, col) => `<g transform="rotate(${a})"><path d="M0 0 C 50 -46 130 -50 200 4 C 140 -14 70 -6 0 0 Z" fill="${col}" stroke="#2a7a35" stroke-width="3"/><path d="M0 0 C 70 -24 140 -22 196 2" stroke="#2a7a35" stroke-width="3" fill="none"/></g>`;
+  const palm = (x, flip) => {
+    let rings = '';
+    for (let y = 700; y > 270; y -= 56) {
+      const xc = 3 + (760 - y) / 506 * 73;
+      rings += `<path d="M${(xc - 24).toFixed(1)} ${y} Q ${xc.toFixed(1)} ${y + 10} ${(xc + 24).toFixed(1)} ${y}" stroke="#6b3d1c" stroke-width="4" fill="none"/>`;
+    }
+    const fr = [-165, -130, -95, -60, -25, 8, 172].map((a, i) => frond(a, i % 2 ? '#4dbb58' : '#3fa34d')).join('');
+    return `<g transform="translate(${x} 0) scale(${flip} 1)">
+      <path d="M-20 760 C -10 600 10 420 60 250 L 92 258 C 46 430 26 600 26 760 Z" fill="url(#trunk)" stroke="#5a3218" stroke-width="4"/>${rings}
+      <g transform="translate(76 252)"><g class="sway">${fr}<circle cx="-8" cy="18" r="16" fill="#7a4a22" stroke="#4a2b1a" stroke-width="3"/><circle cx="18" cy="22" r="15" fill="#8a5a2b" stroke="#4a2b1a" stroke-width="3"/></g></g></g>`;
+  };
+  const flower = (x, y, c) => {
+    let p = '';
+    for (let k = 0; k < 5; k++) { const a = k / 5 * Math.PI * 2; p += `<circle cx="${(x + Math.cos(a) * 9).toFixed(1)}" cy="${(y + Math.sin(a) * 9).toFixed(1)}" r="8" fill="${c}"/>`; }
+    return `<path d="M${x} ${y} v24" stroke="#3a8a2e" stroke-width="4"/>${p}<circle cx="${x}" cy="${y}" r="6" fill="#fff3a0"/>`;
+  };
+  let flowers = '';
+  const fc = ['#ff8fb0', '#ffd54f', '#b388ff'];
+  for (let i = 0; i < 18; i++) {
+    const x = 60 + rnd(i + 3) * 1480, y = 690 + rnd(i + 11) * 130;
+    if (x > 520 && x < 1080) continue;
+    flowers += flower(Math.round(x), Math.round(y), fc[i % 3]);
+  }
+  const bigLeaf = (tf, col) => `<g transform="${tf}"><g class="leafTop"><path d="M0 0 C 80 -70 220 -60 320 20 C 220 0 100 10 0 0 Z" fill="${col}" stroke="#226b2c" stroke-width="4"/><path d="M0 0 C 100 -30 220 -20 310 18" stroke="#226b2c" stroke-width="4" fill="none"/></g></g>`;
+  const canopy =
+    bigLeaf('translate(-30 -10) rotate(28) scale(1.15)', '#2f8f3c') +
+    bigLeaf('translate(-30 60) rotate(60) scale(1)', '#3aa047') +
+    bigLeaf('translate(40 -40) rotate(8) scale(.95)', '#46b153') +
+    bigLeaf('translate(1630 -10) scale(-1.15 1.15) rotate(28)', '#2f8f3c') +
+    bigLeaf('translate(1630 60) scale(-1 1) rotate(60)', '#3aa047') +
+    bigLeaf('translate(1560 -40) scale(-.95 .95) rotate(8)', '#46b153');
+  const vine = (x, len) => {
+    let leaves = '';
+    for (let y = 40; y < len; y += 46) leaves += `<ellipse cx="${x + (y % 92 ? 10 : -10)}" cy="${y}" rx="12" ry="7" fill="#43a047" transform="rotate(${y % 92 ? 30 : -30} ${x} ${y})"/>`;
+    return `<g class="sway"><path d="M${x} 0 Q ${x + 18} ${len / 2} ${x} ${len}" stroke="#2f7d32" stroke-width="6" fill="none"/>${leaves}</g>`;
+  };
+  let bushes = '';
+  [[60, 885, 1.2], [250, 910, .95], [1380, 900, 1.05], [1560, 880, 1.3]].forEach(([x, y, s]) => {
+    bushes += `<g transform="translate(${x} ${y}) scale(${s})"><circle cx="-70" cy="0" r="70" fill="#3e9a35"/><circle cx="0" cy="-30" r="85" fill="#48a83e"/><circle cx="80" cy="0" r="70" fill="#3e9a35"/><circle cx="-20" cy="-62" r="16" fill="#ff8fb0"/><circle cx="40" cy="-84" r="14" fill="#ffd54f"/><circle cx="72" cy="-34" r="13" fill="#ff8fb0"/></g>`;
+  });
+  let pebbles = '';
+  for (let i = 0; i < 12; i++) {
+    const t = rnd(i + 30), y = 670 + t * 210, half = 60 + t * 320, x = 800 + (rnd(i + 40) - .5) * 2 * half * .8;
+    pebbles += `<ellipse cx="${x.toFixed(0)}" cy="${y.toFixed(0)}" rx="${(6 + t * 10).toFixed(1)}" ry="${(3 + t * 5).toFixed(1)}" fill="#d4a86a" opacity=".7"/>`;
+  }
+  $('#bg').innerHTML = `
+  <svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7fd8ff"/><stop offset=".62" stop-color="#c9f2ff"/><stop offset="1" stop-color="#f3ffe0"/></linearGradient>
+      <radialGradient id="sun" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#fff7b0"/><stop offset=".55" stop-color="#ffe066" stop-opacity=".7"/><stop offset="1" stop-color="#ffe066" stop-opacity="0"/></radialGradient>
+      <linearGradient id="ground" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8fd65a"/><stop offset="1" stop-color="#5eb43f"/></linearGradient>
+      <linearGradient id="path" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f2d29b"/><stop offset="1" stop-color="#e0b071"/></linearGradient>
+      <linearGradient id="trunk" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#b0703f"/><stop offset="1" stop-color="#7a4522"/></linearGradient>
+    </defs>
+    <rect width="1600" height="900" fill="url(#sky)"/>
+    <circle cx="1300" cy="160" r="180" fill="url(#sun)"/><circle cx="1300" cy="160" r="70" fill="#ffe56b"/>
+    <g class="cloud"><ellipse cx="300" cy="150" rx="95" ry="38" fill="#fff"/><ellipse cx="360" cy="128" rx="62" ry="46" fill="#fff"/><ellipse cx="238" cy="134" rx="52" ry="36" fill="#fff"/></g>
+    <g class="cloud" style="animation-duration:34s"><ellipse cx="900" cy="100" rx="80" ry="30" fill="#fff" opacity=".9"/><ellipse cx="950" cy="84" rx="50" ry="36" fill="#fff" opacity=".9"/></g>
+    <path d="M0 560 Q 200 430 420 520 T 860 500 T 1300 480 T 1600 520 V900 H0 Z" fill="#a6e08a"/>
+    ${far}
+    <path d="M0 615 Q 260 530 520 595 T 1060 575 T 1600 605 V900 H0 Z" fill="#86cf68"/>
+    <path d="M0 652 Q 400 612 800 642 T 1600 632 V900 H0 Z" fill="url(#ground)"/>
+    <path d="M200 900 C 500 760 640 690 770 656 Q 800 648 830 656 C 960 690 1100 760 1400 900 Z" fill="url(#path)"/>
+    ${pebbles}
+    ${palm(170, 1)}${palm(1430, -1)}
+    ${flowers}
+    ${vine(420, 230)}${vine(1180, 190)}${vine(640, 120)}
+    ${canopy}
+    ${bushes}
+  </svg>`;
+}
+
+/* =====================================================================
+   오디오: 효과음(Web Audio) + 음성(Web Speech TTS)
+   ===================================================================== */
+const $ = s => document.querySelector(s);
+let AC = null, MASTER = null, NB = null;
+let MUTE_TTS = false, MUTE_SFX = false, SOUND = 0;
+const HAS_TTS = 'speechSynthesis' in window;
+const TTS = { voice: null };
+let CURRENT_U = null;
+
+function pickVoice() {
+  if (!HAS_TTS) return;
+  const vs = speechSynthesis.getVoices() || [];
+  const ko = vs.filter(v => /^ko/i.test(v.lang));
+  TTS.voice = ko.find(v => /Google|Yuna|SunHi|Heami|Samsung|female/i.test(v.name)) || ko[0] || null;
+  TTS.count = vs.length;
+}
+if (HAS_TTS) { pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
+
+function unlockAudio() {
+  try {
+    if (!AC) {
+      AC = new (window.AudioContext || window.webkitAudioContext)();
+      MASTER = AC.createGain(); MASTER.gain.value = CONFIG.sfxVolume; MASTER.connect(AC.destination);
+    }
+    if (AC.state === 'suspended') AC.resume();
+  } catch (e) { /* 효과음 없이 진행 */ }
+  if (HAS_TTS && !unlockAudio.done) {
+    unlockAudio.done = true;
+    try { const u = new SpeechSynthesisUtterance(' '); u.volume = 0; u.lang = 'ko-KR'; speechSynthesis.speak(u); } catch (e) {}
+    pickVoice();
+  }
+}
+document.addEventListener('pointerdown', unlockAudio, { capture: true });
+
+function tone(f, d, { type = 'sine', vol = .3, at = 0, to = null, attack = .01 } = {}) {
+  if (!AC || MUTE_SFX) return;
+  const t = AC.currentTime + at, o = AC.createOscillator(), g = AC.createGain();
+  o.type = type; o.frequency.setValueAtTime(f, t);
+  if (to) o.frequency.exponentialRampToValueAtTime(to, t + d);
+  g.gain.setValueAtTime(.0001, t);
+  g.gain.exponentialRampToValueAtTime(vol, t + attack);
+  g.gain.exponentialRampToValueAtTime(.0001, t + d);
+  o.connect(g); g.connect(MASTER); o.start(t); o.stop(t + d + .05);
+}
+function noise(d, { vol = .2, at = 0, freq = 1200, to = null, q = 1 } = {}) {
+  if (!AC || MUTE_SFX) return;
+  if (!NB) {
+    NB = AC.createBuffer(1, AC.sampleRate, AC.sampleRate);
+    const ch = NB.getChannelData(0);
+    for (let i = 0; i < ch.length; i++) ch[i] = Math.random() * 2 - 1;
+  }
+  const t = AC.currentTime + at, s = AC.createBufferSource(), f = AC.createBiquadFilter(), g = AC.createGain();
+  s.buffer = NB; f.type = 'bandpass'; f.Q.value = q; f.frequency.setValueAtTime(freq, t);
+  if (to) f.frequency.exponentialRampToValueAtTime(to, t + d);
+  g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.0001, t + d);
+  s.connect(f); f.connect(g); g.connect(MASTER); s.start(t); s.stop(t + d + .05);
+}
+const sfx = {
+  pop() { tone(520, .14, { to: 920, vol: .25 }); },
+  tap() { tone(700, .07, { type: 'triangle', vol: .18 }); },
+  blip() { tone(880, .1, { type: 'triangle', vol: .2 }); tone(1320, .08, { vol: .1, at: .04 }); },
+  hops(n = 4) { for (let i = 0; i < n; i++) tone(240, .14, { to: 540, vol: .18, at: i * .2 }); },
+  whoosh() { noise(.4, { freq: 500, to: 2600, vol: .18 }); },
+  correct() {
+    [523, 659, 784, 1047].forEach((f, i) => tone(f, .22, { type: 'triangle', vol: .28, at: i * .09 }));
+    tone(1568, .45, { vol: .12, at: .36 });
+  },
+  wrong() { tone(330, .22, { vol: .12 }); tone(262, .32, { vol: .1, at: .18 }); }, // 일부러 밋밋하게
+  poke() { tone(190, .06, { type: 'square', vol: .07 }); noise(.05, { freq: 2600, vol: .08 }); },
+  drum(n) { tone(160, .28, { to: 50, vol: .5 }); noise(.12, { freq: 900, vol: .18 }); tone(392 + n * 130, .28, { type: 'triangle', vol: .18, at: .02 }); },
+  stamp() { tone(120, .32, { to: 45, vol: .55 }); noise(.15, { freq: 400, vol: .25 }); tone(1046, .5, { vol: .15, at: .12 }); },
+  sparkle() { for (let i = 0; i < 6; i++) tone(1200 + Math.random() * 1400, .12, { vol: .07, at: i * .05 }); },
+  play() { [784, 988, 1175, 988].forEach((f, i) => tone(f, .1, { type: 'square', vol: .05, at: i * .14 })); },
+  fanfare() {
+    [[523, 0, .15], [659, .15, .15], [784, .3, .15], [1047, .45, .35], [784, .82, .15], [1047, .97, .6]]
+      .forEach(([f, a, d]) => { tone(f, d + .1, { type: 'triangle', vol: .3, at: a }); tone(f / 2, d + .1, { vol: .14, at: a }); });
+    for (let i = 0; i < 8; i++) tone(1500 + Math.random() * 1500, .12, { vol: .06, at: 1 + i * .06 });
+  }
+};
+
+function setCaption(t) { $('#caption').textContent = CONFIG.showCaption ? (t || '') : ''; }
+function say(text, v = {}) {
+  setCaption(text);
+  const rate = v.rate ?? CONFIG.tts.rate;
+  const est = Math.max(900, text.length * 230 / rate);
+  return new Promise(res => {
+    if (MUTE_TTS || !HAS_TTS) { setTimeout(res, est); return; }
+    const doSpeak = () => {
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = 'ko-KR'; if (TTS.voice) u.voice = TTS.voice;
+      u.rate = rate; u.pitch = v.pitch ?? CONFIG.tts.pitch; u.volume = v.volume ?? 1;
+      let done = false;
+      const fin = () => { if (done) return; done = true; clearTimeout(gt); res(); };
+      const gt = setTimeout(fin, est + 3000);   // onend가 안 오는 기기 대비
+      u.onend = fin; u.onerror = fin;
+      CURRENT_U = u;                           // 일부 크롬 GC 버그 방지
+      speechSynthesis.speak(u);
+    };
+    if (speechSynthesis.speaking || speechSynthesis.pending) { speechSynthesis.cancel(); setTimeout(doSpeak, 80); }
+    else doSpeak();
+  });
+}
+const narr = () => ({ pitch: CONFIG.tts.narratorPitch, rate: CONFIG.tts.rate });
+const voiceOf = (id, ex = {}) => Object.assign({ pitch: CHARS[id].pitch, rate: CONFIG.tts.rate }, ex);
+function hasJong(w) { const c = w.charCodeAt(w.length - 1); return c >= 0xAC00 && c <= 0xD7A3 && (c - 0xAC00) % 28 !== 0; }
+const ya = n => n + (hasJong(n) ? '이야' : '야');
+const tpl = s => s.replace(/\{name\}/g, CHARS[STATE.hero].name);
+
+/* =====================================================================
+   상태·흐름 제어
+   ===================================================================== */
+const stage = $('#stage'), overlay = $('#overlay');
+const STATE = { hero: 'mong', log: null };
+const ABORT = new Error('abort');
+let RUN = 0, TIMERS = [], GATE_NEXT = null;
+
+function resetLog() {
+  STATE.log = { t0: Date.now(), end: null, ch: { 1: { wrong: 0, hint: false }, 2: { wrong: 0, hint: false }, 3: { wrong: 0, hint: false, taps: 0 } } };
+}
+resetLog();
+
+function makeCtx(id) {
+  const ctx = {
+    alive: () => id === RUN,
+    check() { if (id !== RUN) throw ABORT; },
+    async sleep(ms) { await new Promise(r => setTimeout(r, ms)); ctx.check(); },
+    async say(t, o) { await say(t, o); ctx.check(); },
+    tap(el) {
+      return new Promise(res => {
+        const h = e => { e.preventDefault(); el.removeEventListener('pointerdown', h); res(e); };
+        el.addEventListener('pointerdown', h);
+      }).then(v => { ctx.check(); return v; });
+    },
+    every(ms, fn) {
+      const t = setInterval(() => { if (id !== RUN) { clearInterval(t); return; } fn(); }, ms);
+      TIMERS.push(t); return () => clearInterval(t);
+    }
+  };
+  return ctx;
+}
+function go(fn) {
+  RUN++; const id = RUN;
+  GATE_NEXT = null;
+  TIMERS.forEach(clearInterval); TIMERS = [];
+  try { if (HAS_TTS) speechSynthesis.cancel(); } catch (e) {}
+  stage.innerHTML = ''; overlay.innerHTML = ''; overlay.className = '';
+  setCaption('');
+  const c = makeCtx(id);
+  setTimeout(() => { if (id !== RUN) return; fn(c).catch(e => { if (e !== ABORT) console.error(e); }); }, 60);
+}
+function setLabel(t) { $('#chapLabel').textContent = t; }
+
+/* ---------- 장면 도우미 ---------- */
+function makeChar(id, { mood = 'happy', pos = 'left' } = {}) {
+  const el = document.createElement('div');
+  el.className = `char pos-${pos}`; el.dataset.id = id;
+  el.innerHTML = `<div class="mover"><div class="inner">${charSVG(id, mood)}</div></div>`;
+  stage.appendChild(el); return el;
+}
+const mover = el => el.querySelector('.mover');
+const inner = el => el.querySelector('.inner');
+function setMood(el, m) { inner(el).innerHTML = charSVG(el.dataset.id, m); }
+function setAnim(el, cls) { inner(el).className = 'inner ' + (cls || ''); }
+function setMove(el, cls) {
+  mover(el).className = 'mover ' + (cls || '');
+}
+function retrigger(node, cls) { node.classList.remove(cls); void node.offsetWidth; node.classList.add(cls); }
+function addProp(el, html, cls) { const p = document.createElement('div'); p.className = 'prop ' + cls; p.innerHTML = html; mover(el).appendChild(p); return p; }
+function bubble(el, { icon = '', text = '', side = 'right' } = {}) {
+  removeBubble(el);
+  const b = document.createElement('div'); b.className = 'bubble ' + side;
+  b.innerHTML = `<div class="b-icon">${icon}</div>${CONFIG.showTeacherLabels && text ? `<div class="b-text">${text}</div>` : ''}`;
+  mover(el).appendChild(b); return b;
+}
+function removeBubble(el) { el.querySelectorAll('.bubble').forEach(b => b.remove()); }
+function emote(el, html) { const e = document.createElement('div'); e.className = 'emote'; e.innerHTML = html; mover(el).appendChild(e); setTimeout(() => e.remove(), 1900); }
+function sparkle(el) {
+  const r = el.getBoundingClientRect();
+  for (let i = 0; i < 8; i++) {
+    const s = document.createElement('div'); s.className = 'spark'; s.innerHTML = ICON.star;
+    const a = i / 8 * Math.PI * 2;
+    s.style.left = (r.left + r.width / 2) + 'px'; s.style.top = (r.top + r.height * .4) + 'px';
+    s.style.setProperty('--dx', (Math.cos(a) * r.width * .75).toFixed(0) + 'px');
+    s.style.setProperty('--dy', (Math.sin(a) * r.height * .5).toFixed(0) + 'px');
+    stage.appendChild(s); setTimeout(() => s.remove(), 1200);
+  }
+}
+function pokeFx(hero) {
+  const r = hero.getBoundingClientRect();
+  const d = document.createElement('div'); d.className = 'pokefx'; d.innerHTML = ICON.burst;
+  d.style.left = (r.right - r.width * .14) + 'px';
+  d.style.top = (r.top + r.height * (.45 + (Math.random() - .5) * .2)) + 'px';
+  stage.appendChild(d); setTimeout(() => d.remove(), 560);
+}
+function floatIcon(x, y, html, delay = 0) {
+  const d = document.createElement('div'); d.className = 'floaty-icon';
+  d.style.left = x + 'px'; d.style.top = y + 'px'; d.style.animationDelay = delay + 's'; d.innerHTML = html;
+  stage.appendChild(d); setTimeout(() => d.remove(), 2200 + delay * 1000);
+}
+function heartsBetween(a, b) {
+  const ra = a.getBoundingClientRect(), rb = b.getBoundingClientRect();
+  const x = (ra.right + rb.left) / 2, y = Math.min(ra.top, rb.top) + ra.height * .3;
+  [0, .35, .7].forEach((d, i) => floatIcon(x + (i - 1) * 30, y, ICON.heart, d));
+}
+const others = () => HEROES.filter(x => x !== STATE.hero);
+
+function holdButton(btn, ms, done) {
+  const fill = btn.querySelector('.fill');
+  let t0 = 0, raf = 0, fired = false;
+  const fire = () => {
+    if (fired) return; fired = true; done();
+    setTimeout(() => { fired = false; if (fill) fill.style.transform = 'scaleX(0)'; }, 500);
+  };
+  const step = () => {
+    const p = Math.min(1, (performance.now() - t0) / ms);
+    if (fill) fill.style.transform = `scaleX(${p})`;
+    if (p >= 1) { fire(); return; }
+    raf = requestAnimationFrame(step);
+  };
+  btn.addEventListener('pointerdown', e => {
+    e.preventDefault(); e.stopPropagation();
+    if (fired) return;
+    if (ms <= 0) { fire(); return; }
+    t0 = performance.now(); cancelAnimationFrame(raf); raf = requestAnimationFrame(step);
+  });
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => btn.addEventListener(ev, () => {
+    if (fired) return; cancelAnimationFrame(raf); if (fill) fill.style.transform = 'scaleX(0)';
+  }));
+  return fire;
+}
+
+/* ---------- 선택 카드 (2지선다) ---------- */
+function choose(c, { log, wrong, right, wrongLine, wrongLabel = '', rightLabel = '' }) {
+  return new Promise(resolve => {
+    overlay.className = 'show dim';
+    const box = document.createElement('div'); box.className = 'choices';
+    const mk = (art, ok, label) => {
+      const d = document.createElement('button'); d.className = 'card'; d.dataset.ok = ok ? '1' : '0';
+      d.innerHTML = `<div class="card-art">${art}</div>${CONFIG.showTeacherLabels ? `<div class="card-note">${label}</div>` : ''}`;
+      return d;
+    };
+    const cards = [mk(wrong, false, wrongLabel), mk(right, true, rightLabel)];
+    if (CONFIG.shuffleChoices && Math.random() < .5) cards.reverse();
+    cards.forEach((d, i) => { d.style.animationDelay = `${i * .15}s, ${i * .15 + .6}s`; box.appendChild(d); });
+    overlay.appendChild(box); sfx.pop();
+    const rightCard = cards.find(d => d.dataset.ok === '1');
+    let busy = false;
+    cards.forEach(d => d.addEventListener('pointerdown', async e => {
+      e.preventDefault();
+      if (busy || !c.alive()) return;
+      busy = true;
+      if (d.dataset.ok === '1') {
+        d.classList.remove('hint'); d.classList.add('chosen');
+        cards.forEach(x => { if (x !== d) x.classList.add('fade'); });
+        await new Promise(r => setTimeout(r, 700));
+        if (!c.alive()) return;
+        overlay.innerHTML = ''; overlay.className = '';
+        resolve();
+      } else {
+        log.wrong++;
+        retrigger(d, 'nope'); sfx.wrong();
+        try { await c.say(wrongLine, narr()); } catch (err) { return; }
+        d.classList.remove('nope');
+        if (CONFIG.hintAfterWrong > 0 && log.wrong >= CONFIG.hintAfterWrong) { rightCard.classList.add('hint'); log.hint = true; }
+        busy = false;
+      }
+    }));
+  });
+}
+
+/* 카드 그림 */
+function artThrow() {
+  return `<div class="layer pose-throw" style="left:4%;top:18%;width:62%;height:74%">${charSVG(STATE.hero, 'angry')}</div>
+    <div class="layer flyer" style="right:2%;top:2%;width:30%">${ch1ItemHTML()}</div>
+    <div class="layer" style="left:52%;top:18%;width:22%;height:22%">${ICON.speed}</div>`;
+}
+function artNo() {
+  return `<div class="layer wave" style="left:2%;top:20%;width:58%;height:70%"><div class="inner shake-no">${charSVG(STATE.hero, 'talk')}</div></div>
+    <div class="layer" style="right:2%;top:6%;width:42%">${ICON.xSign}</div>`;
+}
+function artPush(F) {
+  return `<div class="layer pose-push" style="left:0;top:20%;width:58%;height:70%">${charSVG(STATE.hero, 'angry')}</div>
+    <div class="layer" style="left:47%;top:34%;width:18%;height:18%">${ICON.burst}</div>
+    <div class="layer" style="right:-6%;top:36%;width:44%;height:53%;transform:rotate(28deg)">${charSVG(F, 'surprised')}</div>`;
+}
+function artStop() {
+  return `<div class="layer pose-stop" style="left:0;top:20%;width:58%;height:70%">${charSVG(STATE.hero, 'talk')}</div>
+    <div class="layer" style="right:2%;top:4%;width:44%">${ICON.stopSign}</div>`;
+}
+function artFace(m) {
+  return `<div class="layer" style="left:12%;top:4%;width:76%;height:91%"><div class="inner ${m === 'annoyed' ? 'shake-no' : 'bob'}">${charSVG(STATE.hero, m)}</div></div>`;
+}
+
+/* ---------- 교사 게이트 ---------- */
+function teacherGate(c, { log, chips, phrase, icon }) {
+  return new Promise(resolve => {
+    overlay.className = 'show dim';
+    const g = document.createElement('div'); g.className = 'gate';
+    g.innerHTML = `<div class="gate-board">
+        <div class="gate-hero"><div class="inner bob">${charSVG(STATE.hero, 'talk')}</div></div>
+        <div class="gate-right">
+          <div class="gate-icon">${icon}</div>
+          <div class="chips">${chips.map(s => `<span class="chip">${s}</span>`).join('')}</div>
+          <button class="replay" aria-label="다시 듣기">${ICON.speaker}</button>
+        </div>
+      </div>
+      <div class="gate-note">우리 친구도 함께 말해볼까요?</div>`;
+    const tb = document.createElement('button'); tb.className = 'teacher-next';
+    tb.innerHTML = `<span class="fill"></span><span class="lbl">교사 확인: 다음으로 ➔</span><small class="lbl">${CONFIG.teacherHoldMs > 0 ? '길게 누르기 · Enter' : '터치 · Enter'}</small>`;
+    overlay.appendChild(g); overlay.appendChild(tb);
+    sfx.pop();
+    const chipEls = [...g.querySelectorAll('.chip')];
+    let playing = false, closed = false;
+    async function model(first) {
+      if (playing || closed) return;
+      playing = true; g.classList.remove('listening');
+      try {
+        if (first) { await c.say('우리 친구도 함께 말해볼까요?', narr()); if (closed) throw ABORT; }
+        for (const el of chipEls) {
+          el.classList.add('lit'); sfx.blip();
+          await c.say(el.textContent, voiceOf(STATE.hero, { rate: .75 }));
+          if (closed) throw ABORT;
+        }
+        await c.sleep(150);
+        chipEls.forEach(e => e.classList.add('lit'));
+        await c.say(phrase, voiceOf(STATE.hero, { rate: .85 }));
+        if (closed) throw ABORT;
+        chipEls.forEach(e => e.classList.remove('lit'));
+        g.classList.add('listening');
+      } catch (e) { /* 중단 */ }
+      playing = false;
+    }
+    model(true);
+    g.querySelector('.replay').addEventListener('pointerdown', e => { e.preventDefault(); sfx.tap(); model(false); });
+    const finish = () => {
+      if (closed) return; closed = true; GATE_NEXT = null; log.gate = true;
+      try { if (HAS_TTS) speechSynthesis.cancel(); } catch (e) {}
+      sfx.correct(); overlay.innerHTML = ''; overlay.className = '';
+      resolve();
+    };
+    GATE_NEXT = holdButton(tb, CONFIG.teacherHoldMs, finish);
+  });
+}
+
+async function chapterCard(c, n, icon) {
+  const d = document.createElement('div'); d.className = 'chapcard wood';
+  d.innerHTML = `<div class="cc-num">${n}</div><div class="cc-icon">${icon}</div>`;
+  stage.appendChild(d); sfx.whoosh();
+  await c.say(['첫 번째 이야기', '두 번째 이야기', '세 번째 이야기'][n - 1], narr());
+  await c.sleep(250);
+  d.classList.add('out'); await c.sleep(450); d.remove();
+}
+
+/* =====================================================================
+   [Intro] 타이틀 · 단짝 고르기
+   ===================================================================== */
+async function intro(c) {
+  setLabel('');
+  const t = document.createElement('div'); t.className = 'title wood';
+  t.innerHTML = `<div class="t-top">${CONFIG.title.top}</div><div class="t-main">${CONFIG.title.main}</div>`;
+  stage.appendChild(t);
+  const start = document.createElement('button'); start.className = 'startBtn'; start.setAttribute('aria-label', '시작');
+  start.innerHTML = ICON.play; stage.appendChild(start);
+
+  const jumpFns = [ch1, ch2, ch3, ending];
+  const jump = document.createElement('div'); jump.className = 'jumps';
+  jump.innerHTML = '<span>교사용 바로가기</span>' + ['1장', '2장', '3장', '엔딩'].map((x, i) => `<button data-i="${i}">${x}</button>`).join('');
+  stage.appendChild(jump);
+  jump.addEventListener('pointerdown', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    e.preventDefault(); resetLog(); go(jumpFns[+b.dataset.i]);
+  });
+  setTimeout(() => {
+    if (!c.alive() || !HAS_TTS) return;
+    pickVoice();
+    if (TTS.count > 0 && !TTS.voice) {
+      const w = document.createElement('div'); w.className = 'warn';
+      w.textContent = '이 기기에서 한국어 음성(TTS)을 찾지 못했습니다. 기기 설정에서 한국어 음성을 설치하거나, 소리 버튼으로 음성을 끄고 교사가 직접 읽어 주세요.';
+      stage.appendChild(w);
+    }
+  }, 1500);
+
+  await c.tap(start);
+  start.classList.add('gone'); sfx.pop();
+  resetLog();
+  await c.say(`${CONFIG.title.top} ${CONFIG.title.main} 같이 갈 친구를 골라 볼까?`, narr());
+
+  const picks = document.createElement('div'); picks.className = 'picks';
+  picks.innerHTML = HEROES.map((id, i) =>
+    `<button class="pick" data-id="${id}" style="--c:${CHARS[id].color};animation-delay:${i * .12}s"><div class="pick-char">${charSVG(id, 'happy')}</div>${CONFIG.showTeacherLabels ? `<div class="pick-name">${CHARS[id].name}</div>` : ''}</button>`).join('');
+  stage.appendChild(picks); sfx.pop();
+  const chosen = await new Promise(res => {
+    picks.addEventListener('pointerdown', e => { const b = e.target.closest('.pick'); if (!b) return; e.preventDefault(); res(b); });
+  });
+  c.check();
+  const id = chosen.dataset.id; STATE.hero = id;
+  [...picks.children].forEach(b => b.classList.add(b === chosen ? 'chosen' : 'out'));
+  sfx.correct();
+  await c.say(`나는 ${ya(CHARS[id].name)}! 같이 가자!`, voiceOf(id));
+  await c.sleep(300);
+  go(ch1);
+}
+
+/* =====================================================================
+   [Chapter 1] 하기 싫은 것 거절하기 — "싫어요 / 아니요"
+   ===================================================================== */
+async function ch1(c) {
+  const C1 = CONFIG.ch1, H = STATE.hero, F = C1.friend;
+  setLabel('1장 · 하기 싫은 것 거절하기 ("싫어요 / 아니요")');
+  await chapterCard(c, 1, ICON.xBadge);
+
+  const hero = makeChar(H, { pos: 'left' }); setAnim(hero, 'bob'); setMove(hero, 'enter-left'); sfx.hops(3);
+  await c.sleep(900);
+  const fr = makeChar(F, { pos: 'right' }); addProp(fr, ch1ItemHTML(), 'held');
+  setMove(fr, 'enter-right'); sfx.hops(4);
+  await c.sleep(1350);
+  setMove(fr, ''); setAnim(fr, 'bob reach');
+  await c.say(C1.friendLine, voiceOf(F));
+  setMove(fr, 'lean-in');
+  setMood(hero, 'worried'); setAnim(hero, 'shake-no'); emote(hero, ICON.sweatBig);
+  await c.say(C1.heroLine, voiceOf(H));
+  await c.say(C1.question, narr());
+  setAnim(hero, 'bob');
+
+  await choose(c, { log: STATE.log.ch[1], wrong: artThrow(), right: artNo(), wrongLine: C1.wrongLine, wrongLabel: '(던지기)', rightLabel: '(싫어요 · 아니요)' });
+
+  sfx.correct();
+  setMood(hero, 'talk'); setAnim(hero, 'wave shake-no');
+  bubble(hero, { icon: ICON.xBadge, text: C1.answer });
+  await c.say(C1.answer, voiceOf(H, { rate: .95 }));
+  setAnim(hero, 'bob');
+  setMood(fr, 'happy'); setAnim(fr, 'bob');
+  await c.say(C1.friendOk, voiceOf(F));
+  setMove(fr, 'exit-right'); sfx.hops(4);
+  removeBubble(hero);
+  setMood(hero, 'proud'); setAnim(hero, 'jump'); sparkle(hero); sfx.sparkle();
+  await c.sleep(1300);
+  setAnim(hero, 'bob');
+
+  await teacherGate(c, { log: STATE.log.ch[1], chips: C1.gateChips, phrase: C1.gatePhrase, icon: ICON.xBadge });
+  go(ch2);
+}
+
+/* =====================================================================
+   [Chapter 2] 좋아하는 물건 지키기 — "하지 마!"
+   ===================================================================== */
+async function ch2(c) {
+  const C2 = CONFIG.ch2, H = STATE.hero, F = others()[0];
+  setLabel('2장 · 좋아하는 물건 지키기 ("하지 마!")');
+  await chapterCard(c, 2, ICON.stopBadge);
+
+  const hero = makeChar(H, { pos: 'left' }); setAnim(hero, 'bob');
+  const toys = document.createElement('div'); toys.className = 'toys play';
+  toys.innerHTML = `<div class="toy tablet">${itemHTML('tablet')}</div><div class="toy clay">${itemHTML('clay')}</div>`;
+  stage.appendChild(toys);
+  sfx.play();
+  await c.sleep(400);
+  await c.say(C2.heroLine, voiceOf(H));
+
+  const fr = makeChar(F, { pos: 'right' }); setMove(fr, 'enter-right'); sfx.hops(4);
+  await c.sleep(1350);
+  setMove(fr, 'lean-in'); setAnim(fr, 'reach');
+  toys.className = 'toys tug';
+  await c.say(C2.friendLine, voiceOf(F));
+  setMood(hero, 'surprised'); emote(hero, ICON.sweatBig);
+  await c.sleep(400);
+  setMood(hero, 'worried');
+  await c.say(C2.question, narr());
+
+  await choose(c, { log: STATE.log.ch[2], wrong: artPush(F), right: artStop(), wrongLine: C2.wrongLine, wrongLabel: '(밀기)', rightLabel: '(하지 마!)' });
+
+  sfx.correct();
+  setMood(hero, 'talk'); setAnim(hero, 'pose-stop');
+  const sign = addProp(hero, ICON.stopSign, 'hold-stop');
+  const sp = c.say(C2.answer, voiceOf(H, { rate: .95 }));
+  await c.sleep(250);
+  setMood(fr, 'surprised'); setAnim(fr, ''); setMove(fr, 'recoil'); toys.className = 'toys';
+  await sp;
+  await c.say(C2.friendSorry, voiceOf(F));
+  setMood(fr, 'happy'); setAnim(fr, 'bob');
+  sign.remove();
+  setMood(hero, 'proud'); setAnim(hero, 'jump'); sparkle(hero); sfx.sparkle(); toys.className = 'toys safe';
+  await c.say(C2.praise, narr());
+  setAnim(hero, 'bob');
+
+  await teacherGate(c, { log: STATE.log.ch[2], chips: C2.gateChips, phrase: C2.gatePhrase, icon: ICON.stopBadge });
+  go(ch3);
+}
+
+/* =====================================================================
+   [Chapter 3] 불편한 장난 멈추게 하기 — "하지 마! / 싫어요!"
+   ===================================================================== */
+async function ch3(c) {
+  const C3 = CONFIG.ch3, H = STATE.hero, F = others()[1], log = STATE.log.ch[3];
+  setLabel('3장 · 불편한 장난 멈추게 하기 ("하지 마! / 싫어요!")');
+  await chapterCard(c, 3, ICON.stopBadge);
+
+  const hero = makeChar(H, { pos: 'left' }); setAnim(hero, 'bob');
+  const fr = makeChar(F, { pos: 'near' }); setMove(fr, 'enter-right'); sfx.hops(4);
+  await c.sleep(1350);
+  setMove(fr, ''); setMood(fr, 'proud');
+
+  let poking = false;
+  const pokeOnce = () => { if (!poking) return; sfx.poke(); retrigger(mover(hero), 'jolt'); pokeFx(hero); };
+  const startPoke = () => { poking = true; setMood(fr, 'proud'); setAnim(fr, 'poke poke-move'); pokeOnce(); };
+  const pausePoke = () => { poking = false; setAnim(fr, ''); };
+  const stopTimer = c.every(700, pokeOnce);
+  startPoke();
+  setMood(hero, 'annoyed');
+  await c.say(C3.intro, narr());
+
+  // 1단계: 감정 인지
+  await c.say(tpl(C3.faceQ), narr());
+  if (C3.emotionChoice) {
+    pausePoke();
+    await choose(c, { log, wrong: artFace('happy'), right: artFace('annoyed'), wrongLine: C3.faceWrong, wrongLabel: '(웃는 얼굴)', rightLabel: '(기분 나쁜 얼굴)' });
+    startPoke();
+  } else {
+    hero.classList.add('tap-me');
+    await c.tap(inner(hero));
+    hero.classList.remove('tap-me');
+  }
+  sfx.blip();
+  setMood(hero, 'annoyed'); setAnim(hero, 'shake-no');
+  await c.say(C3.feel, voiceOf(H));
+  setAnim(hero, 'bob');
+
+  // 2단계: 적극적 표현 — 큰 멈춤 버튼 3번
+  const btn = document.createElement('button'); btn.className = 'bigstop'; btn.setAttribute('aria-label', '하지 마');
+  btn.innerHTML = `<div class="bs-a"><div class="bs-b">${ICON.stopBadge}</div></div>`;
+  stage.appendChild(btn); sfx.pop();
+  await c.say(C3.buttonQ, narr());
+  btn.classList.add('ready');
+  for (let i = 0; i < C3.words.length; i++) {
+    await c.tap(btn);
+    log.taps++;
+    btn.classList.add('busy');
+    btn.style.setProperty('--s', (1 + .15 * (i + 1)).toFixed(2));
+    retrigger(btn, 'hit');
+    sfx.drum(i);
+    pausePoke(); setMood(fr, 'surprised'); retrigger(mover(fr), 'flinch');
+    setMood(hero, 'talk'); setAnim(hero, 'pose-stop');
+    bubble(hero, { icon: ICON.stopBadge, text: C3.words[i] });
+    await c.say(C3.words[i], voiceOf(H, { rate: 1, volume: 1 }));
+    btn.classList.remove('busy', 'hit');
+    if (i < C3.words.length - 1) {
+      await c.sleep(350);
+      setMood(hero, 'annoyed'); setAnim(hero, 'bob');
+      startPoke();
+    }
+  }
+  stopTimer(); poking = false;
+  btn.classList.add('done'); sfx.correct();
+  removeBubble(hero);
+  setMood(fr, 'worried'); setAnim(fr, '');
+  await c.sleep(400);
+  await c.say(C3.friendSorry, voiceOf(F));
+  setMood(fr, 'happy'); setAnim(fr, 'wave-hi');
+  setMood(hero, 'happy'); setAnim(hero, 'bob');
+  heartsBetween(hero, fr); sfx.sparkle();
+  await c.say(C3.praise, narr());
+  btn.remove();
+
+  await teacherGate(c, { log, chips: C3.gateChips, phrase: C3.gatePhrase, icon: ICON.stopBadge });
+  go(ending);
+}
+
+/* =====================================================================
+   [Ending] 칭찬 스탬프
+   ===================================================================== */
+function logText() {
+  const L = STATE.log, n = CHARS[STATE.hero].name;
+  const sec = Math.round(((L.end || Date.now()) - L.t0) / 1000);
+  const d = new Date();
+  const h = x => x.hint ? ' (정답 힌트 제공)' : '';
+  return `${d.getFullYear()}.${d.getMonth() + 1}.${d.getDate()} · 주인공 ${n}\n` +
+    `1장 오답 ${L.ch[1].wrong}회${h(L.ch[1])}\n` +
+    `2장 오답 ${L.ch[2].wrong}회${h(L.ch[2])}\n` +
+    `3장 감정 고르기 오답 ${L.ch[3].wrong}회${h(L.ch[3])} · 멈춤 버튼 ${L.ch[3].taps}회\n` +
+    `총 소요 ${Math.floor(sec / 60)}분 ${sec % 60}초`;
+}
+async function ending(c) {
+  setLabel('엔딩 · 칭찬 스탬프');
+  STATE.log.end = Date.now();
+  const H = STATE.hero, o = others();
+  const row = document.createElement('div'); row.className = 'party';
+  [o[0], H, 'pipi', o[1]].forEach((id, i) => {
+    row.innerHTML += `<div class="pc ${id === H ? 'hero' : ''}"><div class="inner cheer" style="animation-delay:${i * .12}s">${charSVG(id, 'proud')}</div></div>`;
+  });
+  stage.appendChild(row);
+  confetti(6000); sfx.fanfare();
+  await c.sleep(800);
+  const st = document.createElement('div'); st.className = 'stamp';
+  st.innerHTML = `<svg viewBox="0 0 200 200"><circle cx="100" cy="100" r="90" fill="rgba(255,255,255,.9)" stroke="#e53935" stroke-width="10"/><circle cx="100" cy="100" r="74" fill="none" stroke="#e53935" stroke-width="4"/><polygon points="${starPts(5, 30, 12, 100, 76)}" fill="#e53935"/><text x="100" y="146" text-anchor="middle" font-size="24" font-weight="900" fill="#e53935" font-family="Apple SD Gothic Neo, Malgun Gothic, sans-serif">참 잘했어요</text></svg>`;
+  stage.appendChild(st); sfx.stamp();
+  await c.say(CONFIG.ending.line, narr());
+
+  const lg = document.createElement('div'); lg.className = 'teacherLog';
+  lg.textContent = '교사 기록\n' + logText();
+  const cp = document.createElement('button'); cp.textContent = '기록 복사';
+  cp.addEventListener('click', async () => {
+    const txt = logText();
+    try { await navigator.clipboard.writeText(txt); cp.textContent = '복사됨'; }
+    catch (e) {
+      const ta = document.createElement('textarea'); ta.value = txt; document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); cp.textContent = '복사됨'; } catch (er) { cp.textContent = '복사 실패'; }
+      ta.remove();
+    }
+  });
+  lg.appendChild(cp); stage.appendChild(lg);
+
+  const again = document.createElement('button'); again.className = 'againBtn';
+  again.innerHTML = `<div class="ab">${ICON.replay}</div>${CONFIG.showTeacherLabels ? '<span>처음부터 다시 하기</span>' : ''}`;
+  stage.appendChild(again);
+  await c.tap(again);
+  sfx.pop(); go(intro);
+}
+
+/* ---------- 폭죽 ---------- */
+function confetti(ms) {
+  const cv = $('#confetti'), g = cv.getContext('2d');
+  const dpr = Math.min(2, window.devicePixelRatio || 1), W = innerWidth, H = innerHeight;
+  cv.width = W * dpr; cv.height = H * dpr; g.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const cols = ['#ff5a7a', '#ffd93b', '#4fc3f7', '#7ed957', '#b388ff', '#ff9f43'];
+  const P = [];
+  for (let i = 0; i < 170; i++) P.push({
+    x: Math.random() * W, y: -Math.random() * H * .8 - 20, vx: (Math.random() - .5) * 3, vy: 2 + Math.random() * 3.5,
+    r: Math.random() * 6.28, vr: (Math.random() - .5) * .25, w: 8 + Math.random() * 8, h: 6 + Math.random() * 8,
+    c: cols[i % cols.length], circ: Math.random() < .3
+  });
+  const t0 = performance.now(), my = RUN;
+  (function f(t) {
+    g.clearRect(0, 0, W, H);
+    if (my !== RUN) return;
+    const el = t - t0; let alive = 0;
+    for (const p of P) {
+      p.vy += .03; p.x += p.vx + Math.sin(t / 400 + p.r) * .6; p.y += p.vy; p.r += p.vr;
+      if (p.y > H + 20) { if (el < ms) { p.y = -20; p.vy = 2 + Math.random() * 3; } else continue; }
+      alive++;
+      g.save(); g.translate(p.x, p.y); g.rotate(p.r); g.fillStyle = p.c;
+      if (p.circ) { g.beginPath(); g.arc(0, 0, p.w / 2, 0, 6.28); g.fill(); }
+      else g.fillRect(-p.w / 2, -p.h / 2, p.w, p.h * Math.abs(Math.cos(p.r)) + 2);
+      g.restore();
+    }
+    if (alive) requestAnimationFrame(f); else g.clearRect(0, 0, W, H);
+  })(t0);
+}
+
+/* =====================================================================
+   교사 도구 막대 · 시작
+   ===================================================================== */
+function applySound() {
+  MUTE_TTS = SOUND >= 1; MUTE_SFX = SOUND === 2;
+  if (MUTE_TTS && HAS_TTS) { try { speechSynthesis.cancel(); } catch (e) {} }
+  $('#bSound').innerHTML = SOUND === 0 ? ICON.sOn : SOUND === 1 ? ICON.sOn + '<small>음성끔</small>' : ICON.sOff;
+}
+$('#bSound').addEventListener('click', () => { SOUND = (SOUND + 1) % 3; applySound(); });
+$('#bFull').innerHTML = ICON.full;
+$('#bFull').addEventListener('click', () => {
+  const d = document, el = d.documentElement;
+  if (!d.fullscreenElement && !d.webkitFullscreenElement) {
+    const f = el.requestFullscreen || el.webkitRequestFullscreen; if (f) f.call(el);
+  } else {
+    const x = d.exitFullscreen || d.webkitExitFullscreen; if (x) x.call(d);
+  }
+});
+$('#bHome').insertAdjacentHTML('beforeend', ICON.home);
+holdButton($('#bHome'), 700, () => go(intro));
+document.addEventListener('keydown', e => {
+  if ((e.key === 'Enter' || e.key === 'ArrowRight' || e.key === 'n' || e.key === 'N') && GATE_NEXT) { e.preventDefault(); GATE_NEXT(); }
+});
+document.addEventListener('contextmenu', e => e.preventDefault());
+
+buildBG();
+applySound();
+go(intro);
+</script>
+</body>
+</html>
