@@ -263,7 +263,7 @@ button{font-family:inherit;border:0;padding:0;background:none;cursor:pointer;tou
 .bk-ic.side{left:auto;right:12%;margin:0;top:10%}
 .bk-ic svg,.bk-ic img{width:100%;height:auto;display:block}
 .bk-text{flex:0 0 auto;min-height:24%;display:flex;align-items:center;justify-content:center;padding:1.4vh 9vw 3.4vh;font-size:min(5.6vh,3.8vw);font-weight:900;color:var(--ink);text-align:center;word-break:keep-all;line-height:1.3}
-.bk-page.title .bk-text{font-size:min(8vh,5.6vw);color:#b8733a}
+.bk-page.cover .bk-text{font-size:min(8vh,5.6vw);color:#b8733a}
 .bk-tag{position:absolute;top:3vmin;left:3.5vmin;font-size:12px;background:rgba(255,255,255,.9);border:1px solid #d7b88a;border-radius:8px;padding:2px 8px;color:#7a4a22;pointer-events:none}
 .bk-tag:empty{display:none}
 .bk-say{position:absolute;right:2.2vmin;bottom:2.2vmin;width:min(9vh,7vw);aspect-ratio:1;border-radius:50%;background:#4fc3f7;border:.6vmin solid #fff;box-shadow:0 .8vmin 0 #2b8fc4;display:flex;align-items:center;justify-content:center}
@@ -469,7 +469,7 @@ const CONFIG = {
     breathQ: '이제 후~ 숨을 쉬어요. 바람 버튼을 세 번 눌러 봐!',
     breath: '후~',
     calmDone: '마음이 조금 편해졌어요. 이제 말로 알려 줘요.',
-    say: { 1: '싫어요', 2: '싫어요.', 3: '시끄러워요. 싫어요.', 4: '너무 시끄러워요. 작게 해 주세요.' },
+    say: { 1: '싫어요', 2: '싫어요.', 3: '시끄러워요. 싫어요.', 4: '작게 해 주세요.' },
     friendOk: '아, 시끄러웠구나! 작게 할게.',
     praise: '팔로 X를 만들고, 숨 쉬고, 말로 알렸어요!'
   },
@@ -489,14 +489,14 @@ const CONFIG = {
     puzzle: {
       teacherLine: '이 퍼즐을 맞춰 볼까?',
       heroLine: '어, 안 들어가… 너무 어려워!',
-      say: { 1: '어려워요', 2: '어려워요.', 3: '어려워요. 도와주세요.', 4: '이거 어려워요. 같이 해 주세요.' },
+      say: { 1: '어려워요', 2: '어려워요.', 3: '어려워요. 도와주세요.', 4: '도와주세요.' },
       teacherOk: '알려 줘서 고마워! 같이 해 보자.',
       praise: '어려울 때 말로 알렸어요!'
     },
     question: {
       teacherLine: '이건 이름이 뭘까?',
       heroLine: '음… 모르겠어…',
-      say: { 1: '몰라요', 2: '몰라요.', 3: '잘 몰라요. 알려 주세요.', 4: '잘 모르겠어요. 다시 알려 주세요.' },
+      say: { 1: '몰라요', 2: '몰라요.', 3: '몰라요. 알려 주세요.', 4: '다시 알려 주세요.' },
       teacherOk: '괜찮아! 몰라도 돼요. 말해 줘서 고마워.',
       answer: '이건 파인애플이에요!',
       repeat: '파인애플!',
@@ -507,7 +507,7 @@ const CONFIG = {
     teacherLine: '이제 색칠하기 시간이에요!',
     heroLine: '으… 하기 싫어. 힘들어…',
     question: '어떻게 말할까?',
-    say: { 1: '쉬고 싶어요', 2: '쉬고 싶어요.', 3: '조금 쉬고 싶어요.', 4: '조금 쉬고 다시 할게요.' },
+    say: { 1: '쉬고 싶어요', 2: '쉬고 싶어요.', 3: '조금 쉬고 싶어요.', 4: '쉬고 할게요.' },
     teacherOk: '말해 줘서 고마워. 조금 쉬고 하자!',
     restSec: 6,
     restLine: '쉬는 시간이에요. 후~ 편하게 쉬어요.',
@@ -518,7 +518,7 @@ const CONFIG = {
     heroLine: '나는 탭이랑 클레이가 좋아!',
     friendLine: '나 줘! 나 줘!',
     question: '내 탭이랑 클레이를 뺏으려고 해! 어떻게 말할까?',
-    say: { 1: '안 돼요', 2: '안 돼요.', 3: '내 거예요. 안 돼요.', 4: '내 거예요. 다 하고 빌려줄게요.' },
+    say: { 1: '안 돼요', 2: '안 돼요.', 3: '내 거예요. 안 돼요.', 4: '이따가 줄게요.' },
     friendSorry: { 1: '앗, 미안해!', 2: '앗, 미안해!', 3: '앗, 미안해!', 4: '알았어, 기다릴게!' },
     praise: '내 물건을 잘 지켰어요!'
   },
@@ -528,7 +528,7 @@ const CONFIG = {
     stopWord: '하지 마세요!',
     friendAgain: '헤헤, 또 해야지!',
     question: '말해도 계속해요. 어떻게 할까?',
-    say: { 1: '도와주세요', 2: '도와주세요.', 3: '선생님, 도와주세요.', 4: '선생님, 친구가 자꾸 쳐요. 도와주세요.' },
+    say: { 1: '도와주세요', 2: '도와주세요.', 3: '선생님, 도와주세요.', 4: '친구가 쳐요. 도와주세요.' },
     teacherLine: '말해 줘서 고마워. 친구가 싫다고 했어요. 이제 멈춰요.',
     friendSorry: '미안해, 이제 안 할게!',
     praise: '선생님께 잘 알렸어요!'
@@ -597,7 +597,7 @@ const CONFIG = {
       ['조망', '갑자기 가져가면 내 마음이 속상할 수 있어요.', 'c=hero:worried'],
       ['설명', '친구를 밀면 친구가 넘어져서 다칠 수 있어요.', 'r=friend:surprised i=burst'],
       ['코칭', '나는 팔로 X를 만들고 "안 돼요."라고 말할 수 있어요.', 'c=hero:talk:pose-x i=cant'],
-      ['코칭', '다 놀고 나서 "빌려줄게요."라고 말할 수도 있어요.', 'l=hero:happy r=friend:happy i=heart'],
+      ['코칭', '"이따가 줄게요."라고 말할 수도 있어요.', 'l=hero:happy r=friend:happy i=heart'],
       ['조망', '내가 말하면 친구는 기다려야 한다는 것을 알 수 있어요.', 'r=friend:happy'],
       ['설명', '나는 말로 내 물건을 지킬 수 있어요.', 'c=hero:proud:pose-x i=star']
     ] },
@@ -1541,7 +1541,7 @@ async function storyBook(c, { n = 0, title, art, pages, last }) {
   for (;;) {
     const [kind, text, a] = all[i];
     const lastPage = i === all.length - 1;
-    pg.classList.toggle('title', i === 0);
+    pg.classList.toggle('cover', i === 0);
     bk.querySelector('.bk-art').innerHTML = pageArt(a, n);
     bk.querySelector('.bk-text').textContent = tpl(text);
     bk.querySelector('.bk-tag').textContent = !CONFIG.showTeacherLabels ? '' : i === 0
