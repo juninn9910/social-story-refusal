@@ -5,8 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#7fd8ff">
 <title>내 마음 말하기 정글 모험</title>
-<script src="listen-guard.js"></script>
+<script src="listen-guard.js?v=single-voice-3"></script>
 <script src="practice-recorder.js"></script>
+<script src="motion-sync.js?v=3"></script>
 <style>
 :root{--ink:#4a2b1a}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -462,7 +463,7 @@ const CONFIG = {
   title: { top: '내 마음 말하기', main: '정글 모험!' },
   // 구글 시트의 탭 이름. 나중에 다른 상황 이야기를 만들면 여기만 바꾸면 새 탭이 자동으로 생깁니다.
   story: '거절·어려움 표현하기',
-  tts: { rate: 0.88, pitch: 1.15, narratorPitch: 1.1 },  // 말 속도·높이 (0.1~2)
+  tts: { rate: 0.88, pitch: 1, narratorPitch: 1 },  // 말 속도·높이 (0.1~2)
   sfxVolume: 0.8,           // 효과음 크기 (0~1)
   shuffleChoices: true,     // 정답 카드 위치를 매번 무작위로 (위치 암기 방지)
   hintAfterWrong: 2,        // 오답 n회 후 정답 카드 반짝임 (0 = 끔)
@@ -475,7 +476,7 @@ const CONFIG = {
   // key는 파일에 적지 마세요(깃허브에 올리면 누구나 볼 수 있음). 기기마다 교사 설정에서 한 번 입력하면 기억합니다.
   sheet: { url: '', key: '' },
   // 녹음 음성 파일 폴더 (클로바더빙 등). 파일이 없으면 기기 음성(TTS)으로 읽어 줍니다.
-  audioDir: 'audio',
+  audioDir: '',
 
   /* 학생 유형 — 교사 설정에서 고르면 단계·수준·오답 카드가 자동으로 맞춰집니다.
      stages: 기본 단계(1~6) / level: 표현 수준(1~4) / task3: 3단계 장면('puzzle' 어려운 과제, 'question' 어려운 질문)
@@ -542,7 +543,7 @@ const CONFIG = {
       teacherLine: '이건 이름이 뭘까?',
       heroLine: '음… 모르겠어…',
       say: { 1: '몰라요', 2: '몰라요.', 3: '몰라요. 알려 주세요.', 4: '다시 알려 주세요.' },
-      teacherOk: '괜찮아! 몰라도 돼요. 말해 줘서 고마워.',
+      teacherOk: '괜찮아! 몰라도 돼. 말해 줘서 고마워.',
       answer: '이건 파인애플이에요!',
       repeat: '파인애플!',
       praise: '모를 때 말로 알렸어요!'
@@ -622,7 +623,7 @@ const CONFIG = {
       ['조망', '그런데 나는 먹고 싶지 않을 때도 있어요.', 'c=hero:worried i=broccoli'],
       ['긍정', '싫은 것은 싫다고 말해도 괜찮아요.', 'c=hero:happy'],
       ['설명', '음식을 던지면 친구가 다칠 수 있어요.', 'r=friend:surprised i=burst'],
-      ['코칭', '나는 말이나 몸짓, 버튼으로 "싫어요."라고 알릴 수 있어요.', 'c=hero:talk:pose-x i=no'],
+      ['코칭', '나는 말이나 몸짓, 버튼으로 "싫어요"라고 알릴 수 있어요.', 'c=hero:talk:pose-x i=no'],
       ['조망', '내가 말하면 친구는 "알았어!" 하고 내 마음을 알 수 있어요.', 'l=hero:happy r=friend:happy'],
       ['설명', '먹기 싫을 때, 나는 말로 알릴 수 있어요.', 'c=hero:proud:pose-x i=star']
     ] },
@@ -633,7 +634,7 @@ const CONFIG = {
       ['조망', '어려우면 마음이 답답해서 소리가 나오려고 할 때가 있어요.', 'c=hero:annoyed i=loud'],
       ['설명', '선생님은 내가 힘든 모습을 보이면 어떤 도움이 필요한지 함께 살펴봐요.', 'r=teacher:surprised i=qmark'],
       ['코칭', '어려울 때 나는 말이나 몸짓, 버튼으로 도움을 요청할 수 있어요.', 'c=hero:talk:pose-raise i=hard'],
-      ['코칭', '답을 모를 때는 "몰라요."라고 말할 수 있어요.', 'c=hero:talk:pose-raise i=dunno'],
+      ['코칭', '답을 모를 때는 "몰라요"라고 말할 수 있어요.', 'c=hero:talk:pose-raise i=dunno'],
       ['코칭', '선생님은 그 말을 들으면 나를 도와줄 수 있어요.', 'l=hero:happy r=teacher:talk'],
       ['긍정', '몰라도 괜찮아요. 같이 배우면 돼요.', 'l=hero:happy r=teacher:happy i=heart'],
       ['설명', '어려울 때 말로 알리면, 나는 선생님과 함께 할 수 있어요.', 'c=hero:proud:pose-raise i=star']
@@ -643,10 +644,10 @@ const CONFIG = {
       ['설명', '색칠하기처럼 하기 싫은 활동이 있을 때도 있어요.', 'c=hero:worried i=paper'],
       ['조망', '오래 하면 몸과 마음이 힘들어질 수 있어요.', 'c=hero:worried i=sweatBig'],
       ['설명', '어른은 내가 힘든 이유와 필요한 도움을 함께 살펴봐요.', 'r=pipi:surprised i=loud'],
-      ['코칭', '힘들 때 나는 편한 방법으로 "쉬고 싶어요."라고 알릴 수 있어요.', 'c=hero:talk:pose-raise i=rest'],
+      ['코칭', '힘들 때 나는 편한 방법으로 "쉬고 싶어요"라고 알릴 수 있어요.', 'c=hero:talk:pose-raise i=rest'],
       ['설명', '선생님은 내 휴식 요청을 듣고 쉴 곳을 마련해 줘요.', 'l=hero:happy r=teacher:talk i=rest'],
       ['설명', '쉬는 방법은 사람마다 달라요. 조용히 있어도 괜찮아요.', 'c=hero:happy i=wind'],
-      ['설명', '쉰 뒤에는 더 쉬기, 도움받기, 다시 하기, 마치기 중에서 함께 정해요.', 'c=hero:happy i=paper'],
+      ['설명', '쉰 뒤에는 더 쉴지, 도움을 받을지, 다시 할지, 마칠지 함께 정해요.', 'c=hero:happy i=paper'],
       ['긍정', '힘들 때 말로 알리는 것은 좋은 방법이에요.', 'c=hero:proud:pose-raise i=star']
     ] },
     5: { title: '내 물건을 지킬 때', art: 'c=hero:happy i=tablet', pages: [
@@ -655,7 +656,7 @@ const CONFIG = {
       ['설명', '내 물건을 가져가려면 먼저 나에게 물어봐야 해요.', 'r=friend:happy i=tablet'],
       ['조망', '갑자기 가져가면 내 마음이 속상할 수 있어요.', 'c=hero:worried'],
       ['설명', '친구를 밀면 친구가 넘어져서 다칠 수 있어요.', 'r=friend:surprised i=burst'],
-      ['코칭', '나는 말이나 몸짓, 버튼으로 "안 돼요."라고 알릴 수 있어요.', 'c=hero:talk:pose-x i=cant'],
+      ['코칭', '나는 말이나 몸짓, 버튼으로 "안 돼요"라고 알릴 수 있어요.', 'c=hero:talk:pose-x i=cant'],
       ['긍정', '나는 내 물건을 나눌지 스스로 정해도 괜찮아요.', 'l=hero:happy r=friend:happy i=heart'],
       ['조망', '내가 말하면 친구는 기다려야 한다는 것을 알 수 있어요.', 'r=friend:happy'],
       ['설명', '나는 말로 내 물건을 지킬 수 있어요.', 'c=hero:proud:pose-x i=star']
@@ -665,10 +666,10 @@ const CONFIG = {
       ['설명', '어떤 친구는 나를 툭툭 치며 장난을 해요.', 'l=hero:annoyed r=friend:proud i=burst'],
       ['긍정', '원하지 않는 몸의 접촉은 멈춰야 해요.', 'r=friend:proud'],
       ['조망', '하지만 나는 툭툭 맞는 것이 싫을 수 있어요.', 'c=hero:annoyed'],
-      ['코칭', '싫을 때 나는 팔로 X를 만들고 "하지 마세요."라고 말할 수 있어요.', 'c=hero:talk:pose-x i=stop'],
+      ['코칭', '싫을 때 나는 팔로 X를 만들고 "하지 마세요"라고 말할 수 있어요.', 'c=hero:talk:pose-x i=stop'],
       ['설명', '그래도 친구가 멈추지 않을 때가 있어요.', 'l=hero:worried r=friend:proud'],
       ['긍정', '나는 먼저 거절하지 않아도 바로 안전한 곳으로 가거나 어른에게 알려도 돼요.', 'c=hero:worried i=rain'],
-      ['코칭', '그때 나는 선생님께 손을 들고 "도와주세요."라고 말할 수 있어요.', 'l=hero:talk:pose-raise r=teacher:happy i=help'],
+      ['코칭', '그때 나는 선생님께 손을 들고 "도와주세요"라고 말할 수 있어요.', 'l=hero:talk:pose-raise r=teacher:happy i=help'],
       ['코칭', '선생님은 친구가 멈추도록 도와줄 수 있어요.', 'l=friend:worried r=teacher:talk'],
       ['긍정', '선생님께 알리는 것은 잘하는 일이에요.', 'l=hero:happy r=teacher:proud i=heart'],
       ['설명', '말해도 멈추지 않으면, 나는 선생님께 알릴 수 있어요.', 'c=hero:proud:pose-raise i=star']
@@ -1089,24 +1090,12 @@ function pickVoice() {
   try { want = localStorage.getItem('ssr.voice'); } catch (e) {}
   TTS.list = ko;
   // 교사가 고른 목소리 → 자연스러운 신경망 음성(엣지 'Natural'·'Online') → 구글 → 기타
-  TTS.voice = ko.find(v => v.name === want) || ko.find(v => /Natural|Online|Neural/i.test(v.name)) ||
+  TTS.voice = ko.find(v => v.name === want) || ko.find(v => v.name === TTS.voice?.name) || ko.find(v => /Natural|Online|Neural/i.test(v.name)) ||
     ko.find(v => /Google/i.test(v.name)) || ko.find(v => /Yuna|SunHi|Heami|Samsung|female/i.test(v.name)) || ko[0] || null;
   TTS.count = vs.length;
-  // 역할별 기본 목소리: 자연 음성이 여러 개면 역할마다 다르게 (선생님은 남자 목소리 우선)
-  const good = ko.filter(v => /Natural|Online|Neural/i.test(v.name));
-  const pool = good.length ? good : ko;
-  const male = pool.filter(v => /InJoon|Hyunsu|BongJin|GookMin|Male|남/i.test(v.name));
-  const fem = pool.filter(v => !male.includes(v));
-  const f = i => fem[i] || fem[0] || pool[0] || null;
-  TTS.auto = { '해설': f(0), '주인공': f(1), '친구': f(2) || f(1), '선생님': male[0] || f(0), '말버튼': f(0) };
 }
-const VOICE_ROLES = ['해설', '주인공', '친구', '선생님', '말버튼'];
-function roleVoice(role) {
-  let m = {};
-  try { m = JSON.parse(localStorage.getItem('ssr.voices') || '{}'); } catch (e) {}
-  const L = TTS.list || [];
-  return L.find(v => v.name === m[role]) || (TTS.auto && TTS.auto[role]) || TTS.voice;
-}
+const VOICE_ROLES = ['공통'];
+function roleVoice(role) { return TTS.voice || null; }
 // 음성 목록이 늦게 오거나 voiceschanged가 안 오는 브라우저(삼성 인터넷 등)가 있어서 몇 초 동안 다시 물어봄
 function warmVoices(ms = 4000) {
   if (!HAS_TTS) return Promise.resolve(0);
@@ -1141,7 +1130,6 @@ function unlockAudio() {
   } catch (e) { /* 효과음 없이 진행 */ }
   if (HAS_TTS && !unlockAudio.done) {
     unlockAudio.done = true;
-    try { const u = new SpeechSynthesisUtterance(' '); u.volume = 0; u.lang = 'ko-KR'; speechSynthesis.speak(u); } catch (e) {}
     pickVoice();
   }
 }
@@ -1156,6 +1144,7 @@ function tone(f, d, { type = 'sine', vol = .3, at = 0, to = null, attack = .01 }
   g.gain.exponentialRampToValueAtTime(vol, t + attack);
   g.gain.exponentialRampToValueAtTime(.0001, t + d);
   o.connect(g); g.connect(MASTER); o.start(t); o.stop(t + d + .05);
+  return () => { try { o.stop(); } catch (_) {} try { o.disconnect(); g.disconnect(); } catch (_) {} };
 }
 function noise(d, { vol = .2, at = 0, freq = 1200, to = null, q = 1 } = {}) {
   if (!AC || MUTE_SFX) return;
@@ -1174,7 +1163,6 @@ const sfx = {
   pop() { tone(520, .14, { to: 920, vol: .25 }); },
   tap() { tone(700, .07, { type: 'triangle', vol: .18 }); },
   blip() { tone(880, .1, { type: 'triangle', vol: .2 }); tone(1320, .08, { vol: .1, at: .04 }); },
-  hops(n = 4) { for (let i = 0; i < n; i++) tone(240, .14, { to: 540, vol: .18, at: i * .2 }); },
   whoosh() { noise(.4, { freq: 500, to: 2600, vol: .18 }); },
   correct() {
     [523, 659, 784, 1047].forEach((f, i) => tone(f, .22, { type: 'triangle', vol: .28, at: i * .09 }));
@@ -1203,14 +1191,41 @@ const cleanName = t => t.replace(/[\\/:*?"<>|#%.,!~…]/g, '').replace(/\s+/g, '
 const audioPath = (text, role) => `${CONFIG.audioDir}/${role ? role + '/' : ''}${cleanName(text)}.mp3`;
 /* All narration returns a real completion result. Cancel/error/timeout never unlocks a page. */
 let LAST_CANCEL = 0, SPEAK_GEN = 0;
-function stopVoice() { SPEAK_GEN++; ListenGuard.stop(); }
+function stopVoice() { SPEAK_GEN++; ListenGuard.stop(MUTE_TTS ? 'muted' : 'cancelled'); }
 function speakTTS(text, v = {}, est) {
-  return ListenGuard.play({ text, rate: v.rate ?? CONFIG.tts.rate, pitch: v.pitch ?? CONFIG.tts.pitch,
+  return ListenGuard.play({ text: speechText(text), rate: v.rate ?? CONFIG.tts.rate, pitch: CONFIG.tts.pitch,
     voice: roleVoice(v.role), volume: v.volume ?? 1 }).then(result => {
       if (result.completed) TTS.ok = true; else TTS.lastErr = result.reason;
       return result;
     });
 }
+// The screen keeps its punctuation; spoken quotations should not stop before '라고'.
+function speechText(text) {
+  return String(text ?? '')
+    .replace(/([.!?])["”]\s*(라고|하고|라는|하는)/g, '$2')
+    .replace(/["“”「」『』]/g, '')
+    .replace(/\bX\b/g, '엑스')
+    .replace(/…+/g, ', ')
+    .replace(/\s+/g, ' ').trim();
+}
+function autoReadCount() {
+  try { return localStorage.getItem('ssr.autoReadCount.v1') === '2' ? 2 : 1; }
+  catch (_) { return 1; }
+}
+async function readForLearning(c, text, options = {}, onPass = () => {}, stillCurrent = () => true) {
+  const count = autoReadCount();
+  let result = { completed: false, reason: 'cancelled' };
+  for (let pass = 1; pass <= count; pass++) {
+    c.check(); if (!stillCurrent()) return { completed: false, reason: 'cancelled' };
+    onPass(pass, count);
+    result = await c.say(text, options);
+    c.check(); if (!stillCurrent()) return { completed: false, reason: 'cancelled' };
+    if (!result?.completed) return result;
+    if (pass < count) await c.sleep(450);
+  }
+  return { completed: true, reason: 'ended', readCount: count };
+}
+
 function say(text, v = {}) {
   const role = v.role || '';
   let bub = null;
@@ -1218,9 +1233,9 @@ function say(text, v = {}) {
     setCaption('');
     if (!v.keep && CONFIG.showBubbleText) bub = bubble(v.el, { text });
   } else if (role === '해설' && !v.noCap) setCaption(text);
-  const paths = CONFIG.audioDir ? [role && audioPath(text, role), audioPath(text, '')].filter(Boolean) : [];
-  return ListenGuard.play({ text, paths, muted: MUTE_TTS, rate: v.rate ?? CONFIG.tts.rate,
-    pitch: v.pitch ?? CONFIG.tts.pitch, voice: roleVoice(role), volume: v.volume ?? 1 }).then(result => {
+  const paths = []; // 수업 안내·대사는 공통 TTS 하나만 사용
+  return ListenGuard.play({ text: speechText(text), paths, muted: MUTE_TTS, rate: v.rate ?? CONFIG.tts.rate,
+    pitch: CONFIG.tts.pitch, voice: roleVoice(role), volume: v.volume ?? 1 }).then(result => {
       if (bub) { const old = bub; setTimeout(() => old.remove(), 700); }
       if (result.completed) TTS.ok = true; else TTS.lastErr = result.reason;
       return result;
@@ -1277,7 +1292,13 @@ function makeCtx(id) {
     alive: () => id === RUN,
     check() { if (id !== RUN) throw ABORT; },
     async sleep(ms) { await waitForLearning(); ctx.check(); await new Promise(r => setTimeout(r, ms)); await waitForLearning(); ctx.check(); },
-    async say(t, o) { await waitForLearning(); ctx.check(); const result = await say(t, o); await waitForLearning(); ctx.check(); return result; },
+    async say(t, o) {
+      await waitForLearning(); ctx.check();
+      const result = await say(t, o), wasPaused = PAUSE_REASONS.size > 0;
+      await waitForLearning(); ctx.check();
+      if (result?.reason === 'cancelled' && !wasPaused && !o?.allowInterrupted) throw ABORT;
+      return result;
+    },
     tap(el) {
       if (el.tagName !== 'BUTTON') {
         el.tabIndex = 0; el.setAttribute('role', 'button');
@@ -1297,6 +1318,7 @@ function makeCtx(id) {
   return ctx;
 }
 function go(fn) {
+  MotionSync.cancelAll();
   if (ACTIVE_PRACTICE_RECORDER) { ACTIVE_PRACTICE_RECORDER.destroy(); ACTIVE_PRACTICE_RECORDER = null; }
   RUN++; const id = RUN;
   GATE_PICK = null;
@@ -1320,6 +1342,20 @@ const mover = el => el.querySelector('.mover');
 const inner = el => el.querySelector('.inner');
 function setMood(el, m) { inner(el).innerHTML = charSVG(el.dataset.id, m); }
 function setAnim(el, cls) { inner(el).className = 'inner ' + (cls || ''); }
+async function moveCharacter(c, el, kind) {
+  const node = mover(el); node.className = 'mover';
+  const actor = inner(el), idle = actor.style.animationPlayState;
+  actor.style.animationPlayState = 'paused';
+  let result;
+  try {
+    result = await MotionSync.move({ element: node, kind, alive: c.alive,
+      paused: () => PAUSE_REASONS.size > 0 || document.hidden,
+      reduced: () => document.documentElement.classList.contains('low-motion') || window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+      viewportWidth: () => innerWidth,
+      stepSound: () => tone(240, .1, { to: 540, vol: .16 }) });
+  } finally { actor.style.animationPlayState = idle || ''; }
+  c.check(); if (!result.completed) throw ABORT;
+}
 function setMove(el, cls) {
   mover(el).className = 'mover ' + (cls || '');
 }
@@ -1496,35 +1532,13 @@ async function stageChoose(c, n, right, phrase, F) {
 }
 
 /* 카드 그림 */
-function artThrow() {
-  return `<div class="layer pose-throw" style="left:4%;top:18%;width:62%;height:74%">${charSVG(STATE.hero, 'angry')}</div>
-    <div class="layer flyer" style="right:2%;top:2%;width:30%">${ch1ItemHTML()}</div>
-    <div class="layer" style="left:52%;top:18%;width:22%;height:22%">${ICON.speed}</div>`;
+function artWrong(kind, friend) {
+  const action = ['push','throw','shout','hold','hurt'].includes(kind) ? kind : 'hold';
+  const hero = HEROES.includes(STATE.hero) ? STATE.hero : 'boogi';
+  const label = { push:'상대를 미는 모습', throw:'물건을 던지는 모습', shout:'큰 소리로 외치는 모습', hold:'불편함을 알리지 못하고 참는 모습', hurt:'몸이 아파 도움이 필요한 모습' }[action];
+  return '<img class="illustrated-object choice-action" src="images/actions/' + hero + '-' + action + '.png" alt="' + label + '" draggable="false">';
 }
-function artPush(F) {
-  return `<div class="layer pose-push" style="left:0;top:20%;width:58%;height:70%">${charSVG(STATE.hero, 'angry')}</div>
-    <div class="layer" style="left:47%;top:34%;width:18%;height:18%">${ICON.burst}</div>
-    <div class="layer" style="right:-6%;top:36%;width:44%;height:53%;transform:rotate(28deg)">${charSVG(F, 'surprised')}</div>`;
-}
-// 자해 행동은 따라 하지 않도록 직접 그리지 않고 '아야'·반창고 상징으로만 보여 줍니다.
-function artHurt() {
-  return `<div class="layer" style="left:4%;top:18%;width:60%;height:74%">${charSVG(STATE.hero, 'worried')}</div>
-    <div class="layer" style="left:30%;top:57%;width:30%">${ICON.ouch}</div>
-    <div class="layer" style="left:34%;top:61%;width:22%">${ICON.bandage}</div>
-    <div class="layer" style="right:8%;top:10%;width:16%">${ICON.sweatBig}</div>`;
-}
-function artShout() {
-  return `<div class="layer" style="left:2%;top:20%;width:58%;height:70%"><div class="inner shake-no">${charSVG(STATE.hero, 'angry')}</div></div>
-    <div class="layer" style="right:0;top:18%;width:42%">${ICON.loud}</div>`;
-}
-function artHold() {
-  return `<div class="layer" style="left:16%;top:28%;width:58%;height:68%">${charSVG(STATE.hero, 'worried')}</div>
-    <div class="layer" style="left:18%;top:2%;width:54%">${ICON.rain}</div>`;
-}
-function artWrong(kind, F) {
-  return kind === 'hurt' ? artHurt() : kind === 'shout' ? artShout() : kind === 'hold' ? artHold()
-    : kind === 'push' ? artPush(F) : artThrow();
-}
+
 function artSay(icon, pose) {
   return `<div class="layer ${pose}" style="left:0;top:20%;width:58%;height:70%">${charSVG(STATE.hero, 'talk')}</div>
     <div class="layer" style="right:2%;top:6%;width:42%">${icon}</div>`;
@@ -1602,12 +1616,13 @@ function meter(v) {
 async function heroSays(c, hero, n, phrase) {
   setMood(hero, 'talk'); setAnim(hero, poseOf(n));
   bubble(hero, { icon: aacIcon(aacOf(n)), text: phrase });
-  await c.say(phrase, V(hero, { rate: .95, keep: true }));
+  const heard = await readForLearning(c, phrase, V(hero, { rate: .88, keep: true }));
+  stLog(n).modelHeard = heard?.completed ? { phrase, count: heard.readCount } : null;
 }
 async function stageStart(c, n) {
   const S = STATE.setup;
   setLabel(`${S.name || '이름 없음'} · ${T().name} · 수준 ${LV()}  |  ${n}단계 ${STAGES[n].name}`);
-  stLog(n); STATE.cur = n;
+  stLog(n).modelHeard = null; STATE.cur = n;
   await chapterCard(c, n, n === 1 ? aacIcon('cant') : aacIcon(aacOf(n)));
 }
 // 화면 연습을 마치면 상황 고르기 화면으로 돌아감
@@ -1660,7 +1675,9 @@ async function storyBook(c, { n = 0, title, art, pages, last }) {
     const version = ++token, started = Date.now();
     setReady(false); status.textContent = '이야기를 듣고 있어요';
     try {
-      const result = await c.say(text, narr({ noCap: true }));
+      const result = await readForLearning(c, text, narr({ noCap: true, allowInterrupted: true }), (pass, total) => {
+        if (version === token && c.alive()) status.textContent = total === 2 ? `이야기를 듣고 있어요 · ${pass}/2회` : '이야기를 듣고 있어요';
+      }, () => version === token && c.alive());
       if (version !== token || !c.alive()) return;
       if (!result?.completed) {
         status.textContent = result?.reason === 'muted' ? '소리를 켜고 다시 듣기를 눌러 주세요.' : '끝까지 듣지 못했어요. 다시 듣기를 눌러 주세요.';
@@ -1773,22 +1790,13 @@ function teacherGate(c, n, phrase) {
     overlay.appendChild(g);
     const mount = g.querySelector('.recording-mount'), replay = g.querySelector('.model-replay');
     const status = g.querySelector('.model-status'), finishButton = g.querySelector('.recording-finish');
-    let closed = false, modelling = false, recorder = null, modelComplete = false, warnedTakeId = null;
+    let closed = false, modelling = false, recorder = null, modelComplete = !!(log.modelHeard?.phrase === phrase && log.modelHeard.count === autoReadCount()), warnedTakeId = null;
     const refresh = () => {
       const ready = !closed && !modelling && modelComplete && !!recorder?.canFinish();
       finishButton.disabled = !ready; finishButton.textContent = ready ? '마치기' : '녹음·교사 확인 후 마치기';
     };
-    const model = async () => {
-      if (closed || modelling || recorder?.isRecording?.()) return;
-      modelling = true; replay.disabled = true; refresh(); stopVoice();
-      if (mount) mount.inert = true;
-      status.textContent = '문장을 듣고 있어요.';
-      try {
-        const result = await c.say(phrase, voiceOf(STATE.hero, { rate: .8 }));
-        if (closed || !c.alive()) return;
-        modelComplete = modelComplete || !!result?.completed;
-        status.textContent = result?.completed ? '이제 녹음하고, 다시 들어 봐요.' : '끝까지 듣지 못했어요. 소리를 켜고 다시 듣기를 눌러 주세요.';
-        if (result?.completed && !recorder) {
+    const attachRecorder = () => {
+      if (recorder) return;
           mount.hidden = false;
           if (!window.PracticeRecorder) { status.textContent = '녹음 도구를 불러오지 못했어요. 폴더 전체를 함께 열어 주세요.'; return; }
           recorder = PracticeRecorder.mount({ container: mount, phrase, student: STATE.setup.name || STATE.kid || '별명 없음', stage: n,
@@ -1797,7 +1805,23 @@ function teacherGate(c, n, phrase) {
             onRecording: recording => { document.querySelector('.edu-launch')?.toggleAttribute('disabled', recording); refresh(); },
             onReady: refresh });
           ACTIVE_PRACTICE_RECORDER = recorder;
-        }
+    };
+    const model = async (reusePreviouslyHeard = false) => {
+      if (closed || modelling || recorder?.isRecording?.()) return;
+      if (reusePreviouslyHeard === true && modelComplete) {
+        status.textContent = '목표 문장을 들었어요. 이제 녹음하고 다시 들어 봐요.'; attachRecorder(); refresh(); return;
+      }
+      modelling = true; replay.disabled = true; refresh(); stopVoice();
+      if (mount) mount.inert = true;
+      status.textContent = '문장을 듣고 있어요.';
+      try {
+        const result = await readForLearning(c, phrase, voiceOf(STATE.hero, { rate: .88, allowInterrupted: true }), (pass, total) => {
+          status.textContent = total === 2 ? `문장을 듣고 있어요 · ${pass}/2회` : '문장을 듣고 있어요.';
+        }, () => !closed && c.alive());
+        if (closed || !c.alive()) return;
+        modelComplete = modelComplete || !!result?.completed;
+        status.textContent = result?.completed ? '이제 녹음하고, 다시 들어 봐요.' : '끝까지 듣지 못했어요. 소리를 켜고 다시 듣기를 눌러 주세요.';
+        if (result?.completed) attachRecorder();
       } catch (error) { if (error !== ABORT && c.alive()) status.textContent = '문장 다시 듣기를 눌러 주세요.'; }
       finally {
         if (!closed && c.alive()) { modelling = false; replay.disabled = false; mount.inert = false; refresh(); }
@@ -1820,10 +1844,10 @@ function teacherGate(c, n, phrase) {
       await c.sleep(900); if (!c.alive()) return;
       overlay.innerHTML = ''; overlay.className = ''; resolve();
     };
-    replay.addEventListener('click', model);
+    replay.addEventListener('click', () => model(false));
     finishButton.addEventListener('click', finish);
     GATE_PICK = finish; // The same checks apply to every completion path.
-    model();
+    model(true);
   });
 }
 
@@ -1953,10 +1977,8 @@ async function intro(c) {
 async function s1(c) {
   const S = CONFIG.s1, n = 1, H = STATE.hero, F = S.friend || 'pipi';
   await stageStart(c, n);
-  const hero = makeChar(H, { pos: 'left' }); setAnim(hero, 'bob'); setMove(hero, 'enter-left'); sfx.hops(3);
-  await c.sleep(900);
-  const fr = makeChar(F, { pos: 'right' }); setMove(fr, 'enter-right'); sfx.hops(4);
-  await c.sleep(1350);
+  const hero = makeChar(H, { pos: 'left' }); setAnim(hero, 'bob'); await moveCharacter(c, hero, 'enter-left');
+  const fr = makeChar(F, { pos: 'right' }); await moveCharacter(c, fr, 'enter-right');
   setMove(fr, ''); setMood(fr, 'proud'); setAnim(fr, 'cheer');
   let singing = true;
   const noteOnce = () => {
@@ -2016,11 +2038,9 @@ async function s1(c) {
 async function s2(c) {
   const S = CONFIG.s2, n = 2, H = STATE.hero, F = S.friend || others()[1];
   await stageStart(c, n);
-  const hero = makeChar(H, { pos: 'left' }); setAnim(hero, 'bob'); setMove(hero, 'enter-left'); sfx.hops(3);
-  await c.sleep(900);
+  const hero = makeChar(H, { pos: 'left' }); setAnim(hero, 'bob'); await moveCharacter(c, hero, 'enter-left');
   const fr = makeChar(F, { pos: 'right' }); addProp(fr, ch1ItemHTML(), 'held');
-  setMove(fr, 'enter-right'); sfx.hops(4);
-  await c.sleep(1350);
+  await moveCharacter(c, fr, 'enter-right');
   setMove(fr, ''); setAnim(fr, 'bob reach');
   await c.say(S.friendLine, V(fr));
   setMove(fr, 'lean-in');
@@ -2036,7 +2056,7 @@ async function s2(c) {
   await heroSays(c, hero, n, phrase);
   setMood(fr, 'happy'); setAnim(fr, 'bob');
   await c.say(lv(S.friendOk), V(fr));
-  setMove(fr, 'exit-right'); sfx.hops(4);
+  await moveCharacter(c, fr, 'exit-right');
   removeBubble(hero);
   setMood(hero, 'proud'); setAnim(hero, 'jump'); sparkle(hero); sfx.sparkle();
   await c.say(S.praise, narr());
@@ -2054,8 +2074,7 @@ async function s3(c) {
   await stageStart(c, n);
   const hero = makeChar(H, { pos: 'left' }); setAnim(hero, 'bob');
   const desk = task === 'puzzle' ? addDesk(puzzleSVG(false)) : null;
-  const t = makeChar(TEACHER, { pos: 'right' }); setMove(t, 'enter-right'); sfx.hops(4);
-  await c.sleep(1350);
+  const t = makeChar(TEACHER, { pos: 'right' }); await moveCharacter(c, t, 'enter-right');
   setMove(t, ''); setAnim(t, 'bob');
   if (!desk) { addProp(t, `<div class="qcard">${ITEMS.pineapple}</div>`, 'held'); setAnim(t, 'bob reach'); }
   await c.say(S.teacherLine, V(t));
@@ -2104,8 +2123,7 @@ async function s4(c) {
   await stageStart(c, n);
   const hero = makeChar(H, { pos: 'left' }); setAnim(hero, 'bob');
   const desk = addDesk(paperSVG(false));
-  const t = makeChar(TEACHER, { pos: 'right' }); setMove(t, 'enter-right'); sfx.hops(4);
-  await c.sleep(1350);
+  const t = makeChar(TEACHER, { pos: 'right' }); await moveCharacter(c, t, 'enter-right');
   setMove(t, ''); setAnim(t, 'bob');
   await c.say(S.teacherLine, V(t));
   setMood(hero, 'worried'); setAnim(hero, 'shake-no'); emote(hero, ICON.sweatBig);
@@ -2161,8 +2179,7 @@ async function s5(c) {
   await c.sleep(400);
   await c.say(S.heroLine, V(hero));
 
-  const fr = makeChar(F, { pos: 'right' }); setMove(fr, 'enter-right'); sfx.hops(4);
-  await c.sleep(1350);
+  const fr = makeChar(F, { pos: 'right' }); await moveCharacter(c, fr, 'enter-right');
   setMove(fr, 'lean-in'); setAnim(fr, 'reach');
   toys.className = 'toys tug';
   await c.say(S.friendLine, V(fr));
@@ -2207,8 +2224,9 @@ async function s6(c) {
     await c.say(S.stopWord, V(hero));
     await c.say('상대가 멈추지 않거나 불편하면 안전한 거리를 두고 어른에게 알려요.', narr());
   }
-  setMove(fr, 'exit-right');
+  await moveCharacter(c, fr, 'exit-right');
   const t = makeChar(TEACHER, { pos: 'right' });
+  await moveCharacter(c, t, 'enter-right');
   const phrase = lv(S.say);
   await heroSays(c, hero, n, phrase);
   await c.say('알려 줘서 고마워. 안전하게 지낼 수 있도록 내가 도울게. 정확한 말이나 동작을 하지 않아도 괜찮아.', V(t));
@@ -2552,7 +2570,7 @@ function voiceOpts(role) {
   const L = TTS.list || [], cur = roleVoice(role);
   return L.length ? L.map(v => `<option value="${esc(v.name)}"${cur === v ? ' selected' : ''}>${esc(v.name.replace(/^Microsoft /, '').replace(/ - Korean.*$/, ''))}</option>`).join('') : '<option>한국어 음성을 찾지 못했어요</option>';
 }
-const VOICE_SAMPLE = { '해설': '친구에게 어떻게 말할까?', '주인공': '하지 마세요!', '친구': '알았어, 미안해!', '선생님': '말해 줘서 고마워.', '말버튼': '도와주세요' };
+const VOICE_SAMPLE = { '공통': '내 마음을 알려요. 싫어요. 도와주세요.', '해설': '친구에게 어떻게 말할까?', '주인공': '하지 마세요!', '친구': '알았어, 미안해!', '선생님': '말해 줘서 고마워.', '말버튼': '도와주세요' };
 const modal = $('#modal');
 function closeModal() { modal.className = ''; modal.innerHTML = ''; modal.onclick = null; modal.onchange = null; }
 function openSetup(onDone, needName = false) {
@@ -2586,14 +2604,15 @@ function openSetup(onDone, needName = false) {
       <div class="mrow"><b></b><div class="opts"><span class="mstat">${esc(sync)}</span></div></div>
       <div class="mrow"><b>유형</b><div class="opts">${Object.entries(CONFIG.types).map(([k, p]) => `<button class="opt${S.type === k ? ' on' : ''}" data-t="${k}">${esc(p.name)}</button>`).join('')}</div></div>
       <div class="mrow"><b>상황 (메뉴)</b><div class="opts">${Object.keys(STAGES).map(Number).map(n => `<button class="opt${S.stages.includes(n) ? ' on' : ''}" data-s="${n}">${n}. ${CONFIG.stories[n].title}</button>`).join('')}</div></div>
+      <div class="mrow"><b>자동 읽기</b><div class="opts"><label for="mReadCount">이야기·목표 문장</label><select id="mReadCount"><option value="1"${autoReadCount() === 1 ? ' selected' : ''}>자동으로 1번 읽기</option><option value="2"${autoReadCount() === 2 ? ' selected' : ''}>자동으로 2번 읽기</option></select><span class="mstat">다시 듣기는 언제든 누를 수 있어요.</span></div></div>
       <div class="mrow"><b>표현 수준</b><div class="opts">${[1, 2, 3, 4].map(l => `<button class="opt${S.level === l ? ' on' : ''}" data-l="${l}">${l}. ${LEVEL_NAMES[l]}</button>`).join('')}</div></div>
       <div class="mnote">${esc(setupNote())}</div>
       <div class="mrow"><b>문제 해결</b><div class="opts"><button class="opt" data-a="sdiag">🔊 소리 진단</button><button class="opt" data-a="cdiag">🔗 연결 진단</button><span class="mstat">소리가 안 나거나 시트에 안 넘어갈 때 눌러 보세요</span></div></div>
       <details${more ? ' open' : ''}><summary>구글 시트 연결 · 목소리</summary>
         <div class="mrow"><b>시트 웹앱</b><div class="opts"><input id="mUrl" type="url" placeholder="https://script.google.com/macros/s/…/exec" value="${esc(sc.url)}"></div></div>
         <div class="mrow"><b>비밀 키</b><div class="opts"><input id="mKey" type="${showKey ? 'text' : 'password'}" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" placeholder="Apps Script에 적은 키" value="${esc(sc.key)}"><button class="opt" data-a="showkey">${showKey ? '키 숨기기' : '키 보기'}</button><button class="opt" data-a="ping">연결 확인</button><span class="mstat">${esc(msg)}</span></div></div>
-        ${VOICE_ROLES.map(r => `<div class="mrow"><b>${r} 목소리</b><div class="opts"><select class="mVoice" data-role="${r}">${voiceOpts(r)}</select><button class="opt" data-vt="${r}">들어 보기</button></div></div>`).join('')}
-        <div class="mrow"><b></b><div class="opts"><span class="mstat">엣지에서 열면 자연스러운 음성(Natural)이 여러 개 나와요.</span><button class="opt" data-a="vlist">녹음 음성 파일 목록</button></div></div>
+        ${VOICE_ROLES.map(r => `<div class="mrow"><b>공통 목소리</b><div class="opts"><select class="mVoice" data-role="${r}">${voiceOpts(r)}</select><button class="opt" data-vt="${r}">들어 보기</button></div></div>`).join('')}
+        <div class="mrow"><b></b><div class="opts"><span class="mstat">해설·캐릭터·말 버튼에 같은 목소리를 사용해요.</span></div></div>
       </details>
       ${warn ? '<p class="mwarn">학생 이름을 먼저 적어 주세요.</p>' : ''}
       <div class="mbtns"><button class="mok">확인</button></div></div>`;
@@ -2606,9 +2625,15 @@ function openSetup(onDone, needName = false) {
       if (applyPerson(S.name)) { sync = `‘${S.name}’ 학생의 저장된 설정을 불러왔어요.`; }
       draw(); return;
     }
+    if (e.target.id === 'mReadCount') {
+      try { localStorage.setItem('ssr.autoReadCount.v1', e.target.value === '2' ? '2' : '1'); } catch (_) {}
+      return;
+    }
     const r = e.target.dataset && e.target.dataset.role;
     if (!r) return;
-    try { const m = JSON.parse(localStorage.getItem('ssr.voices') || '{}'); m[r] = e.target.value; localStorage.setItem('ssr.voices', JSON.stringify(m)); } catch (er) {}
+    stopVoice();
+    try { localStorage.setItem('ssr.voice', e.target.value); } catch (er) {}
+    pickVoice();
     say(VOICE_SAMPLE[r], { role: r, noCap: true });
   };
   modal.onclick = e => {

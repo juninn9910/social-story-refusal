@@ -1,0 +1,215 @@
+{
+  "method": "Exact 724px scene cells from three-column action atlases. Each scene retains its actor, partner and action objects together. Added 12px transparent border; no scaling or repainting.",
+  "assets": [
+    {
+      "file": "mong-push.png",
+      "path": "images/actions/mong-push.png",
+      "width": 748,
+      "height": 748,
+      "source": "push.png",
+      "sourceRect": [
+        0,
+        0,
+        724,
+        724
+      ],
+      "padding": 12
+    },
+    {
+      "file": "ruru-push.png",
+      "path": "images/actions/ruru-push.png",
+      "width": 748,
+      "height": 748,
+      "source": "push.png",
+      "sourceRect": [
+        724,
+        0,
+        724,
+        724
+      ],
+      "padding": 12
+    },
+    {
+      "file": "boogi-push.png",
+      "path": "images/actions/boogi-push.png",
+      "width": 748,
+      "height": 748,
+      "source": "push.png",
+      "sourceRect": [
+        1448,
+        0,
+        724,
+        724
+      ],
+      "padding": 12
+    },
+    {
+      "file": "mong-throw.png",
+      "path": "images/actions/mong-throw.png",
+      "width": 748,
+      "height": 748,
+      "source": "throw.png",
+      "sourceRect": [
+        0,
+        0,
+        724,
+        724
+      ],
+      "padding": 12
+    },
+    {
+      "file": "ruru-throw.png",
+      "path": "images/actions/ruru-throw.png",
+      "width": 748,
+      "height": 748,
+      "source": "throw.png",
+      "sourceRect": [
+        724,
+        0,
+        724,
+        724
+      ],
+      "padding": 12
+    },
+    {
+      "file": "boogi-throw.png",
+      "path": "images/actions/boogi-throw.png",
+      "width": 748,
+      "height": 748,
+      "source": "throw.png",
+      "sourceRect": [
+        1448,
+        0,
+        724,
+        724
+      ],
+      "padding": 12
+    },
+    {
+      "file": "mong-shout.png",
+      "path": "images/actions/mong-shout.png",
+      "width": 748,
+      "height": 748,
+      "source": "shout.png",
+      "sourceRect": [
+        0,
+        0,
+        724,
+        724
+      ],
+      "padding": 12
+    },
+    {
+      "file": "ruru-shout.png",
+      "path": "images/actions/ruru-shout.png",
+      "width": 748,
+      "height": 748,
+      "source": "shout.png",
+      "sourceRect": [
+        724,
+        0,
+        724,
+        724
+      ],
+      "padding": 12
+    },
+    {
+      "file": "boogi-shout.png",
+      "path": "images/actions/boogi-shout.png",
+      "width": 748,
+      "height": 748,
+      "source": "shout.png",
+      "sourceRect": [
+        1448,
+        0,
+        724,
+        724
+      ],
+      "padding": 12
+    },
+    {
+      "file": "mong-hold.png",
+      "path": "images/actions/mong-hold.png",
+      "width": 748,
+      "height": 748,
+      "source": "hold.png",
+      "sourceRect": [
+        0,
+        0,
+        724,
+        724
+      ],
+      "padding": 12
+    },
+    {
+      "file": "ruru-hold.png",
+      "path": "images/actions/ruru-hold.png",
+      "width": 748,
+      "height": 748,
+      "source": "hold.png",
+      "sourceRect": [
+        724,
+        0,
+        724,
+        724
+      ],
+      "padding": 12
+    },
+    {
+      "file": "boogi-hold.png",
+      "path": "images/actions/boogi-hold.png",
+      "width": 748,
+      "height": 748,
+      "source": "hold.png",
+      "sourceRect": [
+        1448,
+        0,
+        724,
+        724
+      ],
+      "padding": 12
+    },
+    {
+      "file": "mong-hurt.png",
+      "path": "images/actions/mong-hurt.png",
+      "width": 748,
+      "height": 748,
+      "source": "hurt.png",
+      "sourceRect": [
+        0,
+        0,
+        724,
+        724
+      ],
+      "padding": 12
+    },
+    {
+      "file": "ruru-hurt.png",
+      "path": "images/actions/ruru-hurt.png",
+      "width": 748,
+      "height": 748,
+      "source": "hurt.png",
+      "sourceRect": [
+        724,
+        0,
+        724,
+        724
+      ],
+      "padding": 12
+    },
+    {
+      "file": "boogi-hurt.png",
+      "path": "images/actions/boogi-hurt.png",
+      "width": 748,
+      "height": 748,
+      "source": "hurt.png",
+      "sourceRect": [
+        1448,
+        0,
+        724,
+        724
+      ],
+      "padding": 12
+    }
+  ]
+}

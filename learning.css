@@ -23,8 +23,8 @@ button:focus-visible,[role=button]:focus-visible,summary:focus-visible,a:focus-v
 .character-art{position:relative;display:block;width:100%;height:100%;pointer-events:none}
 .character-art>img{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:contain;object-position:center bottom;filter:drop-shadow(0 4px 3px #5a542218)}
 .character-art>.character-cross,.character-art>.character-raise{display:none}
-.pose-x .character-art>.character-default,.pose-stop .character-art>.character-default,.pose-push .character-art>.character-default{display:none}
-.pose-x .character-art>.character-cross,.pose-stop .character-art>.character-cross,.pose-push .character-art>.character-cross{display:block}
+.pose-x .character-art>.character-default,.pose-stop .character-art>.character-default{display:none}
+.pose-x .character-art>.character-cross,.pose-stop .character-art>.character-cross{display:block}
 .pose-raise .character-art>.character-default,.pose-up .character-art>.character-default{display:none}
 .pose-raise .character-art>.character-raise,.pose-up .character-art>.character-raise{display:block}
 .char .inner,.gate-hero .inner,.bk-ch .inner{inset:0;height:100%;aspect-ratio:auto}
@@ -57,3 +57,5 @@ button:focus-visible,[role=button]:focus-visible,summary:focus-visible,a:focus-v
 .recording-finish{flex-shrink:0;display:block;background:#3b7652;color:white;font-size:22px;font-weight:800;border:2px solid #285c3b;border-radius:16px;padding:13px 20px;min-height:56px;width:min(440px,100%)}
 .recording-finish:disabled{background:#deded5;color:#64665e;border-color:#b7b9ac;cursor:default}
 @media(max-width:600px){.recording-gate{inset:10vh 2vw 8vh;padding:8px 4px 20px}.recording-gate .gate-board{padding:12px;gap:10px}.recording-gate .gate-hero{flex-basis:76px;width:76px;height:110px}.gate-target{font-size:24px}.model-status{font-size:13px}.recording-finish{font-size:18px}.mc-t{font-size:clamp(13px,2vw,20px)}.bk-listen-status{font-size:11px;left:5%;right:5%}}
+
+.card-art>.choice-action{width:100%;height:100%;object-fit:contain;object-position:center;display:block}
