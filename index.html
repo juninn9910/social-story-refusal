@@ -250,6 +250,14 @@ button{font-family:inherit;border:0;padding:0;background:none;cursor:pointer;tou
 #tbar svg{width:22px;height:22px;position:relative;z-index:1}
 #tbar small{position:relative;z-index:1;font-size:8px;color:#c0392b;line-height:1}
 
+/* 목소리 도움말 띠 */
+.sbanner{position:fixed;left:0;right:0;top:1.2vh;margin:auto;width:min(760px,94vw);z-index:70;background:#fffaf0;border:3px solid #c0392b;border-radius:14px;padding:10px 14px;box-shadow:0 6px 18px rgba(0,0,0,.25);color:var(--ink);font-size:15px;line-height:1.45;animation:popIn .3s both}
+.sb-t{font-weight:900}
+.sb-b{display:flex;gap:8px;margin:8px 0 4px;flex-wrap:wrap}
+.sb-chrome{display:inline-block;background:#3fb43a;color:#fff;font-weight:900;text-decoration:none;border-radius:10px;padding:10px 18px;font-size:17px;box-shadow:0 4px 0 #2a8a2a}
+.sb-x{background:#fff;border:2px solid #7a4a22;border-radius:10px;padding:8px 14px;font-size:15px;color:#5a3218}
+.sb-s{font-size:12px;opacity:.8}
+
 /* 숨쉬기 안내 원 */
 .breathring{position:absolute;width:min(20vh,15vw);aspect-ratio:1;margin-left:calc(min(20vh,15vw) / -2);margin-top:calc(min(20vh,15vw) / -2);z-index:5;pointer-events:none;animation:popIn .4s both}
 .br-c{position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.9),rgba(129,212,250,.75) 60%,rgba(41,182,246,.55));border:.8vmin solid #fff;box-shadow:0 0 4vmin rgba(41,182,246,.6);transform:scale(.8)}
@@ -1062,10 +1070,14 @@ const HAS_TTS = 'speechSynthesis' in window;
 const TTS = { voice: null };
 let CURRENT_U = null;
 
+const IS_SAMSUNG = /SamsungBrowser/i.test(navigator.userAgent);
+const IS_ANDROID = /Android/i.test(navigator.userAgent);
+// 한국어 음성 알아보기: 'ko-KR', 'ko_KR', 'kor', 이름에 Korean/한국어가 들어간 것까지 (안드로이드·삼성 TTS 대비)
+const isKo = v => /^ko(r)?([-_]|$)/i.test(v.lang || '') || /korean|한국|\bko[-_]kr\b/i.test(`${v.name || ''} ${v.voiceURI || ''}`);
 function pickVoice() {
   if (!HAS_TTS) return;
   const vs = speechSynthesis.getVoices() || [];
-  const ko = vs.filter(v => /^ko/i.test(v.lang));
+  const ko = vs.filter(isKo);
   let want = null;
   try { want = localStorage.getItem('ssr.voice'); } catch (e) {}
   TTS.list = ko;
@@ -1088,7 +1100,29 @@ function roleVoice(role) {
   const L = TTS.list || [];
   return L.find(v => v.name === m[role]) || (TTS.auto && TTS.auto[role]) || TTS.voice;
 }
-if (HAS_TTS) { pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
+// 음성 목록이 늦게 오거나 voiceschanged가 안 오는 브라우저(삼성 인터넷 등)가 있어서 몇 초 동안 다시 물어봄
+function warmVoices(ms = 4000) {
+  if (!HAS_TTS) return Promise.resolve(0);
+  return new Promise(res => {
+    const t0 = Date.now();
+    const tick = () => {
+      pickVoice();
+      if ((TTS.list || []).length || Date.now() - t0 > ms) { res((TTS.list || []).length); return; }
+      setTimeout(tick, 250);
+    };
+    tick();
+  });
+}
+if (HAS_TTS) {
+  pickVoice();
+  try { speechSynthesis.addEventListener('voiceschanged', pickVoice); } catch (e) { speechSynthesis.onvoiceschanged = pickVoice; }
+  TTS.ready = warmVoices();
+}
+// 안드로이드에서 크롬으로 이 페이지 다시 열기 (삼성 인터넷에서 한국어 음성이 안 잡힐 때)
+function chromeIntentUrl() {
+  const u = location;
+  return `intent://${u.host}${u.pathname}${u.search}#Intent;scheme=${u.protocol.replace(':', '')};package=com.android.chrome;S.browser_fallback_url=${encodeURIComponent(u.href)};end`;
+}
 
 function unlockAudio() {
   try {
@@ -1192,6 +1226,7 @@ function speakTTS(text, v, est) {
     const speak1 = withVoice => {
       if (done || gen !== SPEAK_GEN) { fin(); return; }
       const u = new SpeechSynthesisUtterance(text);
+      if (!(TTS.list || []).length) pickVoice();   // 목록이 늦게 오는 기기: 말하기 직전에 한 번 더 확인
       const vc = withVoice ? roleVoice(v.role) : null;
       u.lang = (vc && vc.lang) || 'ko-KR'; if (vc) u.voice = vc;
       u.rate = v.rate ?? CONFIG.tts.rate; u.pitch = v.pitch ?? CONFIG.tts.pitch; u.volume = v.volume ?? 1;
@@ -1235,7 +1270,7 @@ function say(text, v = {}) {
     stopVoice();
     if (MUTE_TTS) { setTimeout(fin, est); return; }
     playFile(text, role).then(ok => {
-      if (ok) fin();
+      if (ok) { TTS.ok = true; fin(); }
       else if (!HAS_TTS) setTimeout(fin, est);
       else speakTTS(text, v, est).then(fin);
     });
@@ -1840,6 +1875,17 @@ async function chapterCard(c, num, icon) {
 /* =====================================================================
    [Intro] 타이틀 · 교사 설정 · 단짝 고르기
    ===================================================================== */
+/* 목소리 도움말 띠: 안드로이드면 '크롬으로 열기' 버튼, 아니면 설정 안내 */
+function voiceHelp(why) {
+  if (document.querySelector('.sbanner')) return;
+  const b = document.createElement('div'); b.className = 'sbanner';
+  const canIntent = IS_ANDROID && /^https?:$/.test(location.protocol);
+  b.innerHTML = `<div class="sb-t">🔇 ${why}${IS_SAMSUNG ? ' 삼성 인터넷에서는 한국어 음성이 잘 안 잡혀요.' : ''}</div>
+    <div class="sb-b">${canIntent ? `<a class="sb-chrome" href="${chromeIntentUrl()}">크롬으로 열기</a>` : ''}<button class="sb-x" aria-label="닫기">닫기</button></div>
+    <div class="sb-s">${IS_ANDROID ? '자주 쓰면: 태블릿 설정 → 애플리케이션 → 기본 앱 선택 → 브라우저 앱을 Chrome으로 바꾸면 QR도 크롬으로 열려요. · 한국어 음성: 설정 → 일반 관리 → 텍스트 음성 변환에서 엔진 언어를 한국어로' : '교사 설정 → 문제 해결 → 소리 진단으로 확인해 보세요.'}</div>`;
+  document.body.appendChild(b);
+  b.querySelector('.sb-x').addEventListener('click', () => b.remove());
+}
 function setupSummary() {
   const S = STATE.setup;
   return `${S.name || '이름 없음'} · ${T().name} · ${S.stages.join('·')}단계 · 수준 ${S.level}(${LEVEL_NAMES[S.level]})`;
@@ -1873,15 +1919,10 @@ async function intro(c) {
     else if (b.dataset.a === 'rec') openRecords();
     else if (b.dataset.j) { resetLog(); const j = +b.dataset.j; STATE.cur = j; go(j ? storyOf(j) : ending); }
   });
-  setTimeout(() => {
-    if (!c.alive() || !HAS_TTS) return;
-    pickVoice();
-    if (TTS.count > 0 && !TTS.voice) {
-      const w = document.createElement('div'); w.className = 'warn';
-      w.textContent = '이 기기에서 한국어 음성(TTS)을 찾지 못했습니다. 녹음 음성 파일(audio 폴더)을 넣거나, 소리 버튼으로 음성을 끄고 교사가 직접 읽어 주세요.';
-      stage.appendChild(w);
-    }
-  }, 1500);
+  (TTS.ready || Promise.resolve(0)).then(n => {
+    if (!c.alive()) return;
+    if (!HAS_TTS || !n) voiceHelp(!HAS_TTS ? '이 브라우저는 음성 읽기를 지원하지 않아요.' : '이 브라우저에서 한국어 음성을 찾지 못했어요.');
+  });
 
   await c.tap(start);
   start.classList.add('gone'); sfx.pop(); tp.remove();
@@ -1896,7 +1937,10 @@ async function intro(c) {
   stage.appendChild(nb);
   const inp = nb.querySelector('.nb-in'), ok = nb.querySelector('.nb-ok');
   try { inp.focus(); } catch (e) {}
+  TTS.ok = false;
   c.say(CONFIG.nameAsk, narr({ noCap: true })).catch(() => {});
+  // 안드로이드에서 첫 문장이 소리 나지 않으면 크롬으로 여는 안내를 띄움
+  setTimeout(() => { if (c.alive() && IS_ANDROID && HAS_TTS && !MUTE_TTS && !TTS.ok) voiceHelp('목소리가 나오지 않는 것 같아요.'); }, 4000);
   const kid = await new Promise(res => {
     const tryOk = () => {
       const v = inp.value.replace(/\s+/g, '').trim();
@@ -2431,12 +2475,19 @@ async function sheetDiag(log) {
 async function soundDiag(log) {
   log(`브라우저: ${/SamsungBrowser/i.test(navigator.userAgent) ? '삼성 인터넷' : /Edg\//.test(navigator.userAgent) ? '엣지' : /Chrome/.test(navigator.userAgent) ? '크롬' : '기타'} · ${/Android/i.test(navigator.userAgent) ? '안드로이드' : '컴퓨터/기타'}`);
   log(`소리 버튼 상태: ${SOUND === 0 ? '전체 켬' : SOUND === 1 ? '음성 끔 ← 오른쪽 아래 스피커 버튼을 눌러 켜 주세요' : '전체 끔 ← 스피커 버튼을 눌러 켜 주세요'}`);
+  if (IS_ANDROID && /^https?:$/.test(location.protocol)) {
+    const mb = modal.querySelector('.mbtns');
+    if (mb && !mb.querySelector('.sb-chrome')) mb.insertAdjacentHTML('afterbegin', `<a class="sb-chrome" href="${chromeIntentUrl()}">크롬으로 열기</a>`);
+  }
+  if (IS_SAMSUNG) log('⚠ 삼성 인터넷은 한국어 음성이 잘 안 잡혀요. 아래 ‘크롬으로 열기’를 누르거나, 태블릿 설정 → 애플리케이션 → 기본 앱 선택 → 브라우저 앱을 Chrome으로 바꾸면 QR도 크롬으로 열려요.');
   if (!HAS_TTS) { log('❌ 이 브라우저는 음성 읽기를 지원하지 않아요. 크롬으로 열어 주세요.'); return; }
-  pickVoice();
+  log('음성 목록을 불러오는 중…');
+  await warmVoices(4000);
   const all = speechSynthesis.getVoices() || [];
   log(`음성 목록: 전체 ${all.length}개 · 한국어 ${(TTS.list || []).length}개`);
   (TTS.list || []).slice(0, 6).forEach(v => log(`   · ${v.name}${v.localService ? '' : ' (인터넷 필요)'}`));
-  if (!(TTS.list || []).length) log('⚠ 한국어 음성이 안 보여요. 태블릿 설정 → 일반 → 텍스트 음성 변환(TTS)에서 기본 엔진을 Google 또는 삼성으로 하고 한국어 음성 데이터를 설치해 주세요.');
+  if (!(TTS.list || []).length) log('⚠ 한국어 음성이 안 보여요. 태블릿 설정 → 일반 관리 → 텍스트 음성 변환(TTS)에서 기본 엔진(Google 또는 삼성)의 언어를 한국어로 하고, 한국어 음성 데이터를 내려받아 주세요. 그다음 크롬으로 다시 열어 보세요.');
+  else if (all.length) log(`   (첫 음성의 언어 표기: ${(TTS.list[0].lang || '없음')})`);
   if (SOUND !== 0) { SOUND = 0; applySound(); log('→ 테스트를 위해 소리를 켰어요.'); }
   TTS.ok = false; TTS.lastErr = ''; TTS.fallback = false;
   log('“소리 테스트입니다.”를 읽어 볼게요…');
