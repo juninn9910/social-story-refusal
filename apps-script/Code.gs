@@ -5,11 +5,37 @@
  * - 앱에 새 항목이 생기면 그 열만 맨 오른쪽에 덧붙입니다. (기존 열·기록은 그대로)
  * - '말 버튼 사용' 탭에는 말 버튼 보드를 누른 횟수가 날짜별로 쌓입니다.
  *
- * 설치: 교사용_안내.md 참고. 이 파일을 고친 뒤에는 [배포 → 배포 관리 → 수정 → 새 버전]을 해야 반영돼요.
+ * 설치: 비밀 키를 정한 뒤 편집기에서 setupConnection을 한 번 실행해 시트를 기억해 주세요.
+ * 이 파일을 고친 뒤에는 [배포 → 배포 관리 → 수정 → 새 버전]을 해야 기존 웹앱 주소에 반영돼요.
  */
 const KEY = '여기에-비밀-키를-적으세요';   // 앱의 교사 설정 → '비밀 키'와 똑같이 적어 주세요
 
-const SHEET_ID = '';   // 비워 두면 이 스크립트가 붙은 시트. 따로 만든 스크립트라면 시트 주소의 /d/와 /edit 사이 글자를 넣으세요
+const SHEET_ID = '';   // 시트에 연결된 편집기에서 setupConnection을 실행하면 비워도 돼요. 별도 스크립트라면 시트 주소의 /d/와 /edit 사이 ID를 넣으세요.
+
+// 편집기에서 한 번 실행: 웹앱에서는 '현재 열린 시트'를 찾을 수 없으므로 ID를 기억합니다.
+// 학생 기록이나 시트의 셀은 바꾸지 않아요. 연결할 시트를 바꿀 때만 다시 실행하면 됩니다.
+function setupConnection() {
+  const configuredKey = String(KEY || '').trim();
+  if (!configuredKey || configuredKey === '여기에-비밀-키를-적으세요') throw new Error('Code.gs 맨 위의 KEY를 나만의 비밀 키로 바꾸고 저장한 뒤 setupConnection을 다시 실행해 주세요.');
+  const explicitId = String(SHEET_ID || '').trim();
+  const ss = explicitId ? SpreadsheetApp.openById(explicitId) : SpreadsheetApp.getActiveSpreadsheet();
+  if (!ss) throw new Error('기록할 구글 시트에서 [확장 프로그램 → Apps Script]를 열고 setupConnection을 다시 실행해 주세요. 별도 스크립트라면 SHEET_ID에 시트 ID를 적어 주세요.');
+  PropertiesService.getScriptProperties().setProperty('SSR_SHEET_ID', ss.getId());
+  const message = '시트 연결을 기억했어요. 이제 [배포 → 배포 관리 → 수정 → 새 버전]으로 배포하면 기존 웹앱 주소를 계속 사용할 수 있어요.';
+  console.log(message);
+  return { ok: true, sheetId: ss.getId(), message };
+}
+
+function recordSpreadsheet_() {
+  const explicitId = String(SHEET_ID || '').trim();
+  const savedId = explicitId ? '' : String(PropertiesService.getScriptProperties().getProperty('SSR_SHEET_ID') || '').trim();
+  if (explicitId || savedId) return SpreadsheetApp.openById(explicitId || savedId);
+  // 이전 버전의 편집기 실행은 계속 지원해요. 웹앱은 저장된 ID를 사용해야 합니다.
+  let ss = null;
+  try { ss = SpreadsheetApp.getActiveSpreadsheet(); } catch (_) {}
+  if (ss) return ss;
+  throw new Error('연결할 시트가 아직 저장되지 않았어요. 기록할 구글 시트의 [확장 프로그램 → Apps Script]에서 setupConnection을 한 번 실행한 뒤, [배포 → 배포 관리 → 수정 → 새 버전]으로 다시 배포해 주세요.');
+}
 
 function doPost(e) {
   try { return handle_(e); }
@@ -23,8 +49,7 @@ function handle_(e) {
   if (!configuredKey || configuredKey === '여기에-비밀-키를-적으세요') return out_({ ok: false, error: '서버의 비밀 키를 먼저 설정해 주세요' });
   const suppliedKey = String(body && body.key || '').trim();
   if (!suppliedKey || suppliedKey !== configuredKey) return out_({ ok: false, error: '비밀 키가 맞지 않아요' });
-  const ss = SHEET_ID ? SpreadsheetApp.openById(SHEET_ID) : SpreadsheetApp.getActiveSpreadsheet();
-  if (!ss) return out_({ ok: false, error: '연결된 시트가 없어요 → 시트에서 [확장 프로그램 → Apps Script]로 만들거나 SHEET_ID를 적어 주세요' });
+  const ss = recordSpreadsheet_();
 
   if (body.action === 'ping') {
     return out_({ ok: true, sheets: ss.getSheets().map(s => s.getName()) });

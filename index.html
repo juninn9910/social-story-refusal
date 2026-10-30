@@ -474,7 +474,7 @@ const CONFIG = {
   allowPracticeShortcut: false, // 학생 화면에서 이야기 전체를 건너뛰지 않도록 기본 해제  // 카드의 작은 설명 글씨
   // 구글 시트 웹앱 (설치 방법: 교사용_안내.md). 여기 적어 두면 교사 설정에서 매번 넣지 않아도 됩니다.
   // key는 파일에 적지 마세요(깃허브에 올리면 누구나 볼 수 있음). 기기마다 교사 설정에서 한 번 입력하면 기억합니다.
-  sheet: { url: '', key: '' },
+  sheet: { url: 'https://script.google.com/macros/s/AKfycbzYb0Y8hYNHYRrrU6VRe53ivibriY4XqI3uvAG-l9wqkIzDvc-Dwc8LitDcDMjXSRBnOg/exec', key: '' },
   // 녹음 음성 파일 폴더 (클로바더빙 등). 파일이 없으면 기기 음성(TTS)으로 읽어 줍니다.
   audioDir: '',
 
@@ -1896,7 +1896,7 @@ async function intro(c) {
     flushQueue().then(left => {
       const s = sheetCfg();
       tp.querySelector('.tp-sum').textContent = setupSummary() + ' · ' +
-        (!s.url || !s.key ? '기기에만 저장 (외부 연결은 선택)'  : left ? `시트 전송 대기 ${left}건 · ${SHEET_ERR}` : '구글 시트 연결됨');
+        (!s.enabled ? '시트 연동 꺼짐' : !s.key ? '시트 주소 준비됨 · 교사 설정에서 비밀 키 입력' : left ? `시트 전송 대기 ${left}건 · ${SHEET_ERR}` : SHEET_VERIFIED ? '시트 연결 확인됨' : '교사 설정에서 연결 확인 필요');
     });
   };
   sum();
@@ -2357,13 +2357,18 @@ const store = {
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } }
 };
 const loadRecs = () => store.get(KEY.recs, []);
+let SHEET_VERIFIED = false;
 function sheetCfg() {
-  const s = store.get(KEY.sheet, {});
-  return { url: (s.url ?? CONFIG.sheet.url ?? '').trim(), key: (s.key ?? CONFIG.sheet.key ?? '').trim() };
+  const saved = store.get(KEY.sheet, {}), s = saved && typeof saved === 'object' ? saved : {};
+  const enabled = s.enabled !== false;
+  const configuredUrl = String(s.url || CONFIG.sheet.url || '').trim();
+  return { enabled, configuredUrl, url: enabled ? configuredUrl : '', key: String(s.key || CONFIG.sheet.key || '').trim() };
 }
 async function sheetCall(body) {
   const s = sheetCfg();
+  if (!s.enabled) throw new Error('교사 설정에서 시트 연동 사용을 켜 주세요');
   if (!s.url) throw new Error('웹앱 주소가 없어요');
+  if (!s.key) throw new Error('교사 설정에 Apps Script와 같은 비밀 키를 입력해 주세요');
   if (!/^https:\/\/script\.google\.com\/macros\/s\/[^/]+\/exec$/.test(s.url)) throw new Error('웹앱 주소 모양이 달라요 (…/macros/s/…/exec 이어야 해요)');
   let r;
   const abort = new AbortController(), timeout = setTimeout(() => abort.abort(), 12000);
@@ -2379,7 +2384,8 @@ async function sheetCall(body) {
     if (/accounts\.google|ServiceLogin|로그인/i.test(txt)) throw new Error('구글 로그인 화면이 와요 → 배포 액세스를 “모든 사용자”로 바꿔 주세요');
     throw new Error(`웹앱이 오류 화면을 보냈어요 (HTTP ${r.status}) → Apps Script 코드·배포를 확인해 주세요`);
   }
-  if (!j.ok) throw new Error(j.error || '실패');
+  if (!j.ok) { SHEET_VERIFIED = false; throw new Error(j.error || '실패'); }
+  SHEET_VERIFIED = true;
   return j;
 }
 // 교사 설정 → 연결 진단: 주소·켜짐·키·쓰기·읽기를 차례로 확인 (키는 화면·복사 내용에 넣지 않음)
@@ -2462,7 +2468,8 @@ function flushQueue() {
   const p = (async () => {
     let q = store.get(KEY.queue, []);
     const s = sheetCfg();
-    if (q.length && !s.url) SHEET_ERR = '웹앱 주소가 없어요';
+    if (q.length && !s.enabled) SHEET_ERR = '시트 연동이 꺼져 있어요';
+    else if (q.length && !s.url) SHEET_ERR = '웹앱 주소가 없어요';
     else if (q.length && !s.key) SHEET_ERR = '비밀 키를 아직 넣지 않았어요';
     else {
       while (q.length) {
@@ -2482,7 +2489,7 @@ function flushQueue() {
   return p;
 }
 function sheetStatus(left) {
-  if (!left) return SHEET_ERR ? `구글 시트: ${SHEET_ERR}` : '구글 시트에 저장했어요.';
+  if (!left) return SHEET_ERR ? `구글 시트: ${SHEET_ERR}` : SHEET_VERIFIED ? '구글 시트에 저장했어요.' : '이 기기에 기록했어요. 교사 설정에서 시트 연결을 확인해 주세요.';
   return `구글 시트로 못 보냄 (${left}건 대기): ${SHEET_ERR || '잠시 후 다시 보내요'} → 교사 설정 · 이름 → 구글 시트 연결에서 확인하면 자동으로 보내요.`;
 }
 function sheetRows(rec) {
@@ -2593,7 +2600,12 @@ function openSetup(onDone, needName = false) {
   const grab = () => {
     const nm = $('#mName'); if (nm) S.name = nm.value.trim();
     const u = $('#mUrl'), k = $('#mKey');
-    if (u && k) store.set(KEY.sheet, { url: u.value.trim(), key: k.value.trim() });
+    const enable = $('#mSyncEnabled');
+    if (u && k) {
+      const previous = sheetCfg(), next = { enabled: enable ? enable.checked : true, url: u.value.trim(), key: k.value.trim() };
+      if (previous.configuredUrl !== next.url || previous.key !== next.key || previous.enabled !== next.enabled) SHEET_VERIFIED = false;
+      store.set(KEY.sheet, next);
+    }
     const d = modal.querySelector('details'); if (d) more = d.open;
   };
   const draw = () => {
@@ -2609,7 +2621,8 @@ function openSetup(onDone, needName = false) {
       <div class="mnote">${esc(setupNote())}</div>
       <div class="mrow"><b>문제 해결</b><div class="opts"><button class="opt" data-a="sdiag">🔊 소리 진단</button><button class="opt" data-a="cdiag">🔗 연결 진단</button><span class="mstat">소리가 안 나거나 시트에 안 넘어갈 때 눌러 보세요</span></div></div>
       <details${more ? ' open' : ''}><summary>구글 시트 연결 · 목소리</summary>
-        <div class="mrow"><b>시트 웹앱</b><div class="opts"><input id="mUrl" type="url" placeholder="https://script.google.com/macros/s/…/exec" value="${esc(sc.url)}"></div></div>
+        <div class="mrow"><b>시트 연동</b><div class="opts"><label for="mSyncEnabled"><input id="mSyncEnabled" type="checkbox" style="min-width:20px;width:20px;height:20px;padding:0;vertical-align:middle"${sc.enabled ? ' checked' : ''}> 시트 연동 사용</label><span class="mstat">학습 기록·말 버튼 사용·기본 학생 설정을 보냅니다. 음성 파일은 보내지 않습니다.</span></div></div>
+        <div class="mrow"><b>시트 웹앱</b><div class="opts"><input id="mUrl" type="url" placeholder="https://script.google.com/macros/s/…/exec" value="${esc(sc.configuredUrl)}"></div></div>
         <div class="mrow"><b>비밀 키</b><div class="opts"><input id="mKey" type="${showKey ? 'text' : 'password'}" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" placeholder="Apps Script에 적은 키" value="${esc(sc.key)}"><button class="opt" data-a="showkey">${showKey ? '키 숨기기' : '키 보기'}</button><button class="opt" data-a="ping">연결 확인</button><span class="mstat">${esc(msg)}</span></div></div>
         ${VOICE_ROLES.map(r => `<div class="mrow"><b>공통 목소리</b><div class="opts"><select class="mVoice" data-role="${r}">${voiceOpts(r)}</select><button class="opt" data-vt="${r}">들어 보기</button></div></div>`).join('')}
         <div class="mrow"><b></b><div class="opts"><span class="mstat">해설·캐릭터·말 버튼에 같은 목소리를 사용해요.</span></div></div>
@@ -2625,6 +2638,7 @@ function openSetup(onDone, needName = false) {
       if (applyPerson(S.name)) { sync = `‘${S.name}’ 학생의 저장된 설정을 불러왔어요.`; }
       draw(); return;
     }
+    if (e.target.id === 'mSyncEnabled') { grab(); msg = e.target.checked ? '같은 비밀 키를 입력하고 연결 확인을 눌러 주세요.' : '시트 연동을 껐어요. 기록은 기기에 남아요.'; draw(); return; }
     if (e.target.id === 'mReadCount') {
       try { localStorage.setItem('ssr.autoReadCount.v1', e.target.value === '2' ? '2' : '1'); } catch (_) {}
       return;
@@ -2968,3 +2982,4 @@ go(intro);
 <script src="education-tools.js"></script>
 </body>
 </html>
+
