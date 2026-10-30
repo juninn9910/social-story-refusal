@@ -1,0 +1,330 @@
+{
+  "method": "Whole-atlas connected-component silhouette extraction, alpha core >=24; full silhouette bounding box plus transparent 12px padding. Original artwork preserved.",
+  "assets": [
+    {
+      "name": "mong-neutral",
+      "path": "images/characters/mong-neutral.png",
+      "width": 289,
+      "height": 366,
+      "alphaPixels": 51716,
+      "sourceRect": [
+        80,
+        16,
+        265,
+        342
+      ]
+    },
+    {
+      "name": "ruru-neutral",
+      "path": "images/characters/ruru-neutral.png",
+      "width": 280,
+      "height": 372,
+      "alphaPixels": 58639,
+      "sourceRect": [
+        416,
+        10,
+        256,
+        348
+      ]
+    },
+    {
+      "name": "boogi-neutral",
+      "path": "images/characters/boogi-neutral.png",
+      "width": 215,
+      "height": 336,
+      "alphaPixels": 42680,
+      "sourceRect": [
+        796,
+        47,
+        191,
+        312
+      ]
+    },
+    {
+      "name": "mong-worried",
+      "path": "images/characters/mong-worried.png",
+      "width": 291,
+      "height": 368,
+      "alphaPixels": 52014,
+      "sourceRect": [
+        78,
+        366,
+        267,
+        344
+      ]
+    },
+    {
+      "name": "ruru-worried",
+      "path": "images/characters/ruru-worried.png",
+      "width": 282,
+      "height": 366,
+      "alphaPixels": 58400,
+      "sourceRect": [
+        418,
+        366,
+        258,
+        342
+      ]
+    },
+    {
+      "name": "boogi-worried",
+      "path": "images/characters/boogi-worried.png",
+      "width": 216,
+      "height": 342,
+      "alphaPixels": 43958,
+      "sourceRect": [
+        797,
+        394,
+        192,
+        318
+      ]
+    },
+    {
+      "name": "mong-cross",
+      "path": "images/characters/mong-cross.png",
+      "width": 292,
+      "height": 377,
+      "alphaPixels": 52862,
+      "sourceRect": [
+        76,
+        717,
+        268,
+        353
+      ]
+    },
+    {
+      "name": "ruru-cross",
+      "path": "images/characters/ruru-cross.png",
+      "width": 282,
+      "height": 379,
+      "alphaPixels": 59133,
+      "sourceRect": [
+        418,
+        714,
+        258,
+        355
+      ]
+    },
+    {
+      "name": "boogi-cross",
+      "path": "images/characters/boogi-cross.png",
+      "width": 220,
+      "height": 351,
+      "alphaPixels": 46608,
+      "sourceRect": [
+        796,
+        743,
+        196,
+        327
+      ]
+    },
+    {
+      "name": "mong-raise",
+      "path": "images/characters/mong-raise.png",
+      "width": 296,
+      "height": 375,
+      "alphaPixels": 55515,
+      "sourceRect": [
+        76,
+        1077,
+        272,
+        351
+      ]
+    },
+    {
+      "name": "ruru-raise",
+      "path": "images/characters/ruru-raise.png",
+      "width": 302,
+      "height": 378,
+      "alphaPixels": 61836,
+      "sourceRect": [
+        407,
+        1073,
+        278,
+        354
+      ]
+    },
+    {
+      "name": "boogi-raise",
+      "path": "images/characters/boogi-raise.png",
+      "width": 250,
+      "height": 346,
+      "alphaPixels": 49354,
+      "sourceRect": [
+        766,
+        1107,
+        226,
+        322
+      ]
+    },
+    {
+      "name": "pipi-neutral",
+      "path": "images/characters/pipi-neutral.png",
+      "width": 510,
+      "height": 591,
+      "alphaPixels": 136656,
+      "sourceRect": [
+        41,
+        41,
+        486,
+        567
+      ]
+    },
+    {
+      "name": "owl-neutral",
+      "path": "images/characters/owl-neutral.png",
+      "width": 400,
+      "height": 589,
+      "alphaPixels": 145350,
+      "sourceRect": [
+        751,
+        46,
+        376,
+        565
+      ]
+    },
+    {
+      "name": "pipi-talk",
+      "path": "images/characters/pipi-talk.png",
+      "width": 629,
+      "height": 582,
+      "alphaPixels": 158603,
+      "sourceRect": [
+        41,
+        645,
+        605,
+        558
+      ]
+    },
+    {
+      "name": "owl-talk",
+      "path": "images/characters/owl-talk.png",
+      "width": 534,
+      "height": 580,
+      "alphaPixels": 164637,
+      "sourceRect": [
+        684,
+        646,
+        510,
+        556
+      ]
+    },
+    {
+      "name": "broccoli",
+      "path": "images/objects/broccoli.png",
+      "width": 399,
+      "height": 395,
+      "alphaPixels": 81082,
+      "sourceRect": [
+        30,
+        32,
+        375,
+        371
+      ]
+    },
+    {
+      "name": "tablet",
+      "path": "images/objects/tablet.png",
+      "width": 408,
+      "height": 357,
+      "alphaPixels": 95783,
+      "sourceRect": [
+        439,
+        60,
+        384,
+        333
+      ]
+    },
+    {
+      "name": "clay",
+      "path": "images/objects/clay.png",
+      "width": 400,
+      "height": 297,
+      "alphaPixels": 63102,
+      "sourceRect": [
+        867,
+        115,
+        376,
+        273
+      ]
+    },
+    {
+      "name": "puzzle",
+      "path": "images/objects/puzzle.png",
+      "width": 409,
+      "height": 350,
+      "alphaPixels": 83052,
+      "sourceRect": [
+        39,
+        464,
+        385,
+        326
+      ]
+    },
+    {
+      "name": "paper",
+      "path": "images/objects/paper.png",
+      "width": 409,
+      "height": 385,
+      "alphaPixels": 94062,
+      "sourceRect": [
+        444,
+        448,
+        385,
+        361
+      ]
+    },
+    {
+      "name": "pineapple",
+      "path": "images/objects/pineapple.png",
+      "width": 314,
+      "height": 424,
+      "alphaPixels": 67501,
+      "sourceRect": [
+        903,
+        419,
+        290,
+        400
+      ]
+    },
+    {
+      "name": "cross",
+      "path": "images/objects/cross.png",
+      "width": 414,
+      "height": 396,
+      "alphaPixels": 73653,
+      "sourceRect": [
+        34,
+        829,
+        390,
+        372
+      ]
+    },
+    {
+      "name": "hand",
+      "path": "images/objects/hand.png",
+      "width": 230,
+      "height": 434,
+      "alphaPixels": 40058,
+      "sourceRect": [
+        551,
+        824,
+        206,
+        410
+      ]
+    },
+    {
+      "name": "rest",
+      "path": "images/objects/rest.png",
+      "width": 441,
+      "height": 281,
+      "alphaPixels": 67374,
+      "sourceRect": [
+        815,
+        920,
+        417,
+        257
+      ]
+    }
+  ]
+}

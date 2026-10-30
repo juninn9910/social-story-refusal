@@ -2,9 +2,11 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#7fd8ff">
 <title>내 마음 말하기 정글 모험</title>
+<script src="listen-guard.js"></script>
+<script src="practice-recorder.js"></script>
 <style>
 :root{--ink:#4a2b1a}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -430,23 +432,26 @@ table.rt{border-collapse:collapse;width:100%;font-size:13px;margin-top:6px}
   .mrow{flex-direction:column;gap:4px}
 }
 </style>
+<link rel="stylesheet" href="learning.css">
+<link rel="stylesheet" href="education-tools.css">
+<link rel="stylesheet" href="practice-recorder.css">
 </head>
 <body>
 <div id="app">
-  <div id="bg"></div>
+  <div id="bg" aria-hidden="true"></div>
   <div id="stage"></div>
-  <canvas id="confetti"></canvas>
+  <canvas id="confetti" aria-hidden="true"></canvas>
   <div id="overlay"></div>
   <div id="chapLabel"></div>
-  <div id="caption"></div>
+  <div id="caption" role="status" aria-live="polite" aria-atomic="true"></div>
   <div id="tbar">
     <button id="bSound" title="소리: 전체 켬 → 음성만 끔 → 전체 끔"></button>
     <button id="bFull" title="전체 화면"></button>
-    <button id="bAac" title="말 버튼 (길게 누르기)"><span class="fill"></span></button>
-    <button id="bHome" title="처음으로 (길게 누르기)"><span class="fill"></span></button>
+    <button id="bAac" aria-label="말 버튼 열기" title="말 버튼 열기"><span class="fill"></span></button>
+    <button id="bHome" aria-label="처음으로 · 길게 누르거나 Enter" title="처음으로 (길게 누르기)"><span class="fill"></span></button>
   </div>
 </div>
-<div id="modal"></div>
+<div id="modal" role="dialog" aria-modal="true" aria-label="교사 설정과 기록"></div>
 
 <script>
 'use strict';
@@ -464,10 +469,11 @@ const CONFIG = {
   teacherHoldMs: 600,       // 교사 버튼 길게 누르기 시간(ms). 0이면 한 번 터치
   showCaption: true,        // 화면 위쪽 해설 자막판
   showBubbleText: true,     // 캐릭터 말풍선에 대사 글자 보이기
-  showTeacherLabels: true,  // 카드의 작은 설명 글씨
+  showTeacherLabels: true,
+  allowPracticeShortcut: false, // 학생 화면에서 이야기 전체를 건너뛰지 않도록 기본 해제  // 카드의 작은 설명 글씨
   // 구글 시트 웹앱 (설치 방법: 교사용_안내.md). 여기 적어 두면 교사 설정에서 매번 넣지 않아도 됩니다.
   // key는 파일에 적지 마세요(깃허브에 올리면 누구나 볼 수 있음). 기기마다 교사 설정에서 한 번 입력하면 기억합니다.
-  sheet: { url: 'https://script.google.com/macros/s/AKfycbzYb0Y8hYNHYRrrU6VRe53ivibriY4XqI3uvAG-l9wqkIzDvc-Dwc8LitDcDMjXSRBnOg/exec', key: '' },
+  sheet: { url: '', key: '' },
   // 녹음 음성 파일 폴더 (클로바더빙 등). 파일이 없으면 기기 음성(TTS)으로 읽어 줍니다.
   audioDir: 'audio',
 
@@ -476,23 +482,23 @@ const CONFIG = {
      wrong: 단계별 오답 카드 — hurt(내 몸 아프게 하기) shout(소리 지르기) hold(꾹 참기) throw(던지기) push(밀기) */
   defaultType: 'base',
   types: {
-    A: { name: 'A형 (손 깨물기·참기)', stages: [1, 2, 3, 6], level: 1, task3: 'puzzle',
+    A: { name: '버튼 중심 지원', stages: [1, 2, 3, 6], level: 1, task3: 'puzzle',
          wrong: { 2: 'hurt', 3: 'hurt', 4: 'hurt', 5: 'hold', 6: 'hold' } },
-    B: { name: 'B형 (소리·코 때리기)', stages: [1, 3, 4, 6], level: 2, task3: 'question',
+    B: { name: '짧은 표현 중심 지원', stages: [1, 3, 4, 6], level: 2, task3: 'question',
          wrong: { 2: 'shout', 3: 'shout', 4: 'hurt', 5: 'shout', 6: 'hold' } },
-    base: { name: '기본형 (전체)', stages: [1, 2, 3, 4, 5, 6], level: 3, task3: 'puzzle', wrong: {} }
+    base: { name: '전체 상황 살펴보기', stages: [1, 2, 3, 4, 5, 6], level: 3, task3: 'puzzle', wrong: {} }
   },
   wrongDefault: { 2: 'throw', 3: 'hold', 4: 'shout', 5: 'push', 6: 'hold' },
   wrongs: {
-    hurt:  { label: '(내 몸 아프게 하기)', line: '그러면 내 몸이 아파요. 내 몸은 소중해요. 팔로 X를 만들고 말해 볼까?' },
-    shout: { label: '(소리 지르기)', line: '소리를 지르면 모두 깜짝 놀라요. 말로 해 볼까?' },
-    hold:  { label: '(꾹 참기)', line: '꾹 참으면 마음이 계속 힘들어요. 말로 알려 볼까?' },
-    throw: { label: '(던지기)', line: '던지면 친구가 다쳐요. 말로 해 볼까?' },
-    push:  { label: '(밀기)', line: '밀면 친구가 넘어져요. 말로 해 볼까?' }
+    hurt:  { label: '(내 몸 아프게 하기)', line: '내 몸은 소중해요. 말이나 몸짓, 버튼으로 불편함을 알려도 괜찮아요.' },
+    shout: { label: '(소리 지르기)', line: '많이 힘들 수 있어요. 말이나 몸짓, 버튼으로 도움을 요청할 수 있어요.' },
+    hold:  { label: '(꾹 참기)', line: '도움이 필요할 수 있어요. 말이나 몸짓, 버튼 중 편한 방법을 골라요.' },
+    throw: { label: '(던지기)', line: '물건은 안전하게 내려놓아요. 말이나 몸짓, 버튼으로 싫다고 알려도 괜찮아요.' },
+    push:  { label: '(밀기)', line: '안전한 거리를 두고, 말이나 몸짓, 버튼으로 싫다고 알릴 수 있어요.' }
   },
   gateNote: {
-    x:     { 1: '팔로 X를 만들거나 버튼을 눌러 볼까요?', n: '우리 친구도 팔로 X를 만들고 함께 말해 볼까요?' },
-    raise: { 1: '손을 들거나 버튼을 눌러 볼까요?',       n: '우리 친구도 손을 들고 함께 말해 볼까요?' }
+    x:     { 1: '팔로 X를 만들거나 버튼을 눌러 볼까요?', n: '말이나 몸짓, 버튼 중 편한 방법으로 알려도 괜찮아요. 보기만 해도 돼요.' },
+    raise: { 1: '손을 들거나 버튼을 눌러 볼까요?',       n: '말이나 몸짓, 버튼 중 편한 방법으로 알려도 괜찮아요. 보기만 해도 돼요.' }
   },
 
   /* 단계별 대사. say는 표현 수준별 문장 — 1: 동작·버튼  2: 한 단어  3: 두세 어절  4: 이유·대안
@@ -502,15 +508,15 @@ const CONFIG = {
     intro: '친구가 아주 큰 소리로 노래해요.',
     friendLine: '랄랄라~ 랄랄라~!',
     heroFeel: '으, 너무 시끄러워! 기분이 나빠!',
-    faceQ: '{name:이/} 기분이 어때 보여? 얼굴을 눌러 봐!',
-    faceWrong: '웃는 얼굴일까? 시끄러우면 기분이 나빠요. 다시 볼까?',
-    xQ: '기분이 나쁠 때는 먼저 팔로 X를 만들어요. X 버튼을 눌러 봐!',
-    xDone: '팔로 X! 내 몸을 지켜요.',
+    faceQ: '이 장면에서 주인공은 불편하다고 말했어요. 어떤 얼굴일까요?',
+    faceWrong: '이 이야기의 주인공은 불편하다고 말했어요. 사람마다 느끼는 기분은 다를 수 있어요.',
+    xQ: '불편함을 알리는 방법을 살펴봐요. 팔로 X는 한 가지 예시예요. 그림을 눌러 볼까요?',
+    xDone: '말이나 몸짓, 버튼 중 내게 편한 방법으로 알릴 수 있어요.',
     breathQ: '이제 숨을 쉬어 볼까? 바람 버튼을 눌러 봐!',
     calmDone: '마음이 조금 편해졌어요. 이제 말로 알려 줘요.',
     say: { 1: '싫어요', 2: '싫어요.', 3: '시끄러워요. 싫어요.', 4: '작게 해 주세요.' },
     friendOk: '아, 시끄러웠구나! 작게 할게.',
-    praise: '팔로 X를 만들고, 숨 쉬고, 말로 알렸어요!'
+    praise: '내 마음을 알리는 방법을 골랐어요!'
   },
   s2: {
     friend: null,           // null이면 주인공이 아닌 친구가 자동으로 나와요
@@ -518,7 +524,7 @@ const CONFIG = {
     friendLine: '브로콜리 먹어 봐! 맛있어!',
     heroLine: '나는 이거 먹기 싫어!',
     question: '친구에게 어떻게 말할까?',
-    say: { 1: '싫어요', 2: '싫어요.', 3: '브로콜리 싫어요.', 4: '배불러요. 안 먹을래요.' },
+    say: { 1: '싫어요', 2: '싫어요.', 3: '브로콜리 싫어요.', 4: '먹고 싶지 않아요. 안 먹을래요.' },
     friendOk: { 1: '알았어!', 2: '알았어!', 3: '알았어!', 4: '알았어! 다음에 먹자!' },
     praise: '싫은 것을 말로 알렸어요!'
   },
@@ -546,19 +552,19 @@ const CONFIG = {
     teacherLine: '이제 색칠하기 시간이에요!',
     heroLine: '으… 하기 싫어. 힘들어…',
     question: '어떻게 말할까?',
-    say: { 1: '쉬고 싶어요', 2: '쉬고 싶어요.', 3: '조금 쉬고 싶어요.', 4: '쉬고 할게요.' },
-    teacherOk: '말해 줘서 고마워. 조금 쉬고 하자!',
+    say: { 1: '쉬고 싶어요', 2: '쉬고 싶어요.', 3: '조금 쉬고 싶어요.', 4: '지금은 쉬고 싶어요.' },
+    teacherOk: '알려 줘서 고마워. 편하게 쉬어도 돼. 준비되면 다음을 같이 정하자.',
     restSec: 16,            // 쉬는 시간 (숨쉬기 안내 2번이 들어가요)
-    restLine: '쉬는 시간이에요. 후~ 편하게 쉬어요.',
+    restLine: '쉬는 시간이에요. 편한 자세로 쉬어요. 숨쉬기는 하고 싶을 때만 해요.',
     thenLine: '이제 조금만 해 볼까? 별을 눌러 색칠해 봐!',
-    praise: '쉬고 나서 다시 했어요!'
+    praise: '내게 필요한 휴식과 도움을 살펴봤어요.'
   },
   s5: {
     heroLine: '나는 탭이랑 클레이가 좋아!',
     friendLine: '나 줘! 나 줘!',
     question: '내 탭이랑 클레이를 뺏으려고 해! 어떻게 말할까?',
-    say: { 1: '안 돼요', 2: '안 돼요.', 3: '내 거예요. 안 돼요.', 4: '이따가 줄게요.' },
-    friendSorry: { 1: '앗, 미안해!', 2: '앗, 미안해!', 3: '앗, 미안해!', 4: '알았어, 기다릴게!' },
+    say: { 1: '안 돼요', 2: '안 돼요.', 3: '내 거예요. 안 돼요.', 4: '지금 쓰고 있어요. 주고 싶지 않아요.' },
+    friendSorry: { 1: '앗, 미안해!', 2: '앗, 미안해!', 3: '앗, 미안해!', 4: '알았어. 가져가지 않을게.' },
     praise: '내 물건을 잘 지켰어요!'
   },
   s6: {
@@ -574,24 +580,24 @@ const CONFIG = {
   },
   ending: { line: '멋지게 말했어요! 참 잘했어요!' },
 
-  /* 사회적 상황 이야기 (Carol Gray, Social Stories 10.2 기준)
+  /* 사회적 상황 이야기 (사회적 상황이야기 초안 — 학습자와 함께 검토)
      - 제목 → 도입(누가·어디서·언제) → 본문(무엇을·어떻게·왜) → 결론(정리)
      - 1인칭('나는')으로만 쓰고 2인칭(너·~해 봐)은 쓰지 않아요. 긍정적이고 문자 그대로 정확하게.
      - 문장 유형: 설명·조망(다른 사람의 생각·마음)·긍정(함께 지키는 가치) = 설명문 / 코칭(내가 할 수 있는 행동, 선생님이 도와주는 방법)
      - 설명문 수 ÷ 코칭문 수 ≥ 2  (교사 설정 화면에서 자동으로 확인해 줘요)
      그림: l=왼쪽 c=가운데 r=오른쪽 캐릭터(hero 주인공 / friend 친구 / teacher 선생님 / pipi), i=그림 아이콘
            캐릭터는 '누구:표정:자세' (표정 happy worried annoyed angry talk proud surprised, 자세 pose-x 팔로 X · pose-raise 손 들기) */
-  nameAsk: '내 이름을 써 볼까?',
+  nameAsk: '어떤 이름으로 불러 줄까? 별명도 좋아!',
   nameHello: '{name:아/야}, 반가워!',
   pickLine: '같이 갈 친구를 골라 볼까? 고른 친구가 내 이름으로 함께해요.',
   heroHello: '나는 {name:이야/야}! 같이 가자!',
   // 숨쉬기 안내 (1단계 바람 버튼, 4단계 쉬는 시간)
   breath: {
     cycles: 3, restCycles: 2, inSec: 3, outSec: 3.5,
-    close: '눈을 살짝 감아요.',
+    close: '편한 자세로 있어요. 눈은 뜨고 있어도 괜찮아요.',
     inhale: '코로 숨을 들이마셔요~',
     exhale: '입으로 후~',
-    open: '천천히 눈을 떠요.'
+    open: '지금 내 몸이 어떤지 살펴봐요.'
   },
   pageMinMs: 1500,
   finishDelayMs: 600,       // 따라 말하기를 다 들려준 뒤 마치기 버튼이 나타나기까지(ms)          // 이야기 책: 한 쪽을 다 읽은 뒤에도 최소 이만큼(ms) 지나야 ▶가 열려요
@@ -602,21 +608,21 @@ const CONFIG = {
       ['설명', '나는 학교에서 친구들과 함께 지내요.', 'l=hero:happy r=pipi:happy'],
       ['설명', '가끔 교실이 아주 시끄러워요.', 'l=hero:annoyed r=pipi:proud i=loud'],
       ['조망', '시끄러우면 내 기분이 나빠질 수 있어요.', 'c=hero:annoyed'],
-      ['설명', '기분이 나쁘면 손이 입이나 얼굴로 가고 싶을 때가 있어요.', 'c=hero:worried i=sweatBig'],
+      ['설명', '시끄러우면 귀가 아프거나 쉬고 싶을 수 있어요.', 'c=hero:worried i=sweatBig'],
       ['긍정', '내 몸은 소중해요.', 'c=hero:happy i=heart'],
-      ['코칭', '기분이 나쁠 때, 나는 팔로 X를 만들 수 있어요.', 'c=hero:worried:pose-x i=cant'],
-      ['코칭', '"후~" 숨을 쉬고, "싫어요."라고 말할 수 있어요.', 'c=hero:talk:pose-x i=wind'],
+      ['코칭', '나는 말이나 몸짓, 버튼으로 불편함을 알릴 수 있어요.', 'c=hero:worried:pose-x i=cant'],
+      ['코칭', '내가 원하면 편하게 숨을 쉬거나 조용한 곳에서 쉴 수 있어요.', 'c=hero:talk:pose-x i=wind'],
       ['조망', '내가 말로 알려 주면, 친구와 선생님이 내 마음을 알 수 있어요.', 'l=hero:talk r=teacher:happy'],
-      ['설명', '팔로 X, 숨쉬기, "싫어요." 이렇게 나는 내 몸을 지킬 수 있어요.', 'c=hero:proud:pose-x i=star']
+      ['설명', '말과 몸짓, 버튼은 모두 내 몸과 마음을 지키는 방법이에요.', 'c=hero:proud:pose-x i=star']
     ] },
     2: { title: '먹기 싫은 음식이 있을 때', art: 'c=hero:worried i=broccoli', pages: [
       ['설명', '점심시간에 나는 친구와 함께 밥을 먹어요.', 'l=hero:happy r=friend:happy'],
       ['설명', '친구가 나에게 음식을 줄 때가 있어요.', 'l=hero:surprised r=friend:talk i=broccoli'],
-      ['조망', '친구는 맛있는 것을 나누고 싶어서 줘요.', 'r=friend:happy i=heart'],
+      ['조망', '친구는 나누고 싶을 수도 있지만, 이유는 물어봐야 알 수 있어요.', 'r=friend:happy i=heart'],
       ['조망', '그런데 나는 먹고 싶지 않을 때도 있어요.', 'c=hero:worried i=broccoli'],
       ['긍정', '싫은 것은 싫다고 말해도 괜찮아요.', 'c=hero:happy'],
       ['설명', '음식을 던지면 친구가 다칠 수 있어요.', 'r=friend:surprised i=burst'],
-      ['코칭', '나는 팔로 X를 만들고 "싫어요."라고 말할 수 있어요.', 'c=hero:talk:pose-x i=no'],
+      ['코칭', '나는 말이나 몸짓, 버튼으로 "싫어요."라고 알릴 수 있어요.', 'c=hero:talk:pose-x i=no'],
       ['조망', '내가 말하면 친구는 "알았어!" 하고 내 마음을 알 수 있어요.', 'l=hero:happy r=friend:happy'],
       ['설명', '먹기 싫을 때, 나는 말로 알릴 수 있어요.', 'c=hero:proud:pose-x i=star']
     ] },
@@ -625,8 +631,8 @@ const CONFIG = {
       ['설명', '가끔 퍼즐이 어렵거나, 질문의 답을 모를 때가 있어요.', 'c=hero:worried i=puzzle'],
       ['긍정', '누구나 어려운 것이 있어요. 어른도 그래요.', 'l=hero:happy r=teacher:happy'],
       ['조망', '어려우면 마음이 답답해서 소리가 나오려고 할 때가 있어요.', 'c=hero:annoyed i=loud'],
-      ['설명', '소리를 지르면 선생님은 무엇이 어려운지 알기 어려워요.', 'r=teacher:surprised i=qmark'],
-      ['코칭', '어려울 때 나는 손을 들고 "어려워요."라고 말할 수 있어요.', 'c=hero:talk:pose-raise i=hard'],
+      ['설명', '선생님은 내가 힘든 모습을 보이면 어떤 도움이 필요한지 함께 살펴봐요.', 'r=teacher:surprised i=qmark'],
+      ['코칭', '어려울 때 나는 말이나 몸짓, 버튼으로 도움을 요청할 수 있어요.', 'c=hero:talk:pose-raise i=hard'],
       ['코칭', '답을 모를 때는 "몰라요."라고 말할 수 있어요.', 'c=hero:talk:pose-raise i=dunno'],
       ['코칭', '선생님은 그 말을 들으면 나를 도와줄 수 있어요.', 'l=hero:happy r=teacher:talk'],
       ['긍정', '몰라도 괜찮아요. 같이 배우면 돼요.', 'l=hero:happy r=teacher:happy i=heart'],
@@ -636,53 +642,53 @@ const CONFIG = {
       ['설명', '학교에서는 시간마다 여러 가지 활동을 해요.', 'l=hero:happy r=teacher:happy i=paper'],
       ['설명', '색칠하기처럼 하기 싫은 활동이 있을 때도 있어요.', 'c=hero:worried i=paper'],
       ['조망', '오래 하면 몸과 마음이 힘들어질 수 있어요.', 'c=hero:worried i=sweatBig'],
-      ['설명', '힘들 때 소리를 지르면 친구들이 깜짝 놀라요.', 'r=pipi:surprised i=loud'],
-      ['코칭', '힘들 때 나는 손을 들고 "쉬고 싶어요."라고 말할 수 있어요.', 'c=hero:talk:pose-raise i=rest'],
-      ['코칭', '선생님은 "조금 쉬고 다시 하자."라고 말해 줄 수 있어요.', 'l=hero:happy r=teacher:talk i=rest'],
-      ['설명', '쉬는 동안 나는 "후~" 숨을 쉬어요.', 'c=hero:happy i=wind'],
-      ['설명', '조금 쉬고 나면 다시 할 수 있을 때가 많아요.', 'c=hero:happy i=paper'],
+      ['설명', '어른은 내가 힘든 이유와 필요한 도움을 함께 살펴봐요.', 'r=pipi:surprised i=loud'],
+      ['코칭', '힘들 때 나는 편한 방법으로 "쉬고 싶어요."라고 알릴 수 있어요.', 'c=hero:talk:pose-raise i=rest'],
+      ['설명', '선생님은 내 휴식 요청을 듣고 쉴 곳을 마련해 줘요.', 'l=hero:happy r=teacher:talk i=rest'],
+      ['설명', '쉬는 방법은 사람마다 달라요. 조용히 있어도 괜찮아요.', 'c=hero:happy i=wind'],
+      ['설명', '쉰 뒤에는 더 쉬기, 도움받기, 다시 하기, 마치기 중에서 함께 정해요.', 'c=hero:happy i=paper'],
       ['긍정', '힘들 때 말로 알리는 것은 좋은 방법이에요.', 'c=hero:proud:pose-raise i=star']
     ] },
     5: { title: '내 물건을 지킬 때', art: 'c=hero:happy i=tablet', pages: [
       ['설명', '쉬는 시간에 나는 탭이나 클레이로 놀아요.', 'c=hero:happy i=tablet'],
       ['설명', '친구가 와서 내 장난감을 가져가려고 할 때가 있어요.', 'l=hero:surprised r=friend:talk i=clay'],
-      ['조망', '친구도 그 장난감이 재미있어 보여서 그래요.', 'r=friend:happy i=tablet'],
+      ['설명', '내 물건을 가져가려면 먼저 나에게 물어봐야 해요.', 'r=friend:happy i=tablet'],
       ['조망', '갑자기 가져가면 내 마음이 속상할 수 있어요.', 'c=hero:worried'],
       ['설명', '친구를 밀면 친구가 넘어져서 다칠 수 있어요.', 'r=friend:surprised i=burst'],
-      ['코칭', '나는 팔로 X를 만들고 "안 돼요."라고 말할 수 있어요.', 'c=hero:talk:pose-x i=cant'],
-      ['코칭', '"이따가 줄게요."라고 말할 수도 있어요.', 'l=hero:happy r=friend:happy i=heart'],
+      ['코칭', '나는 말이나 몸짓, 버튼으로 "안 돼요."라고 알릴 수 있어요.', 'c=hero:talk:pose-x i=cant'],
+      ['긍정', '나는 내 물건을 나눌지 스스로 정해도 괜찮아요.', 'l=hero:happy r=friend:happy i=heart'],
       ['조망', '내가 말하면 친구는 기다려야 한다는 것을 알 수 있어요.', 'r=friend:happy'],
       ['설명', '나는 말로 내 물건을 지킬 수 있어요.', 'c=hero:proud:pose-x i=star']
     ] },
     6: { title: '친구가 계속 툭툭 칠 때', art: 'l=hero:annoyed r=friend:proud', pages: [
-      ['설명', '친구들은 놀면서 장난을 칠 때가 있어요.', 'l=hero:happy r=friend:proud'],
+      ['설명', '학교에서는 다른 사람과 가까이 있을 때가 있어요.', 'l=hero:happy r=friend:proud'],
       ['설명', '어떤 친구는 나를 툭툭 치며 장난을 해요.', 'l=hero:annoyed r=friend:proud i=burst'],
-      ['조망', '친구는 재미있어서 그러는 것일 수 있어요.', 'r=friend:proud'],
+      ['긍정', '원하지 않는 몸의 접촉은 멈춰야 해요.', 'r=friend:proud'],
       ['조망', '하지만 나는 툭툭 맞는 것이 싫을 수 있어요.', 'c=hero:annoyed'],
       ['코칭', '싫을 때 나는 팔로 X를 만들고 "하지 마세요."라고 말할 수 있어요.', 'c=hero:talk:pose-x i=stop'],
       ['설명', '그래도 친구가 멈추지 않을 때가 있어요.', 'l=hero:worried r=friend:proud'],
-      ['설명', '꾹 참기만 하면 마음이 계속 힘들어요.', 'c=hero:worried i=rain'],
+      ['긍정', '나는 먼저 거절하지 않아도 바로 안전한 곳으로 가거나 어른에게 알려도 돼요.', 'c=hero:worried i=rain'],
       ['코칭', '그때 나는 선생님께 손을 들고 "도와주세요."라고 말할 수 있어요.', 'l=hero:talk:pose-raise r=teacher:happy i=help'],
       ['코칭', '선생님은 친구가 멈추도록 도와줄 수 있어요.', 'l=friend:worried r=teacher:talk'],
       ['긍정', '선생님께 알리는 것은 잘하는 일이에요.', 'l=hero:happy r=teacher:proud i=heart'],
       ['설명', '말해도 멈추지 않으면, 나는 선생님께 알릴 수 있어요.', 'c=hero:proud:pose-raise i=star']
     ] }
   },
-  // 칭찬 이야기 — 오늘 한 상황만 골라서 엔딩 전에 읽어 줘요 (10.2 기준: 이야기의 절반 이상은 잘한 일을 칭찬)
+  // 칭찬 이야기 — 오늘 한 상황만 골라서 엔딩 전에 읽어 줘요 (앱에서 함께 살펴본 내용만 확인하며 실제 표현은 추정하지 않음)
   applause: {
-    title: '오늘의 칭찬 이야기',
-    open: '오늘 나는 정글 친구들과 이야기를 읽고 연습했어요.',
+    title: '오늘 함께 알아본 이야기',
+    open: '오늘 나는 내 마음을 알리는 방법을 함께 알아봤어요.',
     lines: {
-      1: '기분이 나쁠 때, 나는 팔로 X를 만들고 "싫어요."라고 말했어요.',
-      2: '먹기 싫을 때, 나는 "싫어요."라고 말했어요.',
-      3: '어려울 때, 나는 손을 들고 "어려워요."라고 말했어요.',
-      '3q': '모를 때, 나는 손을 들고 "몰라요."라고 말했어요.',
-      4: '힘들 때, 나는 "쉬고 싶어요."라고 말했어요.',
-      5: '나는 "안 돼요."라고 말하며 내 물건을 지켰어요.',
-      6: '나는 선생님께 "도와주세요."라고 알렸어요.'
+      1: '시끄러울 때 불편함을 알리는 방법을 알아봤어요.',
+      2: '먹기 싫을 때 거절하는 방법을 알아봤어요.',
+      3: '어려울 때 도움을 요청하는 방법을 알아봤어요.',
+      '3q': '모를 때 도움을 요청하는 방법을 알아봤어요.',
+      4: '쉬고 싶을 때 필요한 도움을 알아봤어요.',
+      5: '내 물건을 지키는 방법을 알아봤어요.',
+      6: '안전한 곳으로 가고 어른에게 알리는 방법을 알아봤어요.'
     },
-    teacher: '선생님은 내가 말로 알려 줘서 기뻐요.',
-    close: '나는 참 멋지게 했어요!'
+    teacher: '말과 몸짓, 버튼은 모두 내 마음을 알리는 방법이에요.',
+    close: '내 마음과 내 선택은 소중해요.'
   },
 
   /* 말 버튼 보드 (대체 의사소통). 그림을 바꾸려면 ASSETS.aac에 이미지 경로를 넣으세요. */
@@ -702,7 +708,7 @@ const ASSETS = {
   characters: { mong: null, ruru: null, boogi: null, pipi: null, owl: null },
   items: { ch1Item: null, tablet: null, clay: null },
   aac: {},   // 예) { no: 'img/싫어요.png', help: 'img/도와주세요.png' }
-  background: null
+  background: 'images/jungle-background.png'
 };
 
 /* 캐릭터 이름·목소리 (이름을 바꾸면 TTS 대사에도 반영됩니다) */
@@ -970,10 +976,11 @@ const DRAW = {
   }
 };
 function charSVG(id, mood = 'happy') {
-  const a = ASSETS.characters && ASSETS.characters[id];
-  if (a) {
-    const src = a[mood] || a.default;
-    if (src) return `<img src="${src}" alt="" draggable="false" class="char-img">`;
+  const main = HEROES.includes(id), support = ['pipi','owl'].includes(id);
+  if (main || support) {
+    const pose = main ? (['worried','annoyed','angry','sad'].includes(mood) ? 'worried' : 'neutral') : (['talk','proud'].includes(mood) ? 'talk' : 'neutral');
+    const root = 'images/characters/' + id + '-';
+    return '<span class="character-art animal-' + id + '"><img class="character-default" src="' + root + pose + '.png" alt="" draggable="false">' + (main ? '<img class="character-cross" src="' + root + 'cross.png" alt="" draggable="false"><img class="character-raise" src="' + root + 'raise.png" alt="" draggable="false">' : '') + '</span>';
   }
   return DRAW[id](mood);
 }
@@ -1138,7 +1145,7 @@ function unlockAudio() {
     pickVoice();
   }
 }
-document.addEventListener('pointerdown', unlockAudio, { capture: true });
+document.addEventListener('click', unlockAudio, { capture: true });
 
 function tone(f, d, { type = 'sine', vol = .3, at = 0, to = null, attack = .01 } = {}) {
   if (!AC || MUTE_SFX) return;
@@ -1194,69 +1201,16 @@ let CUR_AUDIO = null;
 // 파일 이름 = 대사에서 문장부호만 뺀 것 (예: "시끄러워요. 싫어요." → 시끄러워요 싫어요.mp3)
 const cleanName = t => t.replace(/[\\/:*?"<>|#%.,!~…]/g, '').replace(/\s+/g, ' ').trim();
 const audioPath = (text, role) => `${CONFIG.audioDir}/${role ? role + '/' : ''}${cleanName(text)}.mp3`;
-function playFile(text, role) {
-  if (!CONFIG.audioDir) return Promise.resolve(false);
-  const paths = [role && audioPath(text, role), audioPath(text, '')].filter(p => p && !AUDIO_MISS.has(p));
-  return new Promise(res => {
-    const tryNext = () => {
-      const p = paths.shift();
-      if (!p) { res(false); return; }
-      const a = new Audio(encodeURI(p));
-      let state = 0;   // 0 여는 중 · 1 재생 중 · 2 끝
-      const fail = miss => { if (state !== 0) return; state = 2; if (miss) AUDIO_MISS.add(p); tryNext(); };
-      const done = () => { if (state === 2) return; state = 2; if (CUR_AUDIO === a) CUR_AUDIO = null; res(true); };
-      a.onerror = () => (state === 0 ? fail(true) : done());
-      a.onended = done;
-      a.play().then(() => { if (state !== 0) return; state = 1; CUR_AUDIO = a; a._stop = done; })
-        .catch(err => fail(!!err && err.name === 'NotSupportedError'));   // 파일 없음은 기억, 자동재생 막힘은 다음에 다시 시도
-    };
-    tryNext();
-  });
-}
-/* 안드로이드(갤럭시탭) 대비:
-   - cancel() 직후 바로 speak()하면 새 문장까지 묻히는 기기가 있어서, 말하는 중일 때만 cancel하고 0.3초 띄움
-   - 고른 목소리로 시작이 안 되면(onstart 없음) 기기 기본 목소리로 한 번 더 시도 */
+/* All narration returns a real completion result. Cancel/error/timeout never unlocks a page. */
 let LAST_CANCEL = 0, SPEAK_GEN = 0;
-function speakTTS(text, v, est) {
-  return new Promise(res => {
-    const gen = SPEAK_GEN;
-    let done = false, started = false, retried = false, wd = null;
-    const fin = () => { if (done) return; done = true; clearTimeout(gt); clearTimeout(wd); res(); };
-    const gt = setTimeout(fin, est + 4000);   // onend가 안 오는 기기 대비
-    const speak1 = withVoice => {
-      if (done || gen !== SPEAK_GEN) { fin(); return; }
-      const u = new SpeechSynthesisUtterance(text);
-      if (!(TTS.list || []).length) pickVoice();   // 목록이 늦게 오는 기기: 말하기 직전에 한 번 더 확인
-      const vc = withVoice ? roleVoice(v.role) : null;
-      u.lang = (vc && vc.lang) || 'ko-KR'; if (vc) u.voice = vc;
-      u.rate = v.rate ?? CONFIG.tts.rate; u.pitch = v.pitch ?? CONFIG.tts.pitch; u.volume = v.volume ?? 1;
-      u.onstart = () => { started = true; TTS.ok = true; };
-      u.onend = () => { if (u === CURRENT_U) fin(); };
-      u.onerror = e => { TTS.lastErr = e && e.error; if (!started && withVoice) retry(); else if (u === CURRENT_U) fin(); };
-      CURRENT_U = u;                           // 일부 크롬 GC 버그 방지
-      try { speechSynthesis.resume(); speechSynthesis.speak(u); } catch (e) { fin(); return; }
-      clearTimeout(wd);
-      if (withVoice) wd = setTimeout(() => { if (!started) retry(); }, 1800);
-    };
-    const retry = () => {
-      if (retried || done || gen !== SPEAK_GEN) return;
-      retried = true; TTS.fallback = true;
-      try { speechSynthesis.cancel(); } catch (e) {}
-      LAST_CANCEL = Date.now();
-      setTimeout(() => speak1(false), 300);
-    };
-    setTimeout(() => speak1(true), Math.max(0, 300 - (Date.now() - LAST_CANCEL)));
-  });
+function stopVoice() { SPEAK_GEN++; ListenGuard.stop(); }
+function speakTTS(text, v = {}, est) {
+  return ListenGuard.play({ text, rate: v.rate ?? CONFIG.tts.rate, pitch: v.pitch ?? CONFIG.tts.pitch,
+    voice: roleVoice(v.role), volume: v.volume ?? 1 }).then(result => {
+      if (result.completed) TTS.ok = true; else TTS.lastErr = result.reason;
+      return result;
+    });
 }
-function stopVoice() {
-  SPEAK_GEN++;
-  try {
-    if (HAS_TTS && (speechSynthesis.speaking || speechSynthesis.pending)) { speechSynthesis.cancel(); LAST_CANCEL = Date.now(); }
-  } catch (e) {}
-  const a = CUR_AUDIO;
-  if (a) { CUR_AUDIO = null; try { a.pause(); } catch (e) {} if (a._stop) a._stop(); }
-}
-/* v.el: 말하는 캐릭터(말풍선 표시) · v.keep: 이미 띄운 말풍선 유지 · v.role: 해설/주인공/친구/선생님/말버튼 */
 function say(text, v = {}) {
   const role = v.role || '';
   let bub = null;
@@ -1264,18 +1218,15 @@ function say(text, v = {}) {
     setCaption('');
     if (!v.keep && CONFIG.showBubbleText) bub = bubble(v.el, { text });
   } else if (role === '해설' && !v.noCap) setCaption(text);
-  const est = Math.max(900, text.length * 230 / (v.rate ?? CONFIG.tts.rate));
-  return new Promise(res => {
-    const fin = () => { if (bub) { const b = bub; setTimeout(() => b.remove(), 700); } res(); };
-    stopVoice();
-    if (MUTE_TTS) { setTimeout(fin, est); return; }
-    playFile(text, role).then(ok => {
-      if (ok) { TTS.ok = true; fin(); }
-      else if (!HAS_TTS) setTimeout(fin, est);
-      else speakTTS(text, v, est).then(fin);
+  const paths = CONFIG.audioDir ? [role && audioPath(text, role), audioPath(text, '')].filter(Boolean) : [];
+  return ListenGuard.play({ text, paths, muted: MUTE_TTS, rate: v.rate ?? CONFIG.tts.rate,
+    pitch: v.pitch ?? CONFIG.tts.pitch, voice: roleVoice(role), volume: v.volume ?? 1 }).then(result => {
+      if (bub) { const old = bub; setTimeout(() => old.remove(), 700); }
+      if (result.completed) TTS.ok = true; else TTS.lastErr = result.reason;
+      return result;
     });
-  });
 }
+
 const narr = (ex = {}) => Object.assign({ pitch: CONFIG.tts.narratorPitch, rate: CONFIG.tts.rate, role: '해설' }, ex);
 const voiceOf = (id, ex = {}) => Object.assign({
   pitch: CHARS[id].pitch, rate: CONFIG.tts.rate,
@@ -1306,6 +1257,14 @@ const stage = $('#stage'), overlay = $('#overlay');
 const STATE = { hero: 'mong', kid: '', log: null, setup: null, cur: 0, done: new Set() };
 const ABORT = new Error('abort');
 let RUN = 0, TIMERS = [], GATE_PICK = null;
+let ACTIVE_PRACTICE_RECORDER = null;
+const PAUSE_REASONS = new Set(); let PAUSE_WAITERS = [];
+function setLearningPause(reason, paused) {
+  if (paused) PAUSE_REASONS.add(reason); else PAUSE_REASONS.delete(reason);
+  document.documentElement.classList.toggle('learning-paused', PAUSE_REASONS.size > 0);
+  if (!PAUSE_REASONS.size) { const pending = PAUSE_WAITERS; PAUSE_WAITERS = []; pending.forEach(resolve => resolve()); }
+}
+function waitForLearning() { return PAUSE_REASONS.size ? new Promise(resolve => PAUSE_WAITERS.push(resolve)) : Promise.resolve(); }
 
 function resetLog() {
   STATE.log = { t0: Date.now(), end: null, saved: null, st: {} };
@@ -1317,22 +1276,28 @@ function makeCtx(id) {
   const ctx = {
     alive: () => id === RUN,
     check() { if (id !== RUN) throw ABORT; },
-    async sleep(ms) { await new Promise(r => setTimeout(r, ms)); ctx.check(); },
-    async say(t, o) { await say(t, o); ctx.check(); },
+    async sleep(ms) { await waitForLearning(); ctx.check(); await new Promise(r => setTimeout(r, ms)); await waitForLearning(); ctx.check(); },
+    async say(t, o) { await waitForLearning(); ctx.check(); const result = await say(t, o); await waitForLearning(); ctx.check(); return result; },
     tap(el) {
+      if (el.tagName !== 'BUTTON') {
+        el.tabIndex = 0; el.setAttribute('role', 'button');
+        el.setAttribute('aria-label', el.getAttribute('aria-label') || '이 장면의 활동 해 보기');
+        el.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); el.click(); } };
+      }
       return new Promise(res => {
-        const h = e => { e.preventDefault(); el.removeEventListener('pointerdown', h); res(e); };
-        el.addEventListener('pointerdown', h);
+        const h = e => { e.preventDefault(); el.removeEventListener('click', h); res(e); };
+        el.addEventListener('click', h);
       }).then(v => { ctx.check(); return v; });
     },
     every(ms, fn) {
-      const t = setInterval(() => { if (id !== RUN) { clearInterval(t); return; } fn(); }, ms);
+      const t = setInterval(() => { if (id !== RUN) { clearInterval(t); return; } if (!PAUSE_REASONS.size) fn(); }, ms);
       TIMERS.push(t); return () => clearInterval(t);
     }
   };
   return ctx;
 }
 function go(fn) {
+  if (ACTIVE_PRACTICE_RECORDER) { ACTIVE_PRACTICE_RECORDER.destroy(); ACTIVE_PRACTICE_RECORDER = null; }
   RUN++; const id = RUN;
   GATE_PICK = null;
   TIMERS.forEach(clearInterval); TIMERS = [];
@@ -1364,7 +1329,7 @@ function bubble(el, { icon = '', text = '', side } = {}) {
   removeBubble(el);
   side = side || (el.classList.contains('pos-right') ? 'left' : 'right');
   const b = document.createElement('div'); b.className = 'bubble ' + side + (icon ? ' answer' : '');
-  b.innerHTML = (icon ? `<div class="b-icon">${icon}</div>` : '') + (CONFIG.showBubbleText && text ? `<div class="b-text">${text}</div>` : '');
+  b.innerHTML = (icon ? `<div class="b-icon">${icon}</div>` : '') + (CONFIG.showBubbleText && text ? `<div class="b-text">${esc(text)}</div>` : '');
   mover(el).appendChild(b); return b;
 }
 function removeBubble(el) { el.querySelectorAll('.bubble').forEach(b => b.remove()); }
@@ -1421,6 +1386,9 @@ function holdButton(btn, ms, done) {
   ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => btn.addEventListener(ev, () => {
     if (fired) return; cancelAnimationFrame(raf); if (fill) fill.style.transform = 'scaleX(0)';
   }));
+  btn.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fire(); }
+  });
   return fire;
 }
 
@@ -1490,17 +1458,17 @@ function choose(c, { log, wrong, right, wrongLine, wrongLabel = '', rightLabel =
     overlay.className = 'show dim';
     const box = document.createElement('div'); box.className = 'choices';
     const mk = (art, ok, label) => {
-      const d = document.createElement('button'); d.className = 'card'; d.dataset.ok = ok ? '1' : '0';
+      const d = document.createElement('button'); d.className = 'card'; d.dataset.ok = ok ? '1' : '0'; d.setAttribute('aria-label', label.replace(/[()]/g, '') || '선택 그림');
       d.innerHTML = `<div class="card-art">${art}</div>${CONFIG.showTeacherLabels ? `<div class="card-note">${label}</div>` : ''}`;
       return d;
     };
     const cards = [mk(wrong, false, wrongLabel), mk(right, true, rightLabel)];
     if (CONFIG.shuffleChoices && Math.random() < .5) cards.reverse();
     cards.forEach((d, i) => { d.style.animationDelay = `${i * .15}s, ${i * .15 + .6}s`; box.appendChild(d); });
-    overlay.appendChild(box); sfx.pop();
+    overlay.appendChild(box); cards[0].focus(); sfx.pop();
     const rightCard = cards.find(d => d.dataset.ok === '1');
     let busy = false;
-    cards.forEach(d => d.addEventListener('pointerdown', async e => {
+    cards.forEach(d => d.addEventListener('click', async e => {
       e.preventDefault();
       if (busy || !c.alive()) return;
       busy = true;
@@ -1642,14 +1610,14 @@ async function stageStart(c, n) {
   stLog(n); STATE.cur = n;
   await chapterCard(c, n, n === 1 ? aacIcon('cant') : aacIcon(aacOf(n)));
 }
-// 한 상황을 마치면 상황 고르기 화면으로 돌아감
+// 화면 연습을 마치면 상황 고르기 화면으로 돌아감
 function next() {
   if (STATE.cur) STATE.done.add(STATE.cur);
   go(menu);
 }
 
 /* =====================================================================
-   사회적 상황 이야기 책 (Carol Gray 10.2) · 상황 고르기
+   사회적 상황 이야기 책 (개별화 초안) · 상황 고르기
    ===================================================================== */
 const ST_KIND = { '설명': 'D', '조망': 'D', '긍정': 'D', '코칭': 'C' };
 function storyRatio(pages) {
@@ -1675,65 +1643,66 @@ function pageArt(spec, n) {
 /* 책 넘기기: 한 쪽에 한 문장, 읽어 준 뒤 학생이 ▶를 눌러 넘김 */
 async function storyBook(c, { n = 0, title, art, pages, last }) {
   const all = [['제목', title, art]].concat(pages);
-  const rt = storyRatio(pages);
   const bk = document.createElement('div'); bk.className = 'book';
   bk.innerHTML = `<div class="bk-page"><div class="bk-art"></div><div class="bk-text"></div><div class="bk-tag"></div>
-      <button class="bk-say" data-nav="say" aria-label="다시 듣기">${ICON.speaker}</button><div class="bk-dots"></div></div>
-    <button class="bk-nav bk-prev" data-nav="prev" aria-label="앞으로">${ICON.play}</button>
-    <button class="bk-nav bk-next" data-nav="next" aria-label="다음">${ICON.play}</button>`;
+      <button class="bk-say" data-nav="say" aria-label="처음부터 다시 듣기">${ICON.speaker}</button><div class="bk-dots"></div>
+      <div class="bk-listen-status" role="status" aria-live="polite"></div></div>
+    <button class="bk-nav bk-prev" data-nav="prev" aria-label="이전 쪽">${ICON.play}</button>
+    <button class="bk-nav bk-next" data-nav="next" aria-label="끝까지 듣고 다음 쪽" disabled>${ICON.play}</button>`;
   stage.appendChild(bk);
-  const pg = bk.querySelector('.bk-page'), nx = bk.querySelector('.bk-next');
-  // 다 읽어 주기 전에는 ▶가 잠겨 있어요. 교사는 ▶를 1.2초 길게 누르면 넘길 수 있어요.
+  const pg = bk.querySelector('.bk-page'), nx = bk.querySelector('.bk-next'), status = bk.querySelector('.bk-listen-status');
   let ready = false, token = 0;
-  const readDone = new Set();
-  const unlock = (k, idx) => { if (k !== token) return; ready = true; readDone.add(idx); nx.classList.remove('locked'); bk.classList.add('read'); };
-  const readPage = (idx, txt) => {
-    const k = ++token, t0 = Date.now();
-    c.say(txt, narr({ noCap: true }))
-      .then(() => setTimeout(() => unlock(k, idx), Math.max(0, CONFIG.pageMinMs - (Date.now() - t0))), () => {});
+  const setReady = value => {
+    ready = value; nx.disabled = !value; nx.setAttribute('aria-disabled', String(!value));
+    nx.classList.toggle('locked', !value); bk.classList.toggle('read', value);
   };
-  const nav = () => new Promise(res => {
-    let hold = null;
-    const done = a => { clearTimeout(hold); bk.removeEventListener('pointerdown', h); bk.removeEventListener('pointerup', up); bk.removeEventListener('pointercancel', up); res(a); };
-    const up = () => clearTimeout(hold);
-    const h = e => {
-      const b = e.target.closest('[data-nav]'); if (!b) return;
-      e.preventDefault();
-      const a = b.dataset.nav;
-      if (a === 'next' && !ready) { retrigger(nx, 'nudge'); clearTimeout(hold); hold = setTimeout(() => done(a), 1200); return; }
-      done(a);
+  const readPage = async text => {
+    const version = ++token, started = Date.now();
+    setReady(false); status.textContent = '이야기를 듣고 있어요';
+    try {
+      const result = await c.say(text, narr({ noCap: true }));
+      if (version !== token || !c.alive()) return;
+      if (!result?.completed) {
+        status.textContent = result?.reason === 'muted' ? '소리를 켜고 다시 듣기를 눌러 주세요.' : '끝까지 듣지 못했어요. 다시 듣기를 눌러 주세요.';
+        return;
+      }
+      await c.sleep(Math.max(0, CONFIG.pageMinMs - (Date.now() - started)));
+      if (version !== token || !c.alive()) return;
+      setReady(true); status.textContent = '다 들었어요. 다음으로 가요.';
+    } catch (error) { if (error !== ABORT && c.alive()) status.textContent = '다시 듣기를 눌러 주세요.'; }
+  };
+  const nav = () => new Promise(resolve => {
+    const handler = event => {
+      const button = event.target.closest('[data-nav]'); if (!button) return;
+      event.preventDefault();
+      const action = button.dataset.nav;
+      if (action === 'next' && !ready) return; // Includes scripted clicks and keyboard activation.
+      bk.removeEventListener('click', handler); resolve(action);
     };
-    bk.addEventListener('pointerdown', h); bk.addEventListener('pointerup', up); bk.addEventListener('pointercancel', up);
-  }).then(v => { c.check(); return v; });
-  let i = 0, again = false;
+    bk.addEventListener('click', handler);
+  }).then(value => { c.check(); return value; });
+  let i = 0;
   for (;;) {
-    const [kind, text, a] = all[i];
-    const lastPage = i === all.length - 1;
+    const [kind, text, spec] = all[i], lastPage = i === all.length - 1;
     pg.classList.toggle('cover', i === 0);
-    bk.querySelector('.bk-art').innerHTML = pageArt(a, n);
+    bk.querySelector('.bk-art').innerHTML = pageArt(spec, n);
     bk.querySelector('.bk-text').textContent = tpl(text);
-    bk.querySelector('.bk-tag').textContent = !CONFIG.showTeacherLabels ? '' : i === 0
-      ? `설명·조망·긍정 ${rt.d} ÷ 코칭 ${rt.k} = ${rt.r.toFixed(1)} ${rt.r >= 2 ? '✓' : '(2 이상 필요)'}`
-      : `${i === 1 ? '도입 · ' : lastPage ? '결론 · ' : ''}${kind}문`;
+    bk.querySelector('.bk-tag').textContent = CONFIG.showTeacherLabels ? (i === 0 ? '끝까지 듣고 다음으로 가요' : `${i} / ${pages.length}`) : '';
     bk.querySelector('.bk-dots').innerHTML = all.map((_, j) => `<i class="${j === i ? 'on' : ''}"></i>`).join('');
     bk.querySelector('.bk-prev').style.visibility = i ? 'visible' : 'hidden';
     nx.classList.toggle('go', lastPage);
-    nx.innerHTML = lastPage ? `${ICON.play}<span>${last}</span>` : ICON.play;
-    if (!again) {
-      retrigger(pg, 'turn');
-      ready = readDone.has(i);
-      nx.classList.toggle('locked', !ready); bk.classList.toggle('read', ready);
-    }
-    again = false;
-    readPage(i, tpl(text));
-    const a2 = await nav();
-    stopVoice(); sfx.tap();
-    if (a2 === 'prev') i = Math.max(0, i - 1);
-    else if (a2 === 'next') { if (lastPage) break; i++; }
-    else again = true;   // 다시 듣기: 같은 쪽을 한 번 더 읽음
+    nx.innerHTML = lastPage ? `${ICON.play}<span>${esc(last)}</span>` : ICON.play;
+    retrigger(pg, 'turn');
+    readPage(tpl(text));
+    const action = await nav();
+    ++token; setReady(false); stopVoice(); sfx.tap();
+    if (action === 'prev') i = Math.max(0, i - 1);
+    else if (action === 'next') { if (lastPage) break; i++; }
+    // Replay always starts a fresh listen, including pages heard earlier.
   }
-  bk.remove();
+  ++token; bk.remove();
 }
+
 function storyOf(n) {
   const fn = async c => {
     const S = CONFIG.stories[n];
@@ -1744,7 +1713,7 @@ function storyOf(n) {
   };
   return fn;
 }
-function menuIcon(n) { return n === 1 ? `<div class="mface">${charSVG(STATE.hero, 'annoyed')}</div>` : aacIcon(aacOf(n)); }
+function menuIcon(n) { return `<img class="scene-thumbnail" src="images/scenes/scene-${n}.png" alt="${esc(CONFIG.stories[n].title)} 상황 그림" draggable="false">`; }
 async function menu(c) {
   const S = STATE.setup;
   setLabel(`${S.name || '이름 없음'} · 상황 고르기 · 수준 ${S.level}`);
@@ -1754,7 +1723,7 @@ async function menu(c) {
   g.innerHTML = S.stages.map((n, i) => `<button class="mcard${STATE.done.has(n) ? ' done' : ''}" data-n="${n}" style="animation-delay:${i * .08}s">
       <div class="mc-ic">${menuIcon(n)}</div><div class="mc-t">${CONFIG.stories[n].title}</div>
       ${STATE.done.has(n) ? `<div class="mc-done">${ICON.star}</div>` : ''}
-      ${CONFIG.showTeacherLabels ? `<span class="mc-quick" data-q="${n}">연습만 ▶</span>` : ''}</button>`).join('');
+      ${CONFIG.allowPracticeShortcut ? `<span class="mc-quick" data-q="${n}">연습만 ▶</span>` : ''}</button>`).join('');
   stage.appendChild(g);
   const end = document.createElement('button'); end.className = 'menu-end';
   end.innerHTML = `<div class="ab">${ICON.star}</div><span>오늘은 끝!</span>`;
@@ -1766,10 +1735,10 @@ async function menu(c) {
     const hnd = e => {
       const q = e.target.closest('[data-q]'), b = e.target.closest('.mcard'), x = e.target.closest('.menu-end');
       if (!q && !b && !x) return;
-      e.preventDefault(); stage.removeEventListener('pointerdown', hnd);
+      e.preventDefault(); stage.removeEventListener('click', hnd);
       res(x ? { end: true } : { n: +(q ? q.dataset.q : b.dataset.n), quick: !!q });
     };
-    stage.addEventListener('pointerdown', hnd);
+    stage.addEventListener('click', hnd);
   });
   c.check();
   if (pick.end) { sfx.pop(); go(ending); return; }
@@ -1790,76 +1759,71 @@ function applausePages() {
 
 /* ---------- 따라 말하기 → 마치기 (폭죽) ---------- */
 function teacherGate(c, n, phrase) {
-  const log = stLog(n), icon = aacIcon(aacOf(n)), btnMode = LV() === 1, pose = poseOf(n);
-  const note = CONFIG.gateNote[pose === 'pose-x' ? 'x' : 'raise'][btnMode ? 1 : 'n'];
+  const log = stLog(n), icon = aacIcon(aacOf(n)), pose = poseOf(n);
   log.ph = phrase;
   return new Promise(resolve => {
     overlay.className = 'show dim';
-    const chips = btnMode ? [phrase] : chipsOf(phrase);
-    const small = chips.length > 3 || chips.join('').length > 7;
-    const g = document.createElement('div'); g.className = 'gate';
+    const g = document.createElement('section'); g.className = 'gate recording-gate';
     g.innerHTML = `<div class="gate-board">
-        <div class="gate-hero"><div class="inner bob ${pose}">${charSVG(STATE.hero, 'talk')}</div></div>
-        <div class="gate-right">
-          ${btnMode ? `<button class="gate-aac" aria-label="${esc(phrase)}">${icon}</button>` : `<div class="gate-icon">${icon}</div>`}
-          <div class="chips${small ? ' small' : ''}">${chips.map(s => `<span class="chip">${s}</span>`).join('')}</div>
-          <button class="replay" aria-label="다시 듣기">${ICON.speaker}</button>
-        </div>
-      </div>
-      <button class="finish" aria-label="마치기"><div class="ab">${ICON.star}</div><span>마치기</span></button>`;
+      <div class="gate-hero"><div class="inner ${pose}">${charSVG(STATE.hero, 'talk')}</div></div>
+      <div class="gate-right"><h2>듣고, 내 목소리로 표현해요</h2><div class="gate-target">${esc(phrase)}</div>
+        <button class="model-replay" type="button">문장 다시 듣기</button><p class="model-status" role="status" aria-live="polite">먼저 문장을 끝까지 들어요.</p></div>
+      </div><div class="recording-mount" hidden></div>
+      <button class="recording-finish" type="button" disabled>녹음·교사 확인 후 마치기</button>`;
     overlay.appendChild(g);
-    sfx.pop();
-    const chipEls = [...g.querySelectorAll('.chip')];
-    const aacBtn = g.querySelector('.gate-aac');
-    let playing = false, closed = false;
-    async function model(first) {
-      if (playing || closed) return;
-      playing = true; g.classList.remove('listening');
-      try {
-        if (first) { await c.say(note, narr()); if (closed) throw ABORT; }
-        if (!btnMode) {
-          for (const el of chipEls) {
-            el.classList.add('lit'); sfx.blip();
-            await c.say(el.textContent, voiceOf(STATE.hero, { rate: .75 }));
-            if (closed) throw ABORT;
-          }
-          await c.sleep(150);
-        }
-        chipEls.forEach(e => e.classList.add('lit'));
-        if (aacBtn) retrigger(aacBtn, 'hit');
-        await c.say(phrase, voiceOf(STATE.hero, { rate: .85 }));
-        if (closed) throw ABORT;
-        chipEls.forEach(e => e.classList.remove('lit'));
-        g.classList.add('listening');
-        if (first) { await c.sleep(CONFIG.finishDelayMs); if (!closed) { g.classList.add('can-finish'); sfx.pop(); } }
-      } catch (e) { /* 중단 */ }
-      playing = false;
-    }
-    if (aacBtn) aacBtn.addEventListener('pointerdown', async e => {
-      e.preventDefault();
-      if (closed) return;
-      log.aac++; sfx.blip(); retrigger(aacBtn, 'hit');
-      if (playing) return;
-      playing = true; chipEls.forEach(x => x.classList.add('lit'));
-      await say(phrase, voiceOf(STATE.hero));
-      chipEls.forEach(x => x.classList.remove('lit'));
-      playing = false;
-    });
-    g.querySelector('.replay').addEventListener('pointerdown', e => { e.preventDefault(); sfx.tap(); model(false); });
-    // 따라 말하기를 한 번 다 들은 뒤에 마치기 버튼이 나타나요. 누르면 폭죽이 터지고 메뉴로 돌아가요.
-    const finish = async () => {
-      if (closed) return; closed = true; GATE_PICK = null;
-      log.done = true;
-      stopVoice();
-      const fb = g.querySelector('.finish'); fb.classList.add('hit');
-      confetti(2600); sfx.fanfare();
-      await new Promise(r => setTimeout(r, 1600));
-      overlay.innerHTML = ''; overlay.className = '';
-      resolve();
+    const mount = g.querySelector('.recording-mount'), replay = g.querySelector('.model-replay');
+    const status = g.querySelector('.model-status'), finishButton = g.querySelector('.recording-finish');
+    let closed = false, modelling = false, recorder = null, modelComplete = false, warnedTakeId = null;
+    const refresh = () => {
+      const ready = !closed && !modelling && modelComplete && !!recorder?.canFinish();
+      finishButton.disabled = !ready; finishButton.textContent = ready ? '마치기' : '녹음·교사 확인 후 마치기';
     };
-    g.querySelector('.finish').addEventListener('pointerdown', e => { e.preventDefault(); if (g.classList.contains('can-finish')) finish(); });
-    GATE_PICK = () => finish();   // 교사용: Enter 키
-    model(true);
+    const model = async () => {
+      if (closed || modelling || recorder?.isRecording?.()) return;
+      modelling = true; replay.disabled = true; refresh(); stopVoice();
+      if (mount) mount.inert = true;
+      status.textContent = '문장을 듣고 있어요.';
+      try {
+        const result = await c.say(phrase, voiceOf(STATE.hero, { rate: .8 }));
+        if (closed || !c.alive()) return;
+        modelComplete = modelComplete || !!result?.completed;
+        status.textContent = result?.completed ? '이제 녹음하고, 다시 들어 봐요.' : '끝까지 듣지 못했어요. 소리를 켜고 다시 듣기를 눌러 주세요.';
+        if (result?.completed && !recorder) {
+          mount.hidden = false;
+          if (!window.PracticeRecorder) { status.textContent = '녹음 도구를 불러오지 못했어요. 폴더 전체를 함께 열어 주세요.'; return; }
+          recorder = PracticeRecorder.mount({ container: mount, phrase, student: STATE.setup.name || STATE.kid || '별명 없음', stage: n,
+            onStart: stopVoice,
+            onBusy: busy => { replay.disabled = busy || modelling; $('#bAac').disabled = busy; },
+            onRecording: recording => { document.querySelector('.edu-launch')?.toggleAttribute('disabled', recording); refresh(); },
+            onReady: refresh });
+          ACTIVE_PRACTICE_RECORDER = recorder;
+        }
+      } catch (error) { if (error !== ABORT && c.alive()) status.textContent = '문장 다시 듣기를 눌러 주세요.'; }
+      finally {
+        if (!closed && c.alive()) { modelling = false; replay.disabled = false; mount.inert = false; refresh(); }
+      }
+    };
+    const finish = async () => {
+      if (closed || modelling || !modelComplete || !recorder?.canFinish() || !c.alive()) return;
+      finishButton.disabled = true;
+      const recording = await recorder.commit();
+      if (!recording || closed || !c.alive() || !recorder.canFinish()) { refresh(); return; }
+      if (recording.storage === 'memory' && warnedTakeId !== recording.id) {
+        warnedTakeId = recording.id;
+        status.textContent = '녹음을 브라우저에 계속 보관하지 못했어요. 아래 ‘녹음 내려받기’로 보관해 주세요. 이 창을 닫으면 임시 녹음이 사라질 수 있어요.';
+        finishButton.disabled = false; finishButton.textContent = '임시 보관 안내 확인 후 마치기';
+        return;
+      }
+      closed = true; GATE_PICK = null; log.recording = recording; log.done = true;
+      recorder.destroy(); if (ACTIVE_PRACTICE_RECORDER === recorder) ACTIVE_PRACTICE_RECORDER = null;
+      stopVoice(); confetti(2000); sfx.fanfare();
+      await c.sleep(900); if (!c.alive()) return;
+      overlay.innerHTML = ''; overlay.className = ''; resolve();
+    };
+    replay.addEventListener('click', model);
+    finishButton.addEventListener('click', finish);
+    GATE_PICK = finish; // The same checks apply to every completion path.
+    model();
   });
 }
 
@@ -1900,15 +1864,15 @@ async function intro(c) {
 
   const tp = document.createElement('div'); tp.className = 'tpanel';
   tp.innerHTML = `<div class="tp-sum"></div>
-    <div class="tp-row"><button data-a="setup">교사 설정 · 이름</button><button data-a="aac">말 버튼</button><button data-a="rec">기록 보기</button></div>
-    <div class="tp-row"><span>바로가기</span>${[1, 2, 3, 4, 5, 6].map(n => `<button data-j="${n}">${n}단계</button>`).join('')}<button data-j="0">엔딩</button></div>`;
+    <div class="tp-row"><button data-a="setup">교사 설정 · 이름</button><button data-a="aac">말 버튼</button><button data-a="rec">기록 보기</button><button data-a="audio">녹음 보관함</button></div>
+`;
   stage.appendChild(tp);
   const sum = () => {
     tp.querySelector('.tp-sum').textContent = setupSummary();
     flushQueue().then(left => {
       const s = sheetCfg();
       tp.querySelector('.tp-sum').textContent = setupSummary() + ' · ' +
-        (!s.url || !s.key ? '구글 시트 미연결 (교사 설정에서 키 입력)' : left ? `시트 전송 대기 ${left}건 · ${SHEET_ERR}` : '구글 시트 연결됨');
+        (!s.url || !s.key ? '기기에만 저장 (외부 연결은 선택)'  : left ? `시트 전송 대기 ${left}건 · ${SHEET_ERR}` : '구글 시트 연결됨');
     });
   };
   sum();
@@ -1917,6 +1881,7 @@ async function intro(c) {
     if (b.dataset.a === 'setup') openSetup(sum);
     else if (b.dataset.a === 'aac') go(aacBoard);
     else if (b.dataset.a === 'rec') openRecords();
+    else if (b.dataset.a === 'audio') window.PracticeRecorder?.openLibrary?.(STATE.setup.name || '');
     else if (b.dataset.j) { resetLog(); const j = +b.dataset.j; STATE.cur = j; go(j ? storyOf(j) : ending); }
   });
   (TTS.ready || Promise.resolve(0)).then(n => {
@@ -1932,7 +1897,7 @@ async function intro(c) {
   t.classList.add('up');
   const nb = document.createElement('div'); nb.className = 'namebox wood';
   nb.innerHTML = `<div class="nb-q">${CONFIG.nameAsk}</div>
-    <input class="nb-in" type="text" maxlength="10" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="done" aria-label="이름">
+    <input class="nb-in" type="text" maxlength="20" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="done" aria-label="이름">
     <button class="nb-ok" aria-label="확인">${ICON.play}</button>`;
   stage.appendChild(nb);
   const inp = nb.querySelector('.nb-in'), ok = nb.querySelector('.nb-ok');
@@ -1947,7 +1912,7 @@ async function intro(c) {
       if (!v) { retrigger(nb, 'nope'); sfx.wrong(); try { inp.focus(); } catch (e) {} return; }
       res(v);
     };
-    ok.addEventListener('pointerdown', e => { e.preventDefault(); tryOk(); });
+    ok.addEventListener('click', e => { e.preventDefault(); tryOk(); });
     inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); tryOk(); } });
   });
   c.check();
@@ -1970,7 +1935,7 @@ async function intro(c) {
     `<button class="pick" data-id="${id}" style="--c:${CHARS[id].color};animation-delay:${i * .12}s"><div class="pick-char">${charSVG(id, 'happy')}</div>${CONFIG.showTeacherLabels ? `<div class="pick-name">${CHARS[id].name}</div>` : ''}</button>`).join('');
   stage.appendChild(picks); sfx.pop();
   const chosen = await new Promise(res => {
-    picks.addEventListener('pointerdown', e => { const b = e.target.closest('.pick'); if (!b) return; e.preventDefault(); res(b); });
+    picks.addEventListener('click', e => { const b = e.target.closest('.pick'); if (!b) return; e.preventDefault(); res(b); });
   });
   c.check();
   const id = chosen.dataset.id; STATE.hero = id;
@@ -2016,7 +1981,7 @@ async function s1(c) {
   sfx.blip();
 
   // ② 팔로 X — 손이 입·코로 가기 전에 먼저 몸을 멈추는 대체 동작
-  const xb = bigButton(aacIcon('cant'), '팔로 X', 52, 42);
+  const xb = bigButton(aacIcon('cant'), '불편함을 알리는 그림 보기', 52, 42);
   await c.say(S.xQ, narr());
   xb.classList.add('ready');
   await c.tap(xb);
@@ -2025,16 +1990,8 @@ async function s1(c) {
   await c.say(S.xDone, narr());
   xb.remove();
 
-  // ③ 숨쉬기 — 버튼을 누르면 눈 감고 들이마시기·후~ 내쉬기를 함께 따라 해요
-  const wb = bigButton(ICON.wind, '숨 쉬기', 52, 42);
-  await c.say(S.breathQ, narr());
-  wb.classList.add('ready');
-  await c.tap(wb);
-  retrigger(wb, 'hit'); sfx.whoosh(); wb.classList.add('done');
-  await c.sleep(400); wb.remove();
-  const cyc = CONFIG.breath.cycles;
-  await breathGuide(c, hero, cyc, i => m.set(65 - (i + 1) * 50 / cyc), 52, 44);
-  await c.say(S.calmDone, narr());
+  const calm = await learningChoice(c, '내게 편한 방법을 골라요', [['tell', '바로 알리기'], ['breath', '숨쉬기 해 보기']]);
+  if (calm === 'breath') await breathGuide(c, hero, CONFIG.breath.cycles, i => m.set(65 - (i + 1) * 50 / CONFIG.breath.cycles), 52, 44);
 
   // ④ 팔로 X + 말로 알리기
   const phrase = lv(S.say);
@@ -2165,25 +2122,22 @@ async function s4(c) {
   await c.say(lv(S.teacherOk), V(t));
   removeBubble(hero);
 
-  // 먼저 쉬기 → 다음에 조금 하기 (말하면 무조건 안 하게 되는 것으로 배우지 않도록)
-  const ft = document.createElement('div'); ft.className = 'ftboard wood';
-  ft.innerHTML = `<div class="ft-item on">${aacIcon('rest')}<svg class="ring" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45"/><circle class="p" cx="50" cy="50" r="45" style="animation-duration:${S.restSec}s"/></svg></div><div class="ft-arrow">➜</div><div class="ft-item">${ICON.crayon}</div>`;
-  stage.appendChild(ft); sfx.pop();
-  const t0 = Date.now();
-  setMood(hero, 'happy');
+  setMood(hero, 'happy'); setAnim(hero, 'bob');
   await c.say(S.restLine, narr());
-  await breathGuide(c, hero, CONFIG.breath.restCycles, null, 50, 56);   // 쉬는 동안 눈 감고 숨쉬기
-  const left = S.restSec * 1000 - (Date.now() - t0);
-  if (left > 0) await c.sleep(left);
-  const its = ft.querySelectorAll('.ft-item'); its[0].classList.remove('on'); its[1].classList.add('on'); sfx.blip();
-  setAnim(hero, 'bob');
-  await c.say(S.thenLine, narr());
-  desk.classList.add('tap-me');
-  await c.tap(desk);
-  desk.classList.remove('tap-me');
-  desk.innerHTML = paperSVG(true); sparkle(desk); sfx.correct();
-  await c.sleep(600);
-  ft.remove();
+  let restChoice;
+  do {
+    restChoice = await learningChoice(c, '지금 무엇이 필요할까?', [
+      ['more', '조금 더 쉬기'], ['help', '도움받기'], ['ready', '준비됐어요'], ['end', '오늘은 마치기']
+    ]);
+    if (restChoice === 'end') { go(finishToday); return; }
+    if (restChoice === 'more') await c.say('조용히 쉬어요. 준비되면 다음을 골라도 돼요.', narr());
+  } while (restChoice === 'more');
+  if (restChoice === 'ready' || restChoice === 'help') {
+    await c.say(restChoice === 'help' ? '선생님과 함께 해요. 멈추고 싶으면 언제든 알려도 돼요.' : '준비됐구나. 해 보고 싶을 때 별을 눌러도 돼요.', narr());
+    const activity = await learningChoice(c, '색칠을 해 볼까?', [['color', '별 색칠하기'], ['end', '지금은 마치기']]);
+    if (activity === 'end') { go(finishToday); return; }
+    if (activity === 'color') { desk.innerHTML = paperSVG(true); sparkle(desk); sfx.correct(); }
+  }
   setMood(t, 'proud');
   setMood(hero, 'proud'); setAnim(hero, 'jump'); sparkle(hero); sfx.sparkle();
   await c.say(S.praise, narr());
@@ -2242,60 +2196,23 @@ async function s5(c) {
 async function s6(c) {
   const S = CONFIG.s6, n = 6, H = STATE.hero, F = others()[1];
   await stageStart(c, n);
-  const hero = makeChar(H, { pos: 'left' }); setAnim(hero, 'bob');
-  const fr = makeChar(F, { pos: 'near' }); setMove(fr, 'enter-right'); sfx.hops(4);
-  await c.sleep(1350);
-  setMove(fr, ''); setMood(fr, 'proud');
-
-  let poking = false;
-  const pokeOnce = () => { if (!poking) return; sfx.poke(); retrigger(mover(hero), 'jolt'); pokeFx(hero); };
-  const startPoke = () => { poking = true; setMood(fr, 'proud'); setAnim(fr, 'poke poke-move'); pokeOnce(); };
-  const pausePoke = () => { poking = false; setAnim(fr, ''); };
-  const stopTimer = c.every(700, pokeOnce);
-  startPoke();
-  setMood(hero, 'annoyed');
-  await c.say(S.intro, narr());
-
-  // 먼저 팔로 X + "하지 마세요!"
-  const sb = bigButton(aacIcon('stop'), S.stopWord);
-  await c.say(S.stopQ, narr());
-  sb.classList.add('ready');
-  await c.tap(sb);
-  retrigger(sb, 'hit'); sfx.drum(1); sb.classList.add('done');
-  pausePoke(); setMood(fr, 'surprised'); retrigger(mover(fr), 'flinch');
-  setMood(hero, 'talk'); setAnim(hero, 'pose-x');
-  bubble(hero, { icon: aacIcon('stop'), text: S.stopWord });
-  await c.say(S.stopWord, V(hero, { rate: 1, keep: true }));
-  await c.sleep(500);
-  removeBubble(hero); sb.remove();
-  setMood(fr, 'proud');
-  await c.say(S.friendAgain, V(fr));
-  setMood(hero, 'annoyed'); setAnim(hero, 'bob');
-  startPoke();
-  await c.sleep(1400);
-  setMood(hero, 'worried'); emote(hero, ICON.sweatBig);
-  await c.say(S.question, narr());
-  pausePoke();
-
+  const hero = makeChar(H, { pos: 'left', mood: 'worried' });
+  const fr = makeChar(F, { pos: 'near' });
+  await c.say('친구가 내 몸을 만져서 불편해요. 내 몸의 안전이 먼저예요.', narr());
+  const path = await learningChoice(c, '바로 도움을 요청해도 괜찮아요.', [
+    ['help', '바로 어른에게 알리기'], ['stop', '먼저 하지 말라고 알리기']
+  ]);
+  if (path === 'stop') {
+    setAnim(hero, 'pose-x');
+    await c.say(S.stopWord, V(hero));
+    await c.say('상대가 멈추지 않거나 불편하면 안전한 거리를 두고 어른에게 알려요.', narr());
+  }
+  setMove(fr, 'exit-right');
+  const t = makeChar(TEACHER, { pos: 'right' });
   const phrase = lv(S.say);
-  await stageChoose(c, n, artTellTeacher(), phrase, F);
-
-  startPoke();
-  sfx.correct();
-  const t = makeChar(TEACHER, { pos: 'right' }); setMove(t, 'enter-right'); sfx.hops(4);
   await heroSays(c, hero, n, phrase);
-  await c.sleep(300);
-  setMove(t, ''); setAnim(t, 'bob');
-  stopTimer(); pausePoke(); setMood(fr, 'surprised');
-  removeBubble(hero); setMood(hero, 'worried'); setAnim(hero, 'bob');
-  await c.say(S.teacherLine, V(t));
-  setMood(fr, 'worried');
-  await c.say(S.friendSorry, V(fr));
-  setMood(fr, 'happy'); setAnim(fr, 'wave-hi');
-  setMood(hero, 'happy'); setMood(t, 'proud');
-  heartsBetween(hero, fr); sfx.sparkle();
-  await c.say(S.praise, narr());
-
+  await c.say('알려 줘서 고마워. 안전하게 지낼 수 있도록 내가 도울게. 정확한 말이나 동작을 하지 않아도 괜찮아.', V(t));
+  removeBubble(hero); setMood(hero, 'happy'); setAnim(hero, 'bob');
   await teacherGate(c, n, phrase);
   next();
 }
@@ -2307,7 +2224,7 @@ function saveSession() {
   const L = STATE.log;
   if (L.saved) return L.saved;
   const st = Object.keys(L.st).map(Number).sort((a, b) => a - b)
-    .map(n => { const s = L.st[n]; return { n, ph: s.ph, r: s.resp, w: s.wrong, h: s.hint, a: s.aac, done: s.done }; });
+    .map(n => { const s = L.st[n]; return { n, ph: s.ph, r: s.resp, w: s.wrong, h: s.hint, a: s.aac, done: s.done, recording: s.recording || null }; });
   if (!st.some(s => s.done)) return (L.saved = { rec: null });
   const S = STATE.setup;
   const rec = {
@@ -2325,17 +2242,18 @@ function saveSession() {
 }
 function sessionText({ rec, prev, ok }) {
   const lines = [`${fmtDate(rec.d)} · ${rec.nm} · ${rec.tn} · 수준 ${rec.lv}(${LEVEL_NAMES[rec.lv]}) · 주인공 ${CHARS[rec.hero].name}`];
-  rec.st.forEach(s => lines.push(`${s.n}단계 ${STAGES[s.n].name}: 완료 · 오답 ${s.w}회${s.h ? '(힌트)' : ''}${s.a ? ` · 버튼 ${s.a}회` : ''}`));
+  rec.st.forEach(s => lines.push(`${s.n}단계 ${STAGES[s.n].name}: 화면 연습 완료${s.recording?.reviewed ? ' · 녹음 교사 확인' : ''} · 오답 ${s.w}회${s.h ? '(힌트)' : ''}${s.a ? ` · 버튼 ${s.a}회` : ''}`));
   const wrong = r => r.st.reduce((t, s) => t + (s.w || 0), 0);
   let cmp = `한 상황 ${rec.st.length}개 · 오답 합계 ${wrong(rec)}회`;
-  if (prev) { const a = wrong(rec), b = wrong(prev); cmp += ` (지난번 ${b}회 ${a < b ? '▼ 줄었어요' : a > b ? '▲' : '='})`; }
+  cmp += ' · 앱 안의 선택 기록이며 실제 의사소통 능력 평가는 아니에요.';
   lines.push(cmp, `총 소요 ${Math.floor(rec.sec / 60)}분 ${rec.sec % 60}초`);
   if (!ok) lines.push('※ 이 브라우저에는 기록이 저장되지 않았어요.');
   return lines.join('\n');
 }
-async function ending(c) {
+function finishToday(c) { return ending(c, true); }
+async function ending(c, skipStory = false) {
   setLabel('엔딩 · 칭찬 이야기');
-  const ap = applausePages();
+  const ap = skipStory ? null : applausePages();
   if (ap) await storyBook(c, { title: CONFIG.applause.title, art: 'c=hero:proud i=star', pages: ap, last: '칭찬 도장 받기' });
   setLabel('엔딩 · 칭찬 스탬프');
   STATE.log.end = Date.now();
@@ -2401,7 +2319,7 @@ function aacBoard(c) {
   close.innerHTML = `<span class="fill"></span><span class="lbl">닫기 ✕</span><small class="lbl">길게 누르기</small>`;
   stage.appendChild(close);
   holdButton(close, 700, () => go(intro));
-  b.addEventListener('pointerdown', e => {
+  b.addEventListener('click', e => {
     const btn = e.target.closest('.aacbtn'); if (!btn) return;
     e.preventDefault();
     const a = CONFIG.aac.find(x => x.id === btn.dataset.id);
@@ -2423,16 +2341,20 @@ const store = {
 const loadRecs = () => store.get(KEY.recs, []);
 function sheetCfg() {
   const s = store.get(KEY.sheet, {});
-  return { url: (s.url || CONFIG.sheet.url || '').trim(), key: (s.key || CONFIG.sheet.key || '').trim() };
+  return { url: (s.url ?? CONFIG.sheet.url ?? '').trim(), key: (s.key ?? CONFIG.sheet.key ?? '').trim() };
 }
 async function sheetCall(body) {
   const s = sheetCfg();
   if (!s.url) throw new Error('웹앱 주소가 없어요');
   if (!/^https:\/\/script\.google\.com\/macros\/s\/[^/]+\/exec$/.test(s.url)) throw new Error('웹앱 주소 모양이 달라요 (…/macros/s/…/exec 이어야 해요)');
   let r;
-  try { r = await fetch(s.url, { method: 'POST', body: JSON.stringify(Object.assign({ key: s.key }, body)) }); }
-  catch (e) { throw new Error('인터넷 연결을 확인해 주세요'); }
-  const txt = await r.text();
+  const abort = new AbortController(), timeout = setTimeout(() => abort.abort(), 12000);
+  let txt;
+  try {
+    r = await fetch(s.url, { method: 'POST', signal: abort.signal, body: JSON.stringify(Object.assign({ key: s.key }, body)) });
+    txt = await r.text();
+  } catch (e) { throw new Error(e.name === 'AbortError' ? '연결 시간이 초과됐어요. 기록은 기기에 남아 있어요.' : '인터넷 연결을 확인해 주세요'); }
+  finally { clearTimeout(timeout); }
   let j;
   try { j = JSON.parse(txt); }
   catch (e) {
@@ -2511,7 +2433,7 @@ function openDiag(title, run, back) {
 }
 // 주소·키가 아직 없어도 기록은 모아 두었다가, 연결되면 한꺼번에 보냄
 function enqueue(payload) {
-  const q = store.get(KEY.queue, []); q.push(payload);
+  const q = store.get(KEY.queue, []); payload.qid = Date.now().toString(36) + Math.random().toString(36).slice(2); q.push(payload);
   while (q.length > 300) q.shift();
   store.set(KEY.queue, q);
   flushQueue();
@@ -2526,9 +2448,13 @@ function flushQueue() {
     else if (q.length && !s.key) SHEET_ERR = '비밀 키를 아직 넣지 않았어요';
     else {
       while (q.length) {
-        try { await sheetCall(Object.assign({ action: 'append' }, q[0])); SHEET_ERR = ''; }
+        const sent = q[0];
+        try { await sheetCall(Object.assign({ action: 'append' }, sent)); SHEET_ERR = ''; }
         catch (e) { SHEET_ERR = e.message === 'Failed to fetch' ? '인터넷 연결을 확인해 주세요' : e.message; break; }
-        q = store.get(KEY.queue, []); q.shift(); store.set(KEY.queue, q);
+        q = store.get(KEY.queue, []);
+        const pos = q.findIndex(x => sent.qid ? x.qid === sent.qid : JSON.stringify(x) === JSON.stringify(sent));
+        if (pos >= 0) q.splice(pos, 1);
+        store.set(KEY.queue, q);
       }
     }
     return store.get(KEY.queue, []).length;
@@ -2545,7 +2471,7 @@ function sheetRows(rec) {
   return rec.st.map(s => ({
     '회차ID': rec.id, '수행일시': rec.d, '이름': rec.nm, '유형': rec.tn, '수준': `${rec.lv} ${LEVEL_NAMES[rec.lv]}`,
     '단계': s.n, '단계명': STAGES[s.n].name, '목표 문장': s.ph,
-    '오답': s.w, '힌트': s.h ? 'O' : '', '버튼 누름': s.a || 0, '소요(초)': rec.sec, '주인공': CHARS[rec.hero] ? CHARS[rec.hero].name : rec.hero
+    '녹음 확인': s.recording?.reviewed ? '교사 확인' : '', '오답': s.w, '힌트': s.h ? 'O' : '', '버튼 누름': s.a || 0, '소요(초)': rec.sec, '주인공': CHARS[rec.hero] ? CHARS[rec.hero].name : rec.hero
   }));
 }
 function recsFromRows(rows) {
@@ -2553,7 +2479,7 @@ function recsFromRows(rows) {
   rows.forEach(r => {
     const id = String(r['회차ID'] || r['수행일시']);
     if (!by.has(id)) by.set(id, { id, d: r['수행일시'], nm: r['이름'], tn: r['유형'], lv: parseInt(r['수준'], 10) || 0, sec: +r['소요(초)'] || 0, st: [] });
-    by.get(id).st.push({ n: +r['단계'], ph: r['목표 문장'], r: RESP_CODE[r['반응']] || null, w: +r['오답'] || 0, h: r['힌트'] === 'O', a: +r['버튼 누름'] || 0, done: true });
+    by.get(id).st.push({ n: +r['단계'], ph: r['목표 문장'], r: RESP_CODE[r['반응']] || null, w: +r['오답'] || 0, h: r['힌트'] === 'O', a: +r['버튼 누름'] || 0, done: true, recording: r['녹음 확인'] === '교사 확인' ? { reviewed: true, remote: true } : null });
   });
   return [...by.values()];
 }
@@ -2617,10 +2543,8 @@ function setupNote() {
   const wr = S.stages.filter(n => n > 1).map(n => `${n}단계 ${CONFIG.wrongs[wrongOf(n)].label.replace(/[()]/g, '')}`);
   if (wr.length) lines.push('오답 카드 — ' + wr.join(' · '));
   if (S.stages.includes(3)) lines.push('3단계 장면 — ' + (taskOf3() === 'question' ? '어려운 질문 (몰라요)' : '어려운 과제 (어려워요)'));
-  lines.push('거절(1·2·5단계, 6단계 첫 장면)은 팔로 X를 만들며 말하고, 어려움·쉬기·도움 요청(3·4·6단계)은 손을 들고 말해요.');
-  lines.push('이야기 문장 비율 (설명·조망·긍정 ÷ 코칭, 기준 2 이상) — ' + S.stages.map(n => {
-    const r = storyRatio(CONFIG.stories[n].pages); return `${n}단계 ${r.r.toFixed(1)}${r.r >= 2 ? ' ✓' : ' ⚠'}`;
-  }).join(' · '));
+  lines.push('말·몸짓·AAC 버튼은 동등한 표현 수단입니다. 정해진 팔 동작과 발화를 함께 요구하지 마세요.');
+  lines.push('이 앱은 사회적 상황이야기 초안입니다. 문장 비율만으로 공식 Social Stories 기준 준수를 보장하지 않습니다. 학생·보호자·교사가 실제 상황과 이해를 함께 확인해 주세요.');
   lines.push('고른 상황만 메뉴에 나오고, 학생이 하나씩 골라 “이야기 읽기 → 연습”을 해요.');
   return lines.join('\n');
 }
@@ -2658,7 +2582,7 @@ function openSetup(onDone, needName = false) {
     const sc = sheetCfg();
     modal.innerHTML = `<div class="mpanel">
       <h2>교사 설정</h2>
-      <div class="mrow"><b>이름</b><div class="opts"><input id="mName" type="text" maxlength="20" placeholder="학생 이름 (학생이 쓸 이름과 똑같이)" value="${esc(S.name)}">${people().map(n => `<button class="opt${n === S.name ? ' on' : ''}" data-n="${esc(n)}">${esc(n)}</button>`).join('')}</div></div>
+      <div class="mrow"><b>이름</b><div class="opts"><input id="mName" type="text" maxlength="20" placeholder="학생 별명·코드 (학생이 쓸 이름과 같게)" value="${esc(S.name)}">${people().map(n => `<button class="opt${n === S.name ? ' on' : ''}" data-n="${esc(n)}">${esc(n)}</button>`).join('')}</div></div>
       <div class="mrow"><b></b><div class="opts"><span class="mstat">${esc(sync)}</span></div></div>
       <div class="mrow"><b>유형</b><div class="opts">${Object.entries(CONFIG.types).map(([k, p]) => `<button class="opt${S.type === k ? ' on' : ''}" data-t="${k}">${esc(p.name)}</button>`).join('')}</div></div>
       <div class="mrow"><b>상황 (메뉴)</b><div class="opts">${Object.keys(STAGES).map(Number).map(n => `<button class="opt${S.stages.includes(n) ? ' on' : ''}" data-s="${n}">${n}. ${CONFIG.stories[n].title}</button>`).join('')}</div></div>
@@ -2741,7 +2665,7 @@ function openRecords(nm = STATE.setup.name, remote = null, note = '') {
     const dots = seq.map(r => `<i class="dot ${wcls(of(r))}${of(r).h ? ' hint' : ''}" title="${esc(fmtDate(r.d))} · 오답 ${of(r).w}회"></i>`).join('');
     return `<tr><td>${n}. ${STAGES[n].name}</td><td><span class="dots">${dots}</span></td><td>${seq.length}회 · 오답 0회 ${seq.filter(r => !of(r).w).length}번</td></tr>`;
   }).join('');
-  const rows = recs.slice().reverse().slice(0, 30).map(r => `<tr><td>${esc(fmtDate(r.d))}</td><td>${r.lv || ''}</td><td>${r.st.map(s => `${s.n}단계 오답 ${s.w}회${s.h ? ' (힌트)' : ''}`).join('<br>')}</td></tr>`).join('');
+  const rows = recs.slice().reverse().slice(0, 30).map(r => `<tr><td>${esc(fmtDate(r.d))}</td><td>${r.lv || ''}</td><td>${r.st.map(s => `${s.n}단계 오답 ${s.w}회${s.h ? ' (힌트)' : ''} · ${s.recording?.reviewed ? '녹음·교사 확인' : '녹음 확인 없음'}`).join('<br>')}</td></tr>`).join('');
   const aacDays = Object.entries(store.get(KEY.aac, {})[nm] || {}).sort((a, b) => (a[0] < b[0] ? 1 : -1)).slice(0, 14);
   const aac = aacDays.map(([day, cnt]) => `<tr><td>${day}</td><td>${CONFIG.aac.filter(a => cnt[a.id]).map(a => `${a.word} ${cnt[a.id]}`).join(' · ')}</td></tr>`).join('');
   const hasSheet = !!sheetCfg().url;
@@ -2749,7 +2673,7 @@ function openRecords(nm = STATE.setup.name, remote = null, note = '') {
     <h2>기록 보기 <small>${remote ? '구글 시트' : '이 기기'}</small></h2>
     <div class="opts">${names.map(x => `<button class="opt${x === nm ? ' on' : ''}" data-tab="${esc(x)}">${esc(x)}</button>`).join('') || '<span>아직 기록한 학생이 없어요.</span>'}</div>
     ${note ? `<p class="mnote">${esc(note)}</p>` : ''}
-    <h3>상황별 변화 <small>(왼쪽이 오래된 기록 · 최근 10회)</small></h3>
+    <p class="mnote">완료·오답·버튼 수는 화면 조작 기록입니다. 실제 표현과 도움 정도는 ‘교사 도구 → 생활 관찰’에서 별도로 기록해 주세요.</p><h3>화면 선택 기록 <small>(왼쪽이 오래된 기록 · 최근 10회)</small></h3>
     <div class="legend">${legend}</div>
     ${trend ? `<table class="rt"><tr><th>상황</th><th>오답</th><th>횟수</th></tr>${trend}</table>` : '<p>아직 기록이 없어요.</p>'}
     <h3>회차별 기록 <small>(최근 30회)</small></h3>
@@ -2772,6 +2696,9 @@ function openRecords(nm = STATE.setup.name, remote = null, note = '') {
     else if (b.classList.contains('mcopy')) copyText(recsTSV(recs) || '기록 없음', b);
     else if (b.classList.contains('mdel')) {
       if (!nm || !confirm(`이 기기에 저장된 ${nm} 기록을 모두 지울까요? 되돌릴 수 없어요. (구글 시트 기록은 그대로 남아요)`)) return;
+      if (FLUSHING) { alert('전송이 끝난 뒤 다시 삭제해 주세요. 이미 전송 중인 자료는 이 기기에서 취소할 수 없어요.'); return; }
+      store.set(KEY.queue, store.get(KEY.queue, []).map(p => Object.assign({}, p, { rows: (p.rows || []).filter(r => r['이름'] !== nm) })).filter(p => p.rows.length));
+      if ((STATE.setup.name || '(이름 없음)') === nm) { AAC_PENDING = {}; resetLog(); }
       store.set(KEY.recs, loadRecs().filter(r => r.nm !== nm));
       const a = store.get(KEY.aac, {}); delete a[nm]; store.set(KEY.aac, a);
       openRecords(nm);
@@ -2834,6 +2761,7 @@ function openVoiceList(back) {
 
 /* ---------- 폭죽 ---------- */
 function confetti(ms) {
+  if (document.documentElement.classList.contains('low-motion') || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   const cv = $('#confetti'), g = cv.getContext('2d');
   const dpr = Math.min(2, window.devicePixelRatio || 1), W = innerWidth, H = innerHeight;
   cv.width = W * dpr; cv.height = H * dpr; g.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -2868,6 +2796,7 @@ function confetti(ms) {
 function applySound() {
   MUTE_TTS = SOUND >= 1; MUTE_SFX = SOUND === 2;
   if (MUTE_TTS) stopVoice();
+  $('#bSound').setAttribute('aria-label', SOUND === 0 ? '소리 전체 켜짐 · 눌러 변경' : SOUND === 1 ? '음성 꺼짐 · 눌러 변경' : '소리 전체 꺼짐 · 눌러 변경');
   $('#bSound').innerHTML = SOUND === 0 ? ICON.sOn : SOUND === 1 ? ICON.sOn + '<small>음성끔</small>' : ICON.sOff;
 }
 $('#bSound').addEventListener('click', () => { SOUND = (SOUND + 1) % 3; applySound(); });
@@ -2883,19 +2812,134 @@ $('#bFull').addEventListener('click', () => {
 $('#bHome').insertAdjacentHTML('beforeend', ICON.home);
 holdButton($('#bHome'), 700, () => go(intro));
 $('#bAac').insertAdjacentHTML('beforeend', ICON.chat);
-holdButton($('#bAac'), 700, () => go(aacBoard));
+$('#bAac').setAttribute('title', '말 버튼 열기 · 한 번 누르기');
+$('#bAac').addEventListener('click', openQuickAac);
 document.addEventListener('keydown', e => {
-  if (!GATE_PICK) return;
+  if (!GATE_PICK || modal.classList.contains('show') || document.querySelector('.quick-aac, .edu-shade, .pr-library') || e.target.closest('input,select,textarea,button,[role=button]')) return;
   if (e.key === 'Enter' || e.key === 'ArrowRight') { e.preventDefault(); GATE_PICK(); }
 });
 document.addEventListener('contextmenu', e => e.preventDefault());
 window.addEventListener('online', () => flushQueue());
 
+function learningChoice(c, title, items) {
+  return new Promise(resolve => {
+    c.check();
+    const panel = document.createElement('section'); panel.className = 'learning-choice';
+    panel.setAttribute('role', 'dialog'); panel.setAttribute('aria-modal', 'true'); panel.setAttribute('aria-label', title);
+    const heading = document.createElement('h2'); heading.textContent = title; panel.appendChild(heading);
+    for (const [value, label] of items) {
+      const btn = document.createElement('button'); btn.textContent = label;
+      btn.addEventListener('click', () => { if (!c.alive()) return; panel.remove(); resolve(value); });
+      panel.appendChild(btn);
+    }
+    overlay.className = 'show dim'; overlay.appendChild(panel);
+    panel.querySelector('button').focus();
+    panel.addEventListener('keydown', e => {
+      if (e.key !== 'Tab') return;
+      const a = [...panel.querySelectorAll('button')], i = a.indexOf(document.activeElement);
+      e.preventDefault(); a[(i + (e.shiftKey ? -1 : 1) + a.length) % a.length].focus();
+    });
+  }).then(value => { c.check(); overlay.className = ''; return value; });
+}
+
+// AAC is available without throwing away the story or practice screen.
+function openQuickAac() {
+  if (ACTIVE_PRACTICE_RECORDER?.isBusy()) return;
+  if (document.querySelector('.quick-aac')) return;
+  const focus = document.activeElement;
+  setLearningPause('aac', true);
+  stopVoice();
+  const shell = document.createElement('div'); shell.className = 'quick-aac';
+  shell.setAttribute('role', 'dialog'); shell.setAttribute('aria-modal', 'true'); shell.setAttribute('aria-label', '내 마음을 알리는 말 버튼');
+  const card = document.createElement('div'); card.className = 'quick-aac-panel';
+  card.innerHTML = '<h2>내 마음을 알려요</h2><p>말·몸짓·버튼 중 편한 방법을 써요.</p><div class="quick-aac-grid"></div>';
+  const grid = card.querySelector('.quick-aac-grid');
+  CONFIG.aac.forEach(a => {
+    const button = document.createElement('button'); button.setAttribute('aria-label', a.word);
+    button.innerHTML = `<span>${aacIcon(a.id)}</span><strong>${esc(a.word)}</strong>`;
+    button.onclick = () => { countAac(a.id); say(a.word, { role: '말버튼', noCap: true }); };
+    grid.appendChild(button);
+  });
+  const close = document.createElement('button'); close.className = 'quick-close'; close.textContent = '닫고 이어보기';
+  let blocked = [];
+  const shut = () => { stopVoice(); flushAac(); shell.remove(); blocked.forEach(([node, was]) => { node.inert = was; }); setLearningPause('aac', false); if (focus && focus.isConnected) focus.focus(); };
+  close.onclick = shut; card.appendChild(close); shell.appendChild(card); document.body.appendChild(shell);
+  blocked = [...document.body.children].filter(node => node !== shell && !['SCRIPT','STYLE'].includes(node.tagName)).map(node => [node, node.inert]);
+  blocked.forEach(([node]) => { node.inert = true; }); close.focus();
+  shell.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { e.preventDefault(); shut(); }
+    if (e.key === 'Tab') {
+      const a = [...card.querySelectorAll('button')], i = a.indexOf(document.activeElement);
+      e.preventDefault(); a[(i + (e.shiftKey ? -1 : 1) + a.length) % a.length].focus();
+    }
+  });
+}
+
+const pause = document.createElement('button'); pause.id = 'bBreak'; pause.textContent = '쉬기·그만하기';
+pause.className = 'break-control'; document.body.appendChild(pause);
+pause.onclick = () => {
+  const restart = STATE.cur;
+  go(async c => {
+    setLabel('잠깐 쉬어도 괜찮아요');
+    const action = await learningChoice(c, '편하게 쉬어요. 준비되면 골라요.', [
+      ['again', restart ? '이 상황 처음부터 보기' : '상황 고르기'], ['menu', '다른 상황 고르기'], ['end', '오늘은 마치기']
+    ]);
+    if (action === 'end') go(finishToday);
+    else if (action === 'again' && restart) go(storyOf(restart));
+    else go(menu);
+  });
+};
+
+const motion = document.createElement('button'); motion.className = 'motion-control';
+let lowMotion = store.get('ssr.lowMotion', window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+function setMotion() { document.documentElement.classList.toggle('low-motion', lowMotion); motion.textContent = lowMotion ? '움직임 줄임' : '움직임 줄이기'; motion.setAttribute('aria-pressed', String(lowMotion)); }
+setMotion(); motion.onclick = () => { lowMotion = !lowMotion; store.set('ssr.lowMotion', lowMotion); setMotion(); };
+document.body.appendChild(motion);
+
+// Native modal focus is contained and restored. Labels are never removed with art text.
+let modalFocus = null;
+new MutationObserver(() => {
+  if (document.querySelector('.edu-shade,.quick-aac,.pr-library')) return;
+  if (modal.classList.contains('show')) {
+    if (!modalFocus) modalFocus = document.activeElement;
+    const title = modal.querySelector('h2'); if (title) modal.setAttribute('aria-label', title.textContent);
+    if (!modal.contains(document.activeElement)) modal.querySelector('input,button,select,summary')?.focus();
+  } else if (modalFocus) { if (modalFocus.isConnected) modalFocus.focus(); modalFocus = null; }
+}).observe(modal, { childList: true, attributes: true, attributeFilter: ['class'] });
+modal.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { e.preventDefault(); closeModal(); }
+  if (e.key === 'Tab') {
+    const a = [...modal.querySelectorAll('input,button,select,summary,a[href]')].filter(x => x.getClientRects().length);
+    const i = a.indexOf(document.activeElement);
+    if (!a.length) return;
+    if (e.shiftKey && i <= 0) { e.preventDefault(); a.at(-1).focus(); }
+    else if (!e.shiftKey && i === a.length - 1) { e.preventDefault(); a[0].focus(); }
+  }
+});
+
+
+function paintedObject(key) {
+  return '<img aria-hidden="true" class="illustrated-object object-' + key + '" src="images/objects/' + key + '.png" alt="" draggable="false">';
+}
+['broccoli','tablet','clay','pineapple'].forEach(key => { ITEMS[key] = paintedObject(key); });
+const objectIconMap = { xSign:'cross', xArms:'cross', xBadge:'cross', cant:'cross', stopBadge:'cross', stop:'cross', hand:'hand', help:'hand', hard:'puzzle', rest:'rest', crayon:'paper' };
+Object.entries(objectIconMap).forEach(([key,value]) => { if (key in ICON) ICON[key] = paintedObject(value); });
+AAC_ICON.no = paintedObject('cross'); AAC_ICON.cant = paintedObject('cross'); AAC_ICON.stop = paintedObject('cross');
+AAC_ICON.help = paintedObject('hand'); AAC_ICON.hard = paintedObject('puzzle'); AAC_ICON.rest = paintedObject('rest');
+puzzleSVG = done => '<span class="painted-prop' + (done ? ' completed-prop' : '') + '">' + paintedObject('puzzle') + '</span>';
+paperSVG = filled => '<span class="painted-prop' + (filled ? ' completed-prop' : '') + '">' + paintedObject('paper') + '</span>';
+
+new MutationObserver(() => {
+  const paused = !!document.querySelector('.edu-shade,.pr-library');
+  if (paused && !PAUSE_REASONS.has('teacher')) stopVoice();
+  setLearningPause('teacher', paused);
+}).observe(document.body, { childList: true });
 buildBG();
 applySound();
 loadSetup();
 flushQueue();
 go(intro);
 </script>
+<script src="education-tools.js"></script>
 </body>
 </html>

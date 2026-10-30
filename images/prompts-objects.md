@@ -1,0 +1,8 @@
+# 주요 소품·의사소통 동작 일러스트
+
+제작 방식: built-in image_gen, 새 그림 생성, 투명 배경 요청.
+최종 파일: `objects.png`. 배치는 3열 × 3행입니다.
+
+## 실제 프롬프트
+
+Use case: illustration-story. Asset type: a coherent educational picture-book object illustration sprite atlas for a Korean social communication webapp. Create one square sheet laid out as EXACTLY 3 columns by 3 rows of equal square cells, actual transparent background, no grid lines, NO TEXT OR LETTERS. Each isolated object centered entirely within its own cell with clear generous margins, no overlap, no shadows crossing cells. Row 1 left to right: one fresh broccoli floret; one small modern tablet with calm blank blue screen; a small mound of colorful modeling clay with a rolling pin. Row 2: one golden star shaped jigsaw piece and simple wooden fitting board; one white sheet with a yellow star and red coloring pencil; one small friendly ripe pineapple. Row 3: two natural human forearms clearly crossing diagonally in front into a single X refusal gesture, palms open visible five fingers each and correct anatomy, no face or torso, no stop sign; one open hand raised upright on forearm, five fingers, natural gentle gesture, not clenched; one small comfortable green floor cushion with a soft leaf and restful atmosphere (rest symbol). Style: professional contemporary children's picture-book gouache and colored pencil, softly painted dimensional shapes with delicate paper texture, warm light, consistent muted forest greens, warm gold and coral, polished hand-drawn illustrations. Avoid flat geometric SVG look, clip art outlines, sticker borders, photorealism, extra objects, labels, and any background fill.

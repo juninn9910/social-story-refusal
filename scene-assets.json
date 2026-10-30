@@ -1,0 +1,44 @@
+[
+  {
+    "situation": 1,
+    "src": "images/scenes/scene-1.png",
+    "alt": "큰 소리로 노래하는 친구 옆에서 귀가 불편한 거북이",
+    "width": 1448,
+    "height": 1086
+  },
+  {
+    "situation": 2,
+    "src": "images/scenes/scene-2.png",
+    "alt": "친구가 권한 브로콜리를 손짓으로 거절하는 거북이",
+    "width": 1448,
+    "height": 1086
+  },
+  {
+    "situation": 3,
+    "src": "images/scenes/scene-3.png",
+    "alt": "어려운 별 퍼즐 앞에서 부엉이 선생님에게 도움을 구하는 거북이",
+    "width": 1448,
+    "height": 1086
+  },
+  {
+    "situation": 4,
+    "src": "images/scenes/scene-4.png",
+    "alt": "초록 방석에서 쉬며 선생님과 이야기하는 거북이",
+    "width": 1448,
+    "height": 1086
+  },
+  {
+    "situation": 5,
+    "src": "images/scenes/scene-5.png",
+    "alt": "태블릿과 클레이를 지키며 거절하는 거북이",
+    "width": 1448,
+    "height": 1086
+  },
+  {
+    "situation": 6,
+    "src": "images/scenes/scene-6.png",
+    "alt": "부엉이 선생님에게 불편함을 알리고 안전한 거리를 두는 거북이",
+    "width": 1448,
+    "height": 1086
+  }
+]
